@@ -1,0 +1,108 @@
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+--dpsa-navy: #0b1a3d;
+--dpsa-dark: #071126;
+--dpsa-cyan: #00b0ff;
+--dpsa-lightcyan: #e1f5fe;
+--dpsa-blue-soft: #dbeefd;
+}
+
+body {
+font-family: 'Plus Jakarta Sans', sans-serif;
+background-color: #f1f5f9;
+color: #1e293b;
+margin: 0;
+padding: 0;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+width: 6px;
+height: 6px;
+}
+::-webkit-scrollbar-track {
+background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+background: #cbd5e1;
+border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+background: #94a3b8;
+}
+
+/* Kartu Scan QR Persis Gambar Referensi */
+.scan-page-wrapper {
+background-color: var(--dpsa-navy);
+min-height: 100vh;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 1.5rem;
+}
+
+.scan-card-outer {
+background-color: var(--dpsa-navy);
+width: 100%;
+max-width: 900px;
+}
+
+.scan-card-body {
+background-color: #ffffff;
+border-radius: 28px;
+box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.scan-header-pill {
+background-color: var(--dpsa-blue-soft);
+border-radius: 9999px;
+border: 1px solid #bfdbfe;
+}
+
+.dashed-cyan-row {
+border-bottom: 2px dashed var(--dpsa-cyan);
+}
+
+.cyan-icon-circle {
+width: 44px;
+height: 44px;
+border-radius: 50%;
+background: #e0f6ff;
+border: 1.5px solid #29b6f6;
+display: flex;
+align-items: center;
+justify-content: center;
+flex-shrink: 0;
+}
+
+.photo-frame-cyan {
+border: 3.5px solid var(--dpsa-cyan);
+border-radius: 26px;
+padding: 6px;
+background: #ffffff;
+box-shadow: 0 4px 14px rgba(0, 176, 255, 0.15);
+}
+
+.code-font {
+font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Print View Setup */
+@media print {
+body * {
+visibility: hidden !important;
+}
+#printablePassport, #printablePassport * {
+visibility: visible !important;
+}
+#printablePassport {
+position: absolute;
+left: 0;
+top: 0;
+width: 100% !important;
+margin: 0 !important;
+padding: 0 !important;
+}
+}
