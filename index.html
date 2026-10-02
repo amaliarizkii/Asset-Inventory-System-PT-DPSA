@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PT DPSA - Asset & Inventory System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="fixed top-5 right-5 z-50 transform -translate-y-24 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700 max-w-md">
+    <div class="text-sky-400">
+      <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+    </div>
+    <div>
+      <h4 id="toastTitle" class="text-xs font-bold text-slate-100 uppercase tracking-wider">Pemberitahuan</h4>
+      <p id="toastMessage" class="text-xs text-slate-300 mt-0.5">Operasi berhasil dijalankan.</p>
+    </div>
+  </div>
+
+  <div class="flex flex-1 min-h-screen">
+    
+    <!-- Sidebar -->
+    <aside class="w-72 bg-slate-900 text-slate-300 flex flex-col justify-between flex-shrink-0 transition-all duration-300 border-r border-slate-800 z-30">
+      <div>
+        <!-- Brand Header with logo dpsa.png -->
+        <div class="h-24 flex items-center px-6 border-b border-slate-800/80 gap-3.5">
+          <img src="logo dpsa.png" alt="PT DPSA" class="w-12 h-12 object-contain" onerror="this.src='https://placehold.co/100x100/f59e0b/0b1b3d?text=DPSA'">
+          <div>
+            <h1 class="text-xl font-black text-white tracking-wider">PT DPSA</h1>
+            <p class="text-[11px] text-sky-400 font-semibold tracking-wide uppercase">Asset & Inventory</p>
+          </div>
+        </div>
+
+        <!-- Live Sync Status Google Sheets -->
+        <div class="px-6 py-3 border-b border-slate-800/50 bg-slate-950/40">
+          <div id="syncStatusBadge" class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span class="text-[10px] text-emerald-300 font-bold">Google Sheets Terhubung</span>
+          </div>
+        </div>
+
+        <!-- 3 Primary Navigation Links -->
+        <nav class="p-5 space-y-2">
+          <p class="px-3 pb-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Navigasi Utama</p>
+
+          <button onclick="switchTab('overview')" id="nav-overview" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40">
+            <div class="flex items-center gap-3">
+              <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+              <span>1. Overview</span>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 opacity-70"></i>
+          </button>
+
+          <button onclick="switchTab('fixasset')" id="nav-fixasset" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+            <div class="flex items-center gap-3">
+              <i data-lucide="building-2" class="w-4 h-4"></i>
+              <span>2. Dashboard Fix Asset</span>
+            </div>
+            <span id="badgeCountFixAsset" class="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-800 text-sky-400">0</span>
+          </button>
+
+          <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+            <div class="flex items-center gap-3">
+              <i data-lucide="boxes" class="w-4 h-4"></i>
+              <span>3. Dashboard Inventory</span>
+            </div>
+            <span id="badgeCountInventory" class="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-800 text-emerald-400">0</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Quick Scan Shortcut & Active User Session -->
+      <div class="p-5 border-t border-slate-800/80 space-y-3">
+        <a href="barcode.html?code=FA/PO3/12/XII/DPSA/2016/KEU" target="_blank" class="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white rounded-xl text-xs font-bold shadow-md transition">
+          <i data-lucide="qr-code" class="w-4 h-4"></i>
+          <span>Buka Paspor QR (Ref. Image)</span>
+        </a>
+
+        <div class="bg-slate-800/60 p-3 rounded-2xl flex items-center justify-between border border-slate-700/50">
+          <div class="flex items-center gap-2.5">
+            <div id="userAvatarInitials" class="w-9 h-9 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold text-xs border border-sky-400/30">
+              GA
+            </div>
+            <div>
+              <p id="userProfileName" class="text-xs font-bold text-white">General Affairs</p>
+              <p id="userProfileRole" class="text-[10px] text-slate-400">Administrator</p>
+            </div>
+          </div>
+          <button onclick="logout()" title="Keluar Akun" class="text-slate-400 hover:text-rose-400 transition p-1">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      
+      <!-- Top Action Bar -->
+      <header class="h-20 bg-white border-b border-slate-200/90 px-6 md:px-8 flex items-center justify-between sticky top-0 z-20 shadow-xs">
+        <div>
+          <h2 id="topBarTitle" class="text-lg md:text-xl font-extrabold text-slate-900 tracking-tight">1. Overview</h2>
+          <p id="topBarSubtitle" class="text-xs text-slate-500 font-medium">PT DPSA Asset & Inventory Management Portal</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button onclick="loadData()" class="p-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition" title="Refresh Data Spreadsheet">
+            <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+          </button>
+          <button onclick="openAddDataModal()" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs md:text-sm px-4 py-2.5 rounded-xl shadow-md transition">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span id="btnTopTambahText">Tambah Item</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Container -->
+      <div class="p-6 md:p-8 space-y-6">
+
+        <!-- SECTION 1: OVERVIEW -->
+        <section id="section-overview" class="space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-5 rounded-3xl shadow-lg border border-slate-800 flex flex-col justify-between">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-sky-400">Total Akumulasi Nilai</span>
+                <h3 id="ovTotalNilaiAll" class="text-2xl font-black mt-2 tracking-tight text-white">Rp 0</h3>
+              </div>
+              <div class="pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                <span>Fix Asset + Inventory</span>
+                <i data-lucide="wallet" class="w-4 h-4 text-sky-400"></i>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-3xl shadow-xs border border-slate-200/90 flex flex-col justify-between">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Keseluruhan Item</span>
+                <h3 id="ovTotalItemAll" class="text-2xl font-extrabold mt-2 text-slate-900">0 Item</h3>
+              </div>
+              <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-emerald-600 font-semibold">
+                <span>Aktiva & persediaan terdaftar</span>
+                <i data-lucide="layers" class="w-4 h-4 text-emerald-500"></i>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-3xl shadow-xs border border-slate-200/90 flex flex-col justify-between">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Nilai Perolehan Fix Asset</span>
+                <h3 id="ovNilaiFixAsset" class="text-2xl font-extrabold mt-2 text-blue-700">Rp 0</h3>
+              </div>
+              <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
+                <span id="ovItemFixAsset">0 Unit Aktiva Tetap</span>
+                <i data-lucide="building-2" class="w-4 h-4 text-blue-600"></i>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-3xl shadow-xs border border-slate-200/90 flex flex-col justify-between">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Nilai Perolehan Inventory</span>
+                <h3 id="ovNilaiInventory" class="text-2xl font-extrabold mt-2 text-emerald-700">Rp 0</h3>
+              </div>
+              <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
+                <span id="ovItemInventory">0 SKU Persediaan</span>
+                <i data-lucide="boxes" class="w-4 h-4 text-emerald-600"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-3xl shadow-xs border border-slate-200/90 flex flex-col">
+              <h3 class="text-sm font-bold text-slate-900 mb-1">Rasio Komposisi Nilai Aset</h3>
+              <p class="text-xs text-slate-500 mb-4">Fix Asset vs Persediaan Gudang</p>
+              <div class="relative flex-1 min-h-[220px] flex items-center justify-center">
+                <canvas id="overviewPieChart"></canvas>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl shadow-xs border border-slate-200/90 lg:col-span-2 flex flex-col">
+              <h3 class="text-sm font-bold text-slate-900 mb-1">Distribusi Nilai Berdasarkan Lokasi</h3>
+              <p class="text-xs text-slate-500 mb-4">Valuasi aset di masing-masing ruangan/gudang</p>
+              <div class="relative flex-1 min-h-[220px]">
+                <canvas id="overviewBarChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top 5 High Value Table -->
+          <div class="bg-white rounded-3xl shadow-xs border border-slate-200/90 overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">5 Aset dengan Nilai Perolehan Tertinggi</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Aktiva paling signifikan di lingkungan PT DPSA</p>
+              </div>
+              <button onclick="switchTab('fixasset')" class="text-xs font-bold text-blue-600 hover:text-blue-700">Lihat Semua Fix Asset &rarr;</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-600">
+                <thead class="bg-slate-50 text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                  <tr>
+                    <th class="py-3.5 px-6">Kode Barang</th>
+                    <th class="py-3.5 px-6">Nama & Spesifikasi</th>
+                    <th class="py-3.5 px-6">Kategori</th>
+                    <th class="py-3.5 px-6">Lokasi</th>
+                    <th class="py-3.5 px-6 text-right">Harga Perolehan</th>
+                    <th class="py-3.5 px-6 text-center">Paspor QR</th>
+                  </tr>
+                </thead>
+                <tbody id="overviewTopTableBody" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 2: FIX ASSET -->
+        <section id="section-fixasset" class="hidden space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white p-5 rounded-3xl shadow-xs border border-slate-200/90">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Nilai Perolehan (Fix Asset)</span>
+              <h3 id="faTotalNilai" class="text-2xl font-black mt-2 text-blue-700">Rp 0</h3>
+              <p class="text-xs text-slate-400 mt-1">Aktiva tetap tercatat di sistem</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-3xl shadow-xs border border-slate-200/90">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Item Terdaftar</span>
+              <h3 id="faTotalItem" class="text-2xl font-black mt-2 text-slate-900">0 Unit</h3>
+              <p class="text-xs text-emerald-600 font-semibold mt-1">100% Berlabel QR Barcode</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-3xl shadow-xs border border-slate-200/90">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Kondisi Fisik Baik</span>
+              <h3 id="faKondisiBaik" class="text-2xl font-black mt-2 text-emerald-600">100%</h3>
+              <p class="text-xs text-slate-500 mt-1">Siap pakai operasional</p>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-3xl shadow-xs border border-slate-200/90 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-sm font-bold text-slate-900">Distribusi Area / Penempatan Ruangan</h4>
+                <p class="text-xs text-slate-500">Proporsi alokasi aktiva tetap di setiap ruangan</p>
+              </div>
+              <span class="text-xs font-semibold px-2.5 py-1 bg-slate-100 rounded-lg text-slate-700" id="faTotalAreaBadge">0 Lokasi</span>
+            </div>
+            <div id="faDistributionBars" class="space-y-2 pt-2"></div>
+          </div>
+
+          <!-- Controls -->
+          <div class="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            <div class="relative flex-1 max-w-md">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input type="text" id="faSearchInput" placeholder="Cari kode barang, nama, PIC, lokasi..." class="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex items-center gap-2">
+              <select id="faFilterLokasi" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5"></select>
+              <select id="faFilterKondisi" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5">
+                <option value="ALL">Semua Kondisi</option>
+                <option value="Baik">Baik</option>
+                <option value="Perlu Perbaikan">Perlu Perbaikan</option>
+                <option value="Rusak">Rusak</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Table Fix Asset -->
+          <div class="bg-white rounded-3xl shadow-xs border border-slate-200/90 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-600">
+                <thead class="bg-slate-50 text-[11px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th class="py-4 px-4 text-center w-12">No</th>
+                    <th class="py-4 px-4">Kode Barang</th>
+                    <th class="py-4 px-4">Nama Barang</th>
+                    <th class="py-4 px-4">Tipe / Ukuran</th>
+                    <th class="py-4 px-3 text-center">Satuan / Kemasan</th>
+                    <th class="py-4 px-3 text-center">Jumlah</th>
+                    <th class="py-4 px-3 text-center">Tahun</th>
+                    <th class="py-4 px-3 text-center">Kondisi</th>
+                    <th class="py-4 px-4 text-right">Harga Perolehan</th>
+                    <th class="py-4 px-4">Lokasi</th>
+                    <th class="py-4 px-4">Keterangan</th>
+                    <th class="py-4 px-4 text-center">Gambar</th>
+                    <th class="py-4 px-4 text-center">Aksi & QR</th>
+                  </tr>
+                </thead>
+                <tbody id="faTableBody" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 3: INVENTORY -->
+        <section id="section-inventory" class="hidden space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white p-5 rounded-3xl shadow-xs border border-slate-200/90">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Nilai Perolehan (Inventory)</span>
+              <h3 id="invTotalNilai" class="text-2xl font-black mt-2 text-emerald-700">Rp 0</h3>
+              <p class="text-xs text-slate-400 mt-1">Total nilai stok gudang saat ini</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-3xl shadow-xs border border-slate-200/90">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Item Terdaftar</span>
+              <h3 id="invTotalItem" class="text-2xl font-black mt-2 text-slate-900">0 SKU</h3>
+              <p class="text-xs text-emerald-600 font-semibold mt-1">Item aktif persediaan</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-3xl shadow-xs border border-slate-200/90">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Kuantitas Fisik</span>
+              <h3 id="invTotalKuantitas" class="text-2xl font-black mt-2 text-sky-600">0</h3>
+              <p class="text-xs text-slate-500 mt-1">Akumulasi seluruh unit stok</p>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-3xl shadow-xs border border-slate-200/90 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-sm font-bold text-slate-900">Distribusi Area Penyimpanan Gudang</h4>
+                <p class="text-xs text-slate-500">Proporsi persediaan di setiap zona logistik</p>
+              </div>
+              <span class="text-xs font-semibold px-2.5 py-1 bg-slate-100 rounded-lg text-slate-700" id="invTotalAreaBadge">0 Area</span>
+            </div>
+            <div id="invDistributionBars" class="space-y-2 pt-2"></div>
+          </div>
+
+          <!-- Controls -->
+          <div class="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            <div class="relative flex-1 max-w-md">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input type="text" id="invSearchInput" placeholder="Cari kode barang, nama, PIC, lokasi gudang..." class="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <div class="flex items-center gap-2">
+              <select id="invFilterLokasi" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5"></select>
+            </div>
+          </div>
+
+          <!-- Table Inventory -->
+          <div class="bg-white rounded-3xl shadow-xs border border-slate-200/90 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-600">
+                <thead class="bg-slate-50 text-[11px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th class="py-4 px-4 text-center w-12">No</th>
+                    <th class="py-4 px-4">Kode Barang</th>
+                    <th class="py-4 px-4">Nama Barang</th>
+                    <th class="py-4 px-4">Tipe / Ukuran</th>
+                    <th class="py-4 px-3 text-center">Satuan / Kemasan</th>
+                    <th class="py-4 px-3 text-center">Jumlah</th>
+                    <th class="py-4 px-3 text-center">Tahun</th>
+                    <th class="py-4 px-3 text-center">Kondisi</th>
+                    <th class="py-4 px-4 text-right">Harga Perolehan</th>
+                    <th class="py-4 px-4">Lokasi</th>
+                    <th class="py-4 px-4">Keterangan</th>
+                    <th class="py-4 px-4 text-center">Gambar</th>
+                    <th class="py-4 px-4 text-center">Aksi & QR</th>
+                  </tr>
+                </thead>
+                <tbody id="invTableBody" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- MODAL LOGIN DPSA -->
+  <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-200 space-y-6">
+      <div class="text-center space-y-2">
+        <img src="logo dpsa.png" alt="PT DPSA" class="w-16 h-16 object-contain mx-auto" onerror="this.src='https://placehold.co/100x100/f59e0b/0b1b3d?text=DPSA'">
+        <h3 class="text-xl font-black text-slate-900 tracking-wider">PT DPSA</h3>
+        <p class="text-xs text-slate-500">Asset & Inventory Authentication Portal</p>
+      </div>
+
+      <div id="loginErrorMsg" class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-600 hidden"></div>
+
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Username</label>
+          <input type="text" id="loginUsername" required placeholder="admin / keuangan / gudang" class="w-full text-xs px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full text-xs px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+        </div>
+        <button type="submit" id="btnLoginSubmit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md transition">
+          Masuk ke Sistem
+        </button>
+      </form>
+
+      <div class="text-center pt-2 border-t border-slate-100">
+        <p class="text-[11px] text-slate-400">Sinkron otomatis dengan akun Google Spreadsheet DPSA</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FORM INPUT IDENTIK (FIX ASSET & INVENTORY) + TEMPAT UPLOAD MANUAL -->
+  <div id="formModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 hidden">
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[92vh]">
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+        <div>
+          <h3 class="font-bold text-sm text-white" id="formModalTitle">Tambah Item</h3>
+          <p class="text-[11px] text-slate-400">Skema kolom Fix Asset dan Inventory seragam & terpadu</p>
+        </div>
+        <button onclick="closeFormModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="unifiedDataForm" class="p-6 overflow-y-auto space-y-4">
+        <input type="hidden" id="formEditId" value="-1">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">Klasifikasi Sistem <span class="text-red-500">*</span></label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+              <input type="radio" name="formKategori" value="fixasset" id="radioFixAsset" checked class="text-blue-600">
+              <span class="text-xs font-semibold text-slate-800">Fix Asset (Aktiva Tetap)</span>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+              <input type="radio" name="formKategori" value="inventory" id="radioInventory" class="text-emerald-600">
+              <span class="text-xs font-semibold text-slate-800">Inventory (Persediaan)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Kode Barang <span class="text-red-500">*</span></label>
+            <input type="text" id="inputKode" required class="w-full text-xs font-mono px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Nama Barang <span class="text-red-500">*</span></label>
+            <input type="text" id="inputNama" required class="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Tipe / Ukuran / Spesifikasi</label>
+          <input type="text" id="inputSpek" class="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Satuan / Kemasan</label>
+            <select id="inputSatuan" class="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+              <option value="Unit">Unit</option>
+              <option value="Set">Set</option>
+              <option value="Pcs">Pcs</option>
+              <option value="Box">Box</option>
+              <option value="Lot">Lot</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Jumlah</label>
+            <input type="number" id="inputJumlah" min="1" value="1" class="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Tahun Perolehan</label>
+            <input type="number" id="inputTahun" min="1995" max="2035" value="2026" class="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Kondisi Aset</label>
+            <select id="inputKondisi" class="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+              <option value="Baik">Baik</option>
+              <option value="Perlu Perbaikan">Perlu Perbaikan</option>
+              <option value="Rusak">Rusak</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Harga Perolehan (Rp)</label>
+            <input type="number" id="inputHarga" placeholder="Contoh: 8612500" class="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Lokasi <span class="text-red-500">*</span></label>
+            <input type="text" id="inputLokasi" required placeholder="Contoh: Ruang Keuangan" class="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Keterangan (Letak/PIC)</label>
+            <input type="text" id="inputKeterangan" placeholder="Contoh: Bu Tari" class="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+          </div>
+        </div>
+
+        <!-- TEMPAT UPLOAD GAMBAR MANUAL & URL SPREADSHEET -->
+        <div class="p-3.5 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
+          <label class="block text-xs font-bold text-slate-700">Gambar Aset (Upload Manual atau URL)</label>
+          <div class="flex items-center gap-3">
+            <input type="file" id="inputManualUpload" accept="image/*" class="text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            <img id="manualImagePreview" src="no image.png" alt="Preview" class="w-10 h-10 rounded-lg object-cover border border-slate-200 hidden">
+          </div>
+          <input type="text" id="inputGambar" placeholder="Atau paste link URL gambar dari spreadsheet..." class="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-xl mt-1">
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+          <button type="button" onclick="closeFormModal()" class="px-4 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600">Batal</button>
+          <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md">Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX PREVIEW -->
+  <div id="imageLightboxModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 hidden">
+    <div class="relative bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-slate-100 flex flex-col">
+      <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
+        <span id="lightboxTitle" class="text-sm font-bold">Foto Aset</span>
+        <button onclick="closeLightbox()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-4 bg-slate-950 flex items-center justify-center max-h-[70vh] overflow-hidden">
+        <img id="lightboxImage" src="no image.png" alt="Aset" class="max-h-[60vh] w-auto max-w-full rounded-xl object-contain">
+      </div>
+      <div class="p-4 bg-slate-50 border-t flex items-center justify-between">
+        <div>
+          <p id="lightboxKode" class="text-xs font-mono font-bold text-blue-700"></p>
+          <p id="lightboxLokasi" class="text-xs text-slate-500"></p>
+        </div>
+        <button id="lightboxBtnScan" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold">
+          Buka Paspor QR
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CETAK STIKER FISIK -->
+  <div id="printStickerModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="text-sm font-bold text-slate-900">Stiker Label QR Fisik</h3>
+        <button onclick="closeStickerModal()" class="text-slate-400 hover:text-slate-700"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <div class="border-2 border-dashed border-slate-300 rounded-2xl p-4 bg-slate-50 text-center space-y-3">
+        <div class="flex items-center justify-between border-b pb-2">
+          <div class="text-left">
+            <span class="text-[10px] font-extrabold text-blue-700 uppercase">PT DPSA ASSET SYSTEM</span>
+            <p id="stickerKode" class="text-xs font-mono font-bold text-slate-800"></p>
+          </div>
+          <span id="stickerKategori" class="text-[9px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800 uppercase">Fix Asset</span>
+        </div>
+        <div class="flex items-center justify-center py-2">
+          <img id="stickerQrImg" src="" alt="QR Barcode" class="w-32 h-32 rounded border border-slate-200">
+        </div>
+        <div class="text-left text-xs space-y-0.5 border-t pt-2">
+          <p id="stickerNama" class="font-bold text-slate-900 truncate"></p>
+          <p id="stickerLokasi" class="text-slate-600 truncate"></p>
+          <p id="stickerPic" class="text-slate-500 text-[11px]"></p>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="closeStickerModal()" class="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600">Batal</button>
+        <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700">Cetak Sekarang</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
