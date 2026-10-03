@@ -365,36 +365,60 @@
 
   </div>
 
-  <!-- MODAL LOGIN DPSA -->
-  <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4 hidden">
-    <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-200 space-y-6">
-      <div class="text-center space-y-2">
-        <img src="logo dpsa.png" alt="PT DPSA" class="w-16 h-16 object-contain mx-auto" onerror="this.src='https://placehold.co/100x100/f59e0b/0b1b3d?text=DPSA'">
-        <h3 class="text-xl font-black text-slate-900 tracking-wider">PT DPSA</h3>
-        <p class="text-xs text-slate-500">Asset & Inventory Authentication Portal</p>
+  <!-- Modal Login -->
+<div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border border-slate-100">
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 bg-blue-50 border border-blue-200 rounded-2xl mx-auto flex items-center justify-center mb-3">
+        <img src="logo dpsa.png" alt="PT DPSA" class="w-10 h-10 object-contain" onerror="this.onerror=null;this.src='no image.png';">
+      </div>
+      <h2 class="text-xl font-bold text-slate-800">PT DPSA</h2>
+      <p class="text-xs text-slate-500 font-medium tracking-wide">Asset & Inventory System</p>
+    </div>
+
+    <!-- Error Alert Box -->
+    <div id="loginErrorMsg" class="hidden mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg text-center font-medium">
+      Username atau password salah!
+    </div>
+
+    <form id="loginForm" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">Username / Email</label>
+        <input 
+          type="text" 
+          id="loginEmail" 
+          class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" 
+          placeholder="staff.it@dharmaputrainterior.co.id" 
+          value="staff.it@dharmaputrainterior.co.id" 
+          required 
+        />
       </div>
 
-      <div id="loginErrorMsg" class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-600 hidden"></div>
-
-      <form id="loginForm" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Username</label>
-          <input type="text" id="loginUsername" required placeholder="admin / keuangan / gudang" class="w-full text-xs px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
-          <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full text-xs px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
-        </div>
-        <button type="submit" id="btnLoginSubmit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md transition">
-          Masuk ke Sistem
-        </button>
-      </form>
-
-      <div class="text-center pt-2 border-t border-slate-100">
-        <p class="text-[11px] text-slate-400">Sinkron otomatis dengan akun Google Spreadsheet DPSA</p>
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+        <input 
+          type="password" 
+          id="loginPassword" 
+          class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" 
+          placeholder="••••••••" 
+          value="staff.itDPSA88" 
+          required 
+        />
       </div>
+
+      <button 
+        type="submit" 
+        id="btnLoginSubmit"
+        class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-sm font-semibold rounded-xl transition-all shadow-md shadow-blue-500/20">
+        Masuk ke Sistem
+      </button>
+    </form>
+
+    <div class="mt-6 pt-4 border-t border-slate-100 text-center">
+      <p class="text-[11px] text-slate-400">Gunakan akun terdaftar pada spreadsheet: <b>staff.it</b>, <b>hrga</b>, atau <b>keuangan</b>.</p>
     </div>
   </div>
+</div>
 
   <!-- MODAL FORM INPUT IDENTIK (FIX ASSET & INVENTORY) + TEMPAT UPLOAD MANUAL -->
   <div id="formModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 hidden">
