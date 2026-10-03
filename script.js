@@ -39,31 +39,140 @@ async function preloadUsers() {
 }
 
 // 2. Autentikasi Sesi
-function checkSession() {
-  const saved = sessionStorage.getItem("dpsa_user");
-  if (saved) {
-    currentUser = JSON.parse(saved);
-    onLoginSuccess();
+/**
+ * script.js - Bagian Autentikasi & Login (Direct & Instant Login)
+ */
+
+// Kredensial Resmi DPSA (langsung terdaftar, tanpa menunggu delay spreadsheet)
+let validAccounts = [
+  { username: "staff.it@dharmaputrainterior.co.id", password: "staff.itDPSA88", role: "IT Support" },
+  { username: "hrga@dharmaputrainterior.co.id", password: "hrgaDPSA88", role: "HR & GA" },
+  { username: "keuangan@dharmaputrainterior.co.id", password: "keuanganDPSA88", role: "Finance" }
+];
+
+let currentUser = null;
+let fixAssets = [];
+let inventoryItems = [];
+let activeTab = 'overview';
+
+// Inisialisasi saat halaman dibuka
+document.addEventListener("DOMContentLoaded", () => {
+  // Cek apakah ada sesi aktif di sessionStorage
+  const savedUser = sessionStorage.getItem("dpsa_user");
+  if (savedUser) {
+    try {
+      currentUser = JSON.parse(savedUser);
+      onLoginSuccess();
+    } catch (e) {
+      showLoginModal();
+    }
   } else {
     showLoginModal();
+  }
+
+  // Pasang listener pada form login & tombol submit
+  setupLoginForm();
+
+  // Ambil update user dari spreadsheet secara asinkron di belakang layar (opsional)
+  syncUsersFromSpreadsheet();
+});
+
+function setupLoginForm() {
+  const form = document.getElementById("loginForm");
+  if (form) {
+    form.onsubmit = function(e) {
+      e.preventDefault();
+      handleLoginSubmit();
+      return false;
+    };
+  }
+
+  // Backup jika tombol login diklik langsung
+  const btnSubmit = document.getElementById("btnLoginSubmit");
+  if (btnSubmit) {
+    btnSubmit.onclick = function(e) {
+      e.preventDefault();
+      handleLoginSubmit();
+    };
+  }
+}
+
+// Logika Validasi Login
+function handleLoginSubmit() {
+  const emailInput = document.getElementById("loginEmail");
+  const passInput = document.getElementById("loginPassword");
+  const errorMsg = document.getElementById("loginErrorMsg");
+
+  if (!emailInput || !passInput) return;
+
+  const inputUser = emailInput.value.trim().toLowerCase();
+  const inputPass = passInput.value.trim();
+
+  if (!inputUser || !inputPass) {
+    if (errorMsg) {
+      errorMsg.textContent = "Silakan masukkan username dan password.";
+      errorMsg.classList.remove("hidden");
+    } else {
+      alert("Silakan masukkan username dan password.");
+    }
+    return;
+  }
+
+  // Cari kecocokan user (bisa format full email atau nama depan saja)
+  const matched = validAccounts.find(acc => {
+    const accUser = acc.username.toLowerCase();
+    const accPrefix = accUser.split("@")[0];
+    return (accUser === inputUser || accPrefix === inputUser) && acc.password === inputPass;
+  });
+
+  if (matched) {
+    currentUser = matched;
+    sessionStorage.setItem("dpsa_user", JSON.stringify(matched));
+    if (errorMsg) errorMsg.classList.add("hidden");
+    onLoginSuccess();
+    showToast(`Selamat datang, ${matched.role || matched.username}!`, "success");
+  } else {
+    if (errorMsg) {
+      errorMsg.textContent = "Username atau password salah!";
+      errorMsg.classList.remove("hidden");
+    } else {
+      showToast("Username atau Password salah!", "error");
+    }
   }
 }
 
 function showLoginModal() {
   const modal = document.getElementById("loginModal");
+  const app = document.getElementById("appContainer");
   if (modal) {
-    modal.style.display = "flex";
     modal.classList.remove("hidden");
+    modal.style.display = "flex";
   }
-  document.getElementById("appContainer").classList.add("hidden");
+  if (app) {
+    app.classList.add("hidden");
+  }
 }
 
-function closeLoginModal() {
+function onLoginSuccess() {
   const modal = document.getElementById("loginModal");
+  const app = document.getElementById("appContainer");
+  
   if (modal) {
-    modal.style.display = "none";
     modal.classList.add("hidden");
+    modal.style.display = "none";
   }
+  if (app) {
+    app.classList.remove("hidden");
+    app.style.opacity = "1";
+  }
+
+  const nameEl = document.getElementById("userDisplayName");
+  if (nameEl && currentUser) {
+    nameEl.textContent = currentUser.username.split("@")[0].toUpperCase();
+  }
+
+  // Muat data dari Google Sheets setelah login terbuka
+  loadAllData();
 }
 
 function logout() {
@@ -72,18 +181,27 @@ function logout() {
   location.reload();
 }
 
-function onLoginSuccess() {
-  closeLoginModal();
-  const appContainer = document.getElementById("appContainer");
-  if (appContainer) {
-    appContainer.classList.remove("hidden");
-    appContainer.classList.remove("opacity-0");
+// Background sync user dari spreadsheet tab "Akses User"
+async function syncUsersFromSpreadsheet() {
+  try {
+    const rows = await fetchSheetData(CONFIG.SHEETS.USERS);
+    if (rows && rows.length > 0) {
+      const remoteUsers = [];
+      rows.forEach((r, idx) => {
+        const c = r.c || [];
+        const u = String(getCellValue(c[0])).trim();
+        const p = String(getCellValue(c[1])).trim();
+        if (u && p && !u.toLowerCase().includes("username")) {
+          remoteUsers.push({ username: u, password: p, role: "User DPSA" });
+        }
+      });
+      if (remoteUsers.length > 0) {
+        validAccounts = remoteUsers;
+      }
+    }
+  } catch (err) {
+    console.log("Menggunakan fallback akun bawaan.");
   }
-  const nameEl = document.getElementById("userDisplayName");
-  if (nameEl && currentUser) {
-    nameEl.textContent = currentUser.username.split("@")[0].toUpperCase();
-  }
-  loadAllData();
 }
 
 // 3. Fetch GViz Query
