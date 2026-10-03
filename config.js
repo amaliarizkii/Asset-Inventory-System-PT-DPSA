@@ -13,7 +13,7 @@ const APP_CONFIG = {
   // Nama Sheet / Tabs di Spreadsheet
   SHEETS: {
     USERS: "Akses User",     // Kolom: username, password, nama, role
-    FIX_ASSET: "Fix Asset",  // Kolom: no, kode_barang, nama_barang, tipe_ukuran, satuan, jumlah, tahun, kondisi, harga, lokasi, keterangan, gambar
+    FIX_ASSET: "Fix Aset",  // Kolom: no, kode_barang, nama_barang, tipe_ukuran, satuan, jumlah, tahun, kondisi, harga, lokasi, keterangan, gambar
     INVENTORY: "Inventory"   // Kolom yang sama persis dengan Fix Asset
   },
 
