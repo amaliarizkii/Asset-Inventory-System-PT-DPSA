@@ -365,9 +365,11 @@
 
   </div>
 
-  <!-- Modal Login -->
-<div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border border-slate-100">
+  <!-- Modal Login Aman & Direct Onclick -->
+<div id="loginModal" style="display: flex;" class="fixed inset-0 z-50 items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border border-slate-100 relative">
+    
+    <!-- Header Modal -->
     <div class="text-center mb-6">
       <div class="w-16 h-16 bg-blue-50 border border-blue-200 rounded-2xl mx-auto flex items-center justify-center mb-3">
         <img src="logo dpsa.png" alt="PT DPSA" class="w-10 h-10 object-contain" onerror="this.onerror=null;this.src='no image.png';">
@@ -376,20 +378,35 @@
       <p class="text-xs text-slate-500 font-medium tracking-wide">Asset & Inventory System</p>
     </div>
 
-    <!-- Error Alert Box -->
-    <div id="loginErrorMsg" class="hidden mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg text-center font-medium">
-      Username atau password salah!
+    <!-- Error Box -->
+    <div id="loginErrorMsg" style="display: none;" class="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg text-center font-medium"></div>
+
+    <!-- Tombol Akses Cepat (1-Klik Langsung Masuk) -->
+    <div class="mb-4 p-3 bg-blue-50/70 border border-blue-100 rounded-xl">
+      <p class="text-[11px] font-semibold text-blue-900 mb-2 text-center">Pilih Akun Cepat (Langsung Masuk):</p>
+      <div class="grid grid-cols-3 gap-2">
+        <button type="button" onclick="pickAccount('staff.it@dharmaputrainterior.co.id', 'staff.itDPSA88')" class="py-1.5 px-2 bg-white hover:bg-blue-600 hover:text-white border border-blue-200 text-blue-700 text-xs font-medium rounded-lg shadow-sm transition-colors text-center">
+          Staff IT
+        </button>
+        <button type="button" onclick="pickAccount('hrga@dharmaputrainterior.co.id', 'hrgaDPSA88')" class="py-1.5 px-2 bg-white hover:bg-blue-600 hover:text-white border border-blue-200 text-blue-700 text-xs font-medium rounded-lg shadow-sm transition-colors text-center">
+          HR & GA
+        </button>
+        <button type="button" onclick="pickAccount('keuangan@dharmaputrainterior.co.id', 'keuanganDPSA88')" class="py-1.5 px-2 bg-white hover:bg-blue-600 hover:text-white border border-blue-200 text-blue-700 text-xs font-medium rounded-lg shadow-sm transition-colors text-center">
+          Keuangan
+        </button>
+      </div>
     </div>
 
-    <form id="loginForm" class="space-y-4">
+    <!-- Form Login Manual -->
+    <form onsubmit="event.preventDefault(); doLogin(); return false;" class="space-y-4">
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1">Username / Email</label>
         <input 
           type="text" 
           id="loginEmail" 
           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" 
-          placeholder="staff.it@dharmaputrainterior.co.id" 
           value="staff.it@dharmaputrainterior.co.id" 
+          placeholder="staff.it@dharmaputrainterior.co.id" 
           required 
         />
       </div>
@@ -400,19 +417,22 @@
           type="password" 
           id="loginPassword" 
           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" 
-          placeholder="••••••••" 
           value="staff.itDPSA88" 
+          placeholder="••••••••" 
           required 
         />
       </div>
 
       <button 
-        type="submit" 
-        id="btnLoginSubmit"
-        class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-sm font-semibold rounded-xl transition-all shadow-md shadow-blue-500/20">
+        type="button" 
+        onclick="doLogin()" 
+        class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-sm font-semibold rounded-xl transition-all shadow-md shadow-blue-500/20 cursor-pointer">
         Masuk ke Sistem
       </button>
     </form>
+
+  </div>
+</div>
 
     <div class="mt-6 pt-4 border-t border-slate-100 text-center">
       <p class="text-[11px] text-slate-400">Gunakan akun terdaftar pada spreadsheet: <b>staff.it</b>, <b>hrga</b>, atau <b>keuangan</b>.</p>
