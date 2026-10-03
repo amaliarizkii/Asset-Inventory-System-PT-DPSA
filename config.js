@@ -12,7 +12,7 @@ const APP_CONFIG = {
   
   // Nama Sheet / Tabs di Spreadsheet
   SHEETS: {
-    USERS: "Users",          // Kolom: username, password, nama, role
+    USERS: "Akses User",     // Kolom: username, password, nama, role
     FIX_ASSET: "Fix Asset",  // Kolom: no, kode_barang, nama_barang, tipe_ukuran, satuan, jumlah, tahun, kondisi, harga, lokasi, keterangan, gambar
     INVENTORY: "Inventory"   // Kolom yang sama persis dengan Fix Asset
   },
@@ -24,9 +24,9 @@ const APP_CONFIG = {
 
   // Kredensial lokal bawaan (digunakan jika spreadsheet dalam mode privat/offline)
   FALLBACK_USERS: [
-    { username: "admin", password: "123", nama: "Admin GA", role: "Administrator" },
-    { username: "keuangan", password: "123", nama: "Bu Tari", role: "Finance" },
-    { username: "gudang", password: "123", nama: "Nisa", role: "Warehouse" }
+    { username: "staff.it", password: "staff.itDPSA88", nama: "Staff IT", role: "Administrator" },
+    { username: "keuangan", password: "keuanganDPSA88", nama: "Keuangan", role: "Finance" },
+    { username: "hrga", password: "hrgaDPSA88", nama: "HRGA", role: "HRGA" }
   ],
 
   // Fallback awal jika koneksi spreadsheet belum dibuka aksesnya ke "Anyone with the link can view"
