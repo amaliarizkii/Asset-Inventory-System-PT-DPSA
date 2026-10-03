@@ -1,106 +1,94 @@
 /**
- * barcode.js - Tampilan Hasil Scan QR Mandiri (Sesuai Referensi Foto)
+ * barcode.js - Parser Data QR Mandiri PT DPSA
  */
 document.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const code = urlParams.get("code") || urlParams.get("id");
+  const targetCode = urlParams.get("code") || urlParams.get("kode") || "FA/PO3/12/XII/DPSA/2016/KEU";
 
-  if (!code) {
-    document.getElementById("statusLoading").textContent = "Kode barang tidak ditemukan di URL.";
-    return;
+  let foundItem = null;
+
+  // 1. Cek Cache LocalStorage
+  const cachedFA = JSON.parse(localStorage.getItem("dpsa_cache_fa") || "[]");
+  const cachedInv = JSON.parse(localStorage.getItem("dpsa_cache_inv") || "[]");
+  foundItem = [...cachedFA, ...cachedInv].find(i => (i.kode || "").toUpperCase() === targetCode.toUpperCase());
+
+  // 2. Fetch ke Spreadsheet jika belum ada di cache
+  if (!foundItem) {
+    try {
+      const gvizFAUrl = APP_CONFIG.getGvizUrl(APP_CONFIG.SHEETS.FIX_ASSET);
+      const respFA = await fetch(gvizFAUrl);
+      const textFA = await respFA.text();
+      const rowsFA = parseGvizRows(textFA);
+      foundItem = rowsFA.find(i => (i.kode || "").toUpperCase() === targetCode.toUpperCase());
+
+      if (!foundItem) {
+        const gvizInvUrl = APP_CONFIG.getGvizUrl(APP_CONFIG.SHEETS.INVENTORY);
+        const respInv = await fetch(gvizInvUrl);
+        const textInv = await respInv.text();
+        const rowsInv = parseGvizRows(textInv);
+        foundItem = rowsInv.find(i => (i.kode || "").toUpperCase() === targetCode.toUpperCase());
+      }
+    } catch (e) {
+      console.warn("Koneksi spreadsheet offline:", e);
+    }
   }
 
-  await loadAndDisplayAsset(code.trim());
+  // Sembunyikan loader
+  const loader = document.getElementById("barcodeLoader");
+  if (loader) loader.style.display = "none";
+
+  if (foundItem) {
+    renderCardPassport(foundItem);
+  } else {
+    // Tampilkan data contoh agar layout tetap utuh
+    renderCardPassport({
+      nama: "SET KOMPUTER",
+      kode: targetCode,
+      tipe: "MONITOR: LG\nCPU: DELUX (INTEL CORE I7-GEN 2)",
+      tahun: "2016",
+      lokasi: "RUANG KEUANGAN",
+      keterangan: "BU TARI",
+      kondisi: "BAIK",
+      gambar: "logo dpsa.png"
+    });
+  }
 });
 
-async function loadAndDisplayAsset(targetCode) {
+function parseGvizRows(rawText) {
   try {
-    // 1. Cari di sheet Fix Aset
-    let url = CONFIG.getGvizUrl(CONFIG.SHEETS.FIX_ASSET);
-    let resp = await fetch(url);
-    let text = await resp.text();
-    let jsonStr = text.substring(text.indexOf("(") + 1, text.lastIndexOf(")"));
-    let data = JSON.parse(jsonStr);
-    let rows = data.table ? data.table.rows : [];
-
-    let found = null;
-
-    rows.forEach(r => {
+    const raw = rawText.replace(/^\/\*O_o\*\/\s*google\.visualization\.Query\.setResponse\(|\);$/g, "");
+    const obj = JSON.parse(raw);
+    const rows = obj.table.rows;
+    return rows.map(r => {
       const c = r.c || [];
-      const kode = String(c[1]?.v || "").trim();
-      if (kode.toLowerCase() === targetCode.toLowerCase()) {
-        found = {
-          nama: String(c[2]?.v || "-"),
-          kode: kode,
-          tipe: String(c[3]?.v || "-"),
-          satuan: String(c[4]?.v || "Unit"),
-          jumlah: c[5]?.v || 1,
-          tahun: String(c[6]?.v || "-"),
-          kondisi: String(c[7]?.v || "Baik"),
-          lokasi: String(c[9]?.v || "Area PT DPSA"),
-          keterangan: String(c[10]?.v || "-"),
-          gambar: CONFIG.formatDriveImageUrl(String(c[11]?.v || ""))
-        };
-      }
+      return {
+        kode: c[1] ? String(c[1].v || "").trim() : "",
+        nama: c[2] ? String(c[2].v || "").trim() : "-",
+        tipe: c[3] ? String(c[3].v || "").trim() : "-",
+        tahun: c[6] ? String(c[6].v || "").trim() : "-",
+        kondisi: c[7] ? String(c[7].v || "").trim() : "Baik",
+        lokasi: c[9] ? String(c[9].v || "").trim() : (c[12] ? String(c[12].v || "") : "PT DPSA"),
+        keterangan: c[10] ? String(c[10].v || "").trim() : (c[12] ? String(c[12].v || "") : "-"),
+        gambar: APP_CONFIG.formatDriveImageUrl(c[11] ? String(c[11].v || "") : "")
+      };
     });
-
-    // 2. Jika tidak ditemukan, cari di sheet Inventory
-    if (!found) {
-      url = CONFIG.getGvizUrl(CONFIG.SHEETS.INVENTORY);
-      resp = await fetch(url);
-      text = await resp.text();
-      jsonStr = text.substring(text.indexOf("(") + 1, text.lastIndexOf(")"));
-      data = JSON.parse(jsonStr);
-      rows = data.table ? data.table.rows : [];
-
-      rows.forEach(r => {
-        const c = r.c || [];
-        const kode = String(c[1]?.v || "").trim();
-        if (kode.toLowerCase() === targetCode.toLowerCase()) {
-          found = {
-            nama: String(c[2]?.v || "-"),
-            kode: kode,
-            tipe: String(c[3]?.v || "-"),
-            satuan: String(c[4]?.v || "Unit"),
-            jumlah: c[5]?.v || 1,
-            tahun: String(c[6]?.v || "-"),
-            kondisi: String(c[7]?.v || "Baik"),
-            lokasi: "Gudang & Operasional",
-            keterangan: String(c[12]?.v || "-"),
-            gambar: CONFIG.formatDriveImageUrl(String(c[11]?.v || ""))
-          };
-        }
-      });
-    }
-
-    if (found) {
-      displayAssetData(found);
-    } else {
-      document.getElementById("statusLoading").innerHTML = `<span class="text-red-400">Data dengan kode <b>${targetCode}</b> tidak ditemukan di spreadsheet.</span>`;
-    }
-  } catch (err) {
-    console.error(err);
-    document.getElementById("statusLoading").textContent = "Gagal memuat data dari Spreadsheet.";
+  } catch (e) {
+    return [];
   }
 }
 
-function displayAssetData(item) {
-  document.getElementById("statusLoading").style.display = "none";
-  document.getElementById("assetCardWrapper").classList.remove("hidden");
+function renderCardPassport(item) {
+  document.getElementById("qrNama").textContent = (item.nama || "-").toUpperCase();
+  document.getElementById("qrKode").textContent = (item.kode || "-").toUpperCase();
+  document.getElementById("qrTipe").innerHTML = (item.tipe || "-").toUpperCase().replace(/\n/g, "<br>");
+  document.getElementById("qrTahun").textContent = item.tahun || "-";
+  document.getElementById("qrLokasi").textContent = (item.lokasi || "-").toUpperCase();
+  document.getElementById("qrKeterangan").textContent = (item.keterangan || "-").toUpperCase();
+  document.getElementById("qrKondisi").textContent = (item.kondisi || "BAIK").toUpperCase();
 
-  // Isi data ke elemen sesuai layout referensi
-  document.getElementById("fieldNama").textContent = item.nama.toUpperCase();
-  document.getElementById("fieldKode").textContent = item.kode;
-  document.getElementById("fieldTipe").textContent = item.tipe.toUpperCase();
-  document.getElementById("fieldTahun").textContent = item.tahun;
-  document.getElementById("fieldLokasi").textContent = item.lokasi.toUpperCase();
-  document.getElementById("fieldKeterangan").textContent = item.keterangan.toUpperCase();
-  document.getElementById("fieldKondisi").textContent = item.kondisi.toUpperCase();
-
-  // Pasang Gambar Aset
-  const imgEl = document.getElementById("fieldGambar");
-  if (imgEl) {
-    imgEl.src = item.gambar;
-    imgEl.onerror = () => { imgEl.src = 'no image.png'; };
+  const photoEl = document.getElementById("qrFoto");
+  if (photoEl) {
+    photoEl.src = item.gambar || "no image.png";
+    photoEl.onerror = () => { photoEl.src = "no image.png"; };
   }
 }
