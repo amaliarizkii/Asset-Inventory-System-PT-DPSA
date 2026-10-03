@@ -38,7 +38,6 @@ async function preloadUsers() {
   }
 }
 
-// 2. Autentikasi Sesi
 /**
  * script.js - Bagian Autentikasi & Login (Direct & Instant Login)
  */
@@ -203,7 +202,6 @@ async function syncUsersFromSpreadsheet() {
     console.log("Menggunakan fallback akun bawaan.");
   }
 }
-
 // 3. Fetch GViz Query
 async function fetchSheetData(sheetName) {
   const url = CONFIG.getGvizUrl(sheetName);
