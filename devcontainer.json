@@ -16,5 +16,5 @@
 }
 },
 "forwardPorts": [5500, 3000],
-"postCreateCommand": "echo 'Lingkungan PT DPSA Asset System siap dijalankan.'"
+"postCreateCommand": "echo 'Inventory & Asset System PT DPSA siap digunakan.'"
 }
