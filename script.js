@@ -341,6 +341,9 @@ function openDetailData(kode) {
 // ========================================================
 // FITUR CETAK SELURUH BARCODE (PISAHKAN FIX ASSET & INVENTORY)
 // ========================================================
+// ========================================================
+// FITUR CETAK SELURUH BARCODE (PERSIS GAMBAR REFERENSI STIKER)
+// ========================================================
 function openBatchPrintModal(type) {
   currentBatchType = type;
   const isFA = type === 'fixasset';
@@ -351,57 +354,44 @@ function openBatchPrintModal(type) {
   const container = document.getElementById("barcodeGridContainer");
 
   title.textContent = isFA ? "Cetak Seluruh Barcode Fix Asset (Aktiva Tetap)" : "Cetak Seluruh Barcode Inventory (Persediaan)";
-  sub.textContent = `Menyiapkan ${list.length} label barcode untuk dicetak`;
+  sub.textContent = `Menyiapkan ${list.length} stiker barcode resmi PT DPSA`;
 
-  // Render Grid Barcode Label Stiker
+  // Render Grid Kartu Barcode (100% Identik Gambar Referensi)
   container.innerHTML = "";
   list.forEach(item => {
     const qrUrl = getQrCodeUrl(item.kode);
     const card = document.createElement("div");
-    card.className = "border-2 border-slate-300 rounded-xl p-2.5 flex flex-col items-center justify-between text-center bg-white shadow-xs print-card";
+    // Kartu berlatar biru muda lembut, sudut rounded lebar, dan padding proporsional
+    card.className = "dpsa-barcode-badge flex flex-col items-center justify-between p-4 rounded-3xl bg-[#dbeefd] border border-blue-200/80 shadow-sm print-card relative";
+    
     card.innerHTML = `
-      <div class="w-full flex items-center justify-between border-b border-slate-200 pb-1 mb-1.5 text-[9px] font-bold text-slate-600">
-        <span class="text-blue-800 font-black">PT DPSA</span>
-        <span>${isFA ? 'FIX ASSET' : 'INVENTORY'}</span>
+      <!-- Header Stiker: Logo Kiri & Teks PT DPSA Tengah -->
+      <div class="w-full flex items-center justify-center relative mb-2">
+        <img src="logo dpsa.png" alt="Logo" class="w-8 h-8 object-contain absolute left-0 top-1/2 -translate-y-1/2" onerror="this.src='no image.png';">
+        <div class="text-center pl-6">
+          <h4 class="text-base sm:text-lg font-black tracking-wide leading-none" style="color: #1a2f64; font-family: 'Plus Jakarta Sans', sans-serif;">PT DPSA</h4>
+          <p class="text-[9px] sm:text-[10px] font-semibold tracking-normal mt-0.5" style="color: #1e3a8a;">Asset &amp; Inventory System</p>
+        </div>
       </div>
-      <div class="my-1">
-        <img src="${qrUrl}" alt="QR" class="w-24 h-24 sm:w-28 sm:h-28 object-contain">
+
+      <!-- Area Tengah: QR Code Tajam -->
+      <div class="my-2 p-1 bg-white rounded-xl shadow-xs">
+        <img src="${qrUrl}" alt="${item.kode}" class="w-32 h-32 sm:w-36 sm:h-36 object-contain">
       </div>
-      <div class="w-full mt-1.5 pt-1 border-t border-slate-200">
-        <p class="font-mono font-black text-[10px] sm:text-xs text-slate-900 break-all leading-tight">${item.kode}</p>
-        <p class="text-[9px] text-slate-600 truncate mt-0.5">${item.nama}</p>
+
+      <!-- Footer Stiker: Kode Barang Bold Navy -->
+      <div class="w-full text-center mt-1">
+        <p class="text-xs sm:text-sm font-black tracking-wider break-all leading-tight uppercase font-mono" style="color: #142852;">
+          ${item.kode}
+        </p>
       </div>
     `;
     container.appendChild(card);
   });
 
-  setPaperSize('A4'); // default A4
+  setPaperSize('A4'); // Default ukuran A4
   modal.classList.remove("hidden");
   if (window.lucide) lucide.createIcons();
-}
-
-function closeBatchPrintModal() {
-  document.getElementById("batchPrintModal").classList.add("hidden");
-}
-
-function setPaperSize(size) {
-  currentPaperSize = size;
-  const btnA4 = document.getElementById("btnPaperA4");
-  const btnA3 = document.getElementById("btnPaperA3");
-  const printable = document.getElementById("printableArea");
-  const container = document.getElementById("barcodeGridContainer");
-
-  if (size === 'A4') {
-    btnA4.className = "px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white transition";
-    btnA3.className = "px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
-    printable.className = "bg-white p-6 shadow-md rounded-2xl w-full max-w-4xl paper-a4";
-    container.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4";
-  } else {
-    btnA3.className = "px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white transition";
-    btnA4.className = "px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
-    printable.className = "bg-white p-8 shadow-md rounded-2xl w-full max-w-6xl paper-a3";
-    container.className = "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3";
-  }
 }
 
 function triggerPrint() {
