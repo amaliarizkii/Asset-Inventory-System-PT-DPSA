@@ -2,11 +2,11 @@
  * script.js - Core Logic & Data Loader PT DPSA Asset & Inventory
  */
 
-// Kredensial Resmi DPSA
+// Kredensial Resmi DPSA (Otentikasi Akurat)
 const VALID_USERS = [
-  { u: "staff.it@dharmaputrainterior.co.id", p: "staff.itDPSA88", role: "IT Support" },
-  { u: "hrga@dharmaputrainterior.co.id", p: "hrgaDPSA88", role: "HR & GA" },
-  { u: "keuangan@dharmaputrainterior.co.id", p: "keuanganDPSA88", role: "Finance" }
+  { u: "staff.it@dharmaputrainterior.co.id", p: "staff.itDPSA88", name: "Staff IT", role: "IT Support", initials: "IT" },
+  { u: "hrga@dharmaputrainterior.co.id", p: "hrgaDPSA88", name: "HR & GA", role: "Human Resource & GA", initials: "HR" },
+  { u: "keuangan@dharmaputrainterior.co.id", p: "keuanganDPSA88", name: "Keuangan", role: "Finance Accounting", initials: "KEU" }
 ];
 
 let currentUser = null;
@@ -15,8 +15,7 @@ let inventoryItems = [];
 let activeTab = 'overview';
 
 // ==========================================
-// 1. DATA BAWAAN LENGKAP DARI SPREADSHEET DPSA
-// (Menjamin data tidak pernah 0)
+// 1. DATA SEED BAWAAN RESMI DPSA SPREADSHEET
 // ==========================================
 const SEED_FIX_ASSETS = [
   { no: 1, kode: "FA/PO3/12/XII/DPSA/2016/KEU", nama: "Set Komputer", tipe: "Monitor: LG CPU: Delux (Intel Core I7-Gen 2)", satuan: "Set", jumlah: 1, tahun: "2016", kondisi: "Baik", harga: 8612500, lokasi: "Ruang Keuangan", keterangan: "Bu Tari", driveId: "1FszIQtfv5nsyOztb2560tEd4kjnn6YCG" },
@@ -65,14 +64,14 @@ const SEED_INVENTORY = [
 ];
 
 // ==========================================
-// 2. LOGIKA LOGIN & INITIAL LOAD
+// 2. SISTEM LOGIN DENGAN PROFIL AKURAT
 // ==========================================
 function doLogin() {
   const e = document.getElementById("loginEmail");
   const p = document.getElementById("loginPassword");
   const errBox = document.getElementById("loginErrorMsg");
-
   if (!e || !p) return;
+
   const uVal = e.value.trim().toLowerCase();
   const pVal = p.value.trim();
 
@@ -84,17 +83,16 @@ function doLogin() {
 
   if (user) {
     currentUser = user;
-    try { sessionStorage.setItem("dpsa_logged_in", JSON.stringify(user)); } catch (e) {}
+    try { sessionStorage.setItem("dpsa_logged_in", JSON.stringify(user)); } catch (err) {}
     
     document.getElementById("loginModal").style.display = "none";
     const app = document.getElementById("appContainer");
-    app.style.display = "block";
+    app.style.display = "flex";
     app.classList.remove("hidden");
 
-    const disp = document.getElementById("userDisplayName");
-    if (disp) disp.textContent = user.role;
+    // Perbarui profil user di sidebar secara akurat
+    updateSidebarUser(user);
 
-    // Muat data langsung (Pertama dari seed lokal agar instan, lalu sync live dari sheets)
     initData();
   } else {
     if (errBox) {
@@ -112,6 +110,16 @@ function pickAccount(email, pass) {
   doLogin();
 }
 
+function updateSidebarUser(user) {
+  const nameEl = document.getElementById("userProfileName");
+  const roleEl = document.getElementById("userProfileRole");
+  const initEl = document.getElementById("userAvatarInitials");
+
+  if (nameEl) nameEl.textContent = user.name;
+  if (roleEl) roleEl.textContent = user.role;
+  if (initEl) initEl.textContent = user.initials;
+}
+
 window.onload = function() {
   try {
     const saved = sessionStorage.getItem("dpsa_logged_in");
@@ -119,37 +127,40 @@ window.onload = function() {
       currentUser = JSON.parse(saved);
       document.getElementById("loginModal").style.display = "none";
       const app = document.getElementById("appContainer");
-      app.style.display = "block";
+      app.style.display = "flex";
       app.classList.remove("hidden");
-      const disp = document.getElementById("userDisplayName");
-      if (disp) disp.textContent = currentUser.role;
+      updateSidebarUser(currentUser);
       initData();
       return;
     }
-  } catch (e) {}
+  } catch (err) {}
   document.getElementById("loginModal").style.display = "flex";
 };
 
 function logout() {
-  try { sessionStorage.removeItem("dpsa_logged_in"); } catch (e) {}
+  try { sessionStorage.removeItem("dpsa_logged_in"); } catch (err) {}
   location.reload();
 }
 
-// Inisialisasi data: muat data seed lokal langsung agar tabel langsung terisi
+// Inisialisasi Data & Cache
 function initData() {
   fixAssets = SEED_FIX_ASSETS.map(item => ({
     ...item,
-    gambar: item.driveId ? `https://drive.google.com/thumbnail?id=${item.driveId}&sz=w800` : 'no image.png'
+    gambar: item.driveId ? CONFIG.formatDriveImageUrl(`https://drive.google.com/file/d/${item.driveId}/view`) : 'no image.png'
   }));
 
   inventoryItems = SEED_INVENTORY.map(item => ({
     ...item,
-    gambar: item.driveId ? `https://drive.google.com/thumbnail?id=${item.driveId}&sz=w800` : 'no image.png'
+    gambar: item.driveId ? CONFIG.formatDriveImageUrl(`https://drive.google.com/file/d/${item.driveId}/view`) : 'no image.png'
   }));
 
-  renderAll();
+  // Simpan ke LocalStorage agar barcode.html selalu bisa membacanya instan
+  try {
+    localStorage.setItem("dpsa_cache_fa", JSON.stringify(fixAssets));
+    localStorage.setItem("dpsa_cache_inv", JSON.stringify(inventoryItems));
+  } catch (e) {}
 
-  // Sinkronisasi data live dari Google Sheets via JSONP (Bebas CORS)
+  renderAll();
   syncDataViaJSONP();
 }
 
@@ -157,7 +168,6 @@ function initData() {
 // 3. SINKRONISASI JSONP BEBAS CORS
 // ==========================================
 function syncDataViaJSONP() {
-  // Callback global untuk Fix Aset
   window.handleFixAssetData = function(json) {
     if (!json || !json.table || !json.table.rows) return;
     const rows = json.table.rows;
@@ -167,7 +177,6 @@ function syncDataViaJSONP() {
       const kode = String(c[1]?.v || "").trim();
       const nama = String(c[2]?.v || "").trim();
       if (!kode || kode.toLowerCase().includes("kode") || !nama) return;
-
       const rawImg = String(c[11]?.v || "");
       parsed.push({
         no: c[0]?.v || (parsed.length + 1),
@@ -186,11 +195,11 @@ function syncDataViaJSONP() {
     });
     if (parsed.length > 0) {
       fixAssets = parsed;
+      try { localStorage.setItem("dpsa_cache_fa", JSON.stringify(fixAssets)); } catch(e){}
       renderAll();
     }
   };
 
-  // Callback global untuk Inventory
   window.handleInventoryData = function(json) {
     if (!json || !json.table || !json.table.rows) return;
     const rows = json.table.rows;
@@ -202,11 +211,9 @@ function syncDataViaJSONP() {
       if (!kode || kode.toLowerCase().includes("kode") || !nama || nama.toLowerCase().includes("nama")) return;
 
       const valI = String(c[8]?.v || "").trim().toLowerCase();
-      const valJ = String(c[9]?.v || "").trim().toLowerCase();
-      let kat = "Bukan Aktiva Tetap";
-      if (valI === "v" || valI === "ya" || valI === "true") kat = "Aktiva Tetap";
-
+      let kat = (valI === "v" || valI === "ya" || valI === "true") ? "Aktiva Tetap" : "Bukan Aktiva Tetap";
       const rawImg = String(c[11]?.v || "");
+
       parsed.push({
         no: c[0]?.v || (parsed.length + 1),
         kode: kode,
@@ -224,11 +231,11 @@ function syncDataViaJSONP() {
     });
     if (parsed.length > 0) {
       inventoryItems = parsed;
+      try { localStorage.setItem("dpsa_cache_inv", JSON.stringify(inventoryItems)); } catch(e){}
       renderAll();
     }
   };
 
-  // Suntikkan script JSONP ke halaman (Bebas dari batasan CORS)
   const scriptFA = document.createElement("script");
   scriptFA.src = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=responseHandler:handleFixAssetData&sheet=${encodeURIComponent(CONFIG.SHEETS.FIX_ASSET)}&headers=0`;
   document.body.appendChild(scriptFA);
@@ -239,7 +246,7 @@ function syncDataViaJSONP() {
 }
 
 // ==========================================
-// 4. RENDERING & UI HELPERS
+// 4. RENDERING & DATA FORMATTERS
 // ==========================================
 function parsePrice(val) {
   if (!val) return 0;
@@ -278,18 +285,48 @@ function renderOverview() {
   const nilaiFA = fixAssets.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0);
   const nilaiInv = inventoryItems.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0);
 
-  const elItem = document.getElementById("totalSemuaItem");
-  const elNilai = document.getElementById("totalSemuaNilai");
-  const elSubFA = document.getElementById("subtotalFANilai");
-  const elSubInv = document.getElementById("subtotalInvNilai");
+  const elItem = document.getElementById("ovTotalItemAll");
+  const elNilai = document.getElementById("ovTotalNilaiAll");
+  const elSubFA = document.getElementById("ovNilaiFixAsset");
+  const elSubInv = document.getElementById("ovNilaiInventory");
 
-  if (elItem) elItem.textContent = (totalFA + totalInv).toLocaleString("id-ID");
+  if (elItem) elItem.textContent = `${(totalFA + totalInv).toLocaleString("id-ID")} Item`;
   if (elNilai) elNilai.textContent = formatRupiah(nilaiFA + nilaiInv);
   if (elSubFA) elSubFA.textContent = formatRupiah(nilaiFA);
   if (elSubInv) elSubInv.textContent = formatRupiah(nilaiInv);
+
+  const badgeFA = document.getElementById("badgeCountFixAsset");
+  const badgeInv = document.getElementById("badgeCountInventory");
+  if (badgeFA) badgeFA.textContent = fixAssets.length;
+  if (badgeInv) badgeInv.textContent = inventoryItems.length;
+
+  // Top 5 Assets
+  const topTable = document.getElementById("overviewTopTableBody");
+  if (topTable) {
+    topTable.innerHTML = "";
+    const sorted = [...fixAssets].sort((a, b) => b.harga - a.harga).slice(0, 5);
+    sorted.forEach(item => {
+      const tr = document.createElement("tr");
+      tr.className = "hover:bg-slate-50 border-b border-slate-100 text-xs";
+      tr.innerHTML = `
+        <td class="py-3.5 px-6 font-mono font-bold text-blue-700">${item.kode}</td>
+        <td class="py-3.5 px-6 font-semibold text-slate-800">${item.nama}</td>
+        <td class="py-3.5 px-6"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">Fix Asset</span></td>
+        <td class="py-3.5 px-6 text-slate-600">${item.lokasi}</td>
+        <td class="py-3.5 px-6 text-right font-bold text-slate-900">${formatRupiah(item.harga)}</td>
+        <td class="py-3.5 px-6 text-center">
+          <button onclick="openDetailData('${item.kode}')" class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-xs font-bold transition flex items-center gap-1.5 mx-auto cursor-pointer">
+            <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+            <span>Lihat Detail Data</span>
+          </button>
+        </td>
+      `;
+      topTable.appendChild(tr);
+    });
+  }
 }
 
-// Fallback jika thumbnail gagal dimuat di browser
+// Fallback jika gambar terkena proteksi thumbnail
 function handleImageError(imgEl, originalUrl) {
   if (!imgEl.dataset.triedBackup) {
     imgEl.dataset.triedBackup = "true";
@@ -299,45 +336,49 @@ function handleImageError(imgEl, originalUrl) {
   }
 }
 
-function renderFixAssetTable() {
-  const tbody = document.getElementById("fixAssetTableBody");
+// Render Tabel Fix Asset dengan tombol "Lihat Detail Data"
+function renderFixAssetTable(filtered = null) {
+  const tbody = document.getElementById("faTableBody");
   if (!tbody) return;
   tbody.innerHTML = "";
 
-  const totalItems = fixAssets.reduce((s, i) => s + (i.jumlah || 1), 0);
-  const totalNilai = fixAssets.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0);
+  const data = filtered || fixAssets;
+  const totalItems = data.reduce((s, i) => s + (i.jumlah || 1), 0);
+  const totalNilai = data.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0);
+
   const elTotal = document.getElementById("faTotalItem");
   const elNilai = document.getElementById("faTotalNilai");
-  if (elTotal) elTotal.textContent = totalItems.toLocaleString("id-ID");
+  if (elTotal) elTotal.textContent = `${totalItems.toLocaleString("id-ID")} Unit`;
   if (elNilai) elNilai.textContent = formatRupiah(totalNilai);
 
-  fixAssets.forEach((item, idx) => {
+  data.forEach((item, idx) => {
     const tr = document.createElement("tr");
-    tr.className = "hover:bg-blue-50/40 border-b border-gray-100 text-sm";
+    tr.className = "hover:bg-blue-50/40 border-b border-slate-100 text-xs";
     tr.innerHTML = `
-      <td class="px-4 py-3 text-center text-gray-500">${idx + 1}</td>
-      <td class="px-4 py-3 font-semibold text-blue-900 whitespace-nowrap">${item.kode}</td>
-      <td class="px-4 py-3 font-medium text-gray-800">${item.nama}</td>
-      <td class="px-4 py-3 text-gray-600 text-xs">${item.tipe}</td>
-      <td class="px-4 py-3 text-center text-gray-600">${item.satuan}</td>
-      <td class="px-4 py-3 text-center font-bold text-gray-700">${item.jumlah}</td>
-      <td class="px-4 py-3 text-center text-gray-600">${item.tahun}</td>
-      <td class="px-4 py-3 text-center"><span class="badge-baik">${item.kondisi}</span></td>
-      <td class="px-4 py-3 text-right font-medium text-gray-900 whitespace-nowrap">${formatRupiah(item.harga)}</td>
-      <td class="px-4 py-3 text-gray-700 whitespace-nowrap">${item.lokasi}</td>
-      <td class="px-4 py-3 text-gray-500 text-xs">${item.keterangan}</td>
-      <td class="px-4 py-3 text-center">
+      <td class="py-3.5 px-4 text-center text-slate-500">${idx + 1}</td>
+      <td class="py-3.5 px-4 font-mono font-bold text-blue-900 whitespace-nowrap">${item.kode}</td>
+      <td class="py-3.5 px-4 font-semibold text-slate-800">${item.nama}</td>
+      <td class="py-3.5 px-4 text-slate-600 text-[11px] max-w-xs">${item.tipe}</td>
+      <td class="py-3.5 px-3 text-center text-slate-600">${item.satuan}</td>
+      <td class="py-3.5 px-3 text-center font-bold text-slate-800">${item.jumlah}</td>
+      <td class="py-3.5 px-3 text-center text-slate-600">${item.tahun}</td>
+      <td class="py-3.5 px-3 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">${item.kondisi}</span></td>
+      <td class="py-3.5 px-4 text-right font-bold text-slate-900 whitespace-nowrap">${formatRupiah(item.harga)}</td>
+      <td class="py-3.5 px-4 text-slate-700 whitespace-nowrap">${item.lokasi}</td>
+      <td class="py-3.5 px-4 text-slate-500 text-[11px]">${item.keterangan}</td>
+      <td class="py-3.5 px-4 text-center">
         <img 
           src="${item.gambar}" 
           alt="${item.nama}" 
-          class="w-10 h-10 object-cover rounded border border-gray-200 cursor-pointer hover:scale-110 transition-transform mx-auto" 
-          onclick="openLightbox('${item.gambar}', '${item.nama}', '${item.kode}')" 
+          class="w-10 h-10 object-cover rounded-lg border border-slate-200 cursor-pointer hover:scale-110 transition-transform mx-auto shadow-xs" 
+          onclick="openLightbox('${item.gambar}', '${item.nama}', '${item.kode}', '${item.lokasi}')" 
           onerror="handleImageError(this, '${item.gambar}')"
         />
       </td>
-      <td class="px-4 py-3 text-center whitespace-nowrap">
-        <button onclick="openBarcodePage('${item.kode}')" class="p-1.5 text-blue-600 hover:bg-blue-100 rounded" title="Lihat Kartu QR">
-          <i data-lucide="qr-code" class="w-4 h-4"></i>
+      <td class="py-3.5 px-4 text-center whitespace-nowrap">
+        <button onclick="openDetailData('${item.kode}')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 mx-auto cursor-pointer">
+          <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+          <span>Lihat Detail Data</span>
         </button>
       </td>
     `;
@@ -346,52 +387,58 @@ function renderFixAssetTable() {
   if (window.lucide) lucide.createIcons();
 }
 
-function renderInventoryTable() {
+// Render Tabel Inventory dengan tombol "Lihat Detail Data"
+function renderInventoryTable(filtered = null) {
   const tbody = document.getElementById("inventoryTableBody");
   if (!tbody) return;
   tbody.innerHTML = "";
 
-  const totalItems = inventoryItems.reduce((s, i) => s + (i.jumlah || 1), 0);
-  const totalNilai = inventoryItems.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0);
+  const data = filtered || inventoryItems;
+  const totalItems = data.reduce((s, i) => s + (i.jumlah || 1), 0);
+  const totalNilai = data.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0);
+
   const elTotal = document.getElementById("invTotalItem");
   const elNilai = document.getElementById("invTotalNilai");
-  if (elTotal) elTotal.textContent = totalItems.toLocaleString("id-ID");
+  const elQty = document.getElementById("invTotalKuantitas");
+  if (elTotal) elTotal.textContent = `${data.length} SKU`;
   if (elNilai) elNilai.textContent = formatRupiah(totalNilai);
+  if (elQty) elQty.textContent = totalItems.toLocaleString("id-ID");
 
-  inventoryItems.forEach((item, idx) => {
+  data.forEach((item, idx) => {
     const isAktiva = item.kategori === "Aktiva Tetap";
-    const badgeClass = isAktiva ? "bg-amber-100 text-amber-800 border-amber-300" : "bg-teal-100 text-teal-800 border-teal-300";
+    const badgeClass = isAktiva ? "bg-amber-100 text-amber-800" : "bg-teal-100 text-teal-800";
 
     const tr = document.createElement("tr");
-    tr.className = "hover:bg-blue-50/40 border-b border-gray-100 text-sm";
+    tr.className = "hover:bg-blue-50/40 border-b border-slate-100 text-xs";
     tr.innerHTML = `
-      <td class="px-4 py-3 text-center text-gray-500">${idx + 1}</td>
-      <td class="px-4 py-3 font-semibold text-blue-900 whitespace-nowrap">${item.kode}</td>
-      <td class="px-4 py-3 font-medium text-gray-800">${item.nama}</td>
-      <td class="px-4 py-3 text-gray-600 text-xs">${item.tipe}</td>
-      <td class="px-4 py-3 text-center text-gray-600">${item.satuan}</td>
-      <td class="px-4 py-3 text-center font-bold text-gray-700">${item.jumlah}</td>
-      <td class="px-4 py-3 text-center text-gray-600">${item.tahun}</td>
-      <td class="px-4 py-3 text-center"><span class="badge-baik">${item.kondisi}</span></td>
-      <td class="px-4 py-3 text-center whitespace-nowrap">
-        <span class="inline-block px-2.5 py-0.5 text-xs font-semibold rounded-full border ${badgeClass}">
+      <td class="py-3.5 px-4 text-center text-slate-500">${idx + 1}</td>
+      <td class="py-3.5 px-4 font-mono font-bold text-blue-900 whitespace-nowrap">${item.kode}</td>
+      <td class="py-3.5 px-4 font-semibold text-slate-800">${item.nama}</td>
+      <td class="py-3.5 px-4 text-slate-600 text-[11px] max-w-xs">${item.tipe}</td>
+      <td class="py-3.5 px-3 text-center text-slate-600">${item.satuan}</td>
+      <td class="py-3.5 px-3 text-center font-bold text-slate-800">${item.jumlah}</td>
+      <td class="py-3.5 px-3 text-center text-slate-600">${item.tahun}</td>
+      <td class="py-3.5 px-3 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">${item.kondisi}</span></td>
+      <td class="py-3.5 px-3 text-center whitespace-nowrap">
+        <span class="inline-block px-2.5 py-0.5 text-[10px] font-bold rounded-full ${badgeClass}">
           ${item.kategori}
         </span>
       </td>
-      <td class="px-4 py-3 text-right font-medium text-gray-900 whitespace-nowrap">${formatRupiah(item.harga)}</td>
-      <td class="px-4 py-3 text-gray-500 text-xs">${item.keterangan}</td>
-      <td class="px-4 py-3 text-center">
+      <td class="py-3.5 px-4 text-right font-bold text-slate-900 whitespace-nowrap">${formatRupiah(item.harga)}</td>
+      <td class="py-3.5 px-4 text-slate-500 text-[11px]">${item.keterangan}</td>
+      <td class="py-3.5 px-4 text-center">
         <img 
           src="${item.gambar}" 
           alt="${item.nama}" 
-          class="w-10 h-10 object-cover rounded border border-gray-200 cursor-pointer hover:scale-110 transition-transform mx-auto" 
-          onclick="openLightbox('${item.gambar}', '${item.nama}', '${item.kode}')" 
+          class="w-10 h-10 object-cover rounded-lg border border-slate-200 cursor-pointer hover:scale-110 transition-transform mx-auto shadow-xs" 
+          onclick="openLightbox('${item.gambar}', '${item.nama}', '${item.kode}', 'Area DPSA')" 
           onerror="handleImageError(this, '${item.gambar}')"
         />
       </td>
-      <td class="px-4 py-3 text-center whitespace-nowrap">
-        <button onclick="openBarcodePage('${item.kode}')" class="p-1.5 text-blue-600 hover:bg-blue-100 rounded" title="Lihat Kartu QR">
-          <i data-lucide="qr-code" class="w-4 h-4"></i>
+      <td class="py-3.5 px-4 text-center whitespace-nowrap">
+        <button onclick="openDetailData('${item.kode}')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 mx-auto cursor-pointer">
+          <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+          <span>Lihat Detail Data</span>
         </button>
       </td>
     `;
@@ -400,35 +447,83 @@ function renderInventoryTable() {
   if (window.lucide) lucide.createIcons();
 }
 
-function switchTab(tabId) {
-  document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
-  document.querySelectorAll(".nav-tab-btn").forEach(el => el.classList.remove("active-tab"));
-
-  const target = document.getElementById(tabId + "Tab");
-  const btn = document.getElementById("btnTab-" + tabId);
-  if (target) target.classList.remove("hidden");
-  if (btn) btn.classList.add("active-tab");
+// Buka Halaman Hasil Scan / Detail Data
+function openDetailData(kode) {
+  window.open(`barcode.html?code=${encodeURIComponent(kode)}`, '_blank');
 }
 
-function openLightbox(url, name, code) {
-  const modal = document.getElementById("lightboxModal");
-  const img = document.getElementById("lightboxImg");
+// Filter Pencarian
+function filterFixAsset() {
+  const query = document.getElementById("faSearchInput").value.toLowerCase();
+  const res = fixAssets.filter(i => 
+    i.kode.toLowerCase().includes(query) || 
+    i.nama.toLowerCase().includes(query) || 
+    i.lokasi.toLowerCase().includes(query) || 
+    i.keterangan.toLowerCase().includes(query)
+  );
+  renderFixAssetTable(res);
+}
+
+function filterInventory() {
+  const query = document.getElementById("invSearchInput").value.toLowerCase();
+  const res = inventoryItems.filter(i => 
+    i.kode.toLowerCase().includes(query) || 
+    i.nama.toLowerCase().includes(query) || 
+    i.keterangan.toLowerCase().includes(query)
+  );
+  renderInventoryTable(res);
+}
+
+// Navigasi Tab
+function switchTab(tabId) {
+  activeTab = tabId;
+  const sections = ['overview', 'fixasset', 'inventory'];
+  sections.forEach(s => {
+    const el = document.getElementById(`section-${s}`);
+    const nav = document.getElementById(`nav-${s}`);
+    if (el) el.classList.add('hidden');
+    if (nav) {
+      nav.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition";
+    }
+  });
+
+  const targetEl = document.getElementById(`section-${tabId}`);
+  const targetNav = document.getElementById(`nav-${tabId}`);
+  if (targetEl) targetEl.classList.remove('hidden');
+  if (targetNav) {
+    targetNav.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40";
+  }
+
+  const titles = {
+    overview: "1. Overview",
+    fixasset: "2. Dashboard Fix Asset",
+    inventory: "3. Dashboard Inventory"
+  };
+  const titleEl = document.getElementById("topBarTitle");
+  if (titleEl) titleEl.textContent = titles[tabId];
+}
+
+// Lightbox Preview
+function openLightbox(url, name, code, lokasi) {
+  const modal = document.getElementById("imageLightboxModal");
+  const img = document.getElementById("lightboxImage");
   const title = document.getElementById("lightboxTitle");
-  const codeEl = document.getElementById("lightboxCode");
+  const codeEl = document.getElementById("lightboxKode");
+  const lokEl = document.getElementById("lightboxLokasi");
+  const btn = document.getElementById("lightboxBtnScan");
+
   if (modal && img) {
     img.src = url;
     img.onerror = () => { img.src = 'no image.png'; };
     if (title) title.textContent = name;
     if (codeEl) codeEl.textContent = code;
-    modal.style.display = "flex";
+    if (lokEl) lokEl.textContent = lokasi || "PT DPSA";
+    if (btn) btn.onclick = () => openDetailData(code);
+    modal.classList.remove("hidden");
   }
 }
 
 function closeLightbox() {
-  const modal = document.getElementById("lightboxModal");
-  if (modal) modal.style.display = "none";
-}
-
-function openBarcodePage(kode) {
-  window.open(`barcode.html?code=${encodeURIComponent(kode)}`, '_blank');
+  const modal = document.getElementById("imageLightboxModal");
+  if (modal) modal.classList.add("hidden");
 }
