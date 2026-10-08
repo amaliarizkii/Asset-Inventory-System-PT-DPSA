@@ -4,9 +4,18 @@ body {
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-/* Print Rules Khusus Cetak Barcode Massal & Paspor */
+/* Desain Stiker Barcode Resmi PT DPSA (Identik Gambar Referensi) */
+.dpsa-barcode-badge {
+  background-color: #dbeefd !important; /* Warna biru muda lembut */
+  border-radius: 24px !important;
+  border: 1px solid #bfdbfe !important;
+  box-sizing: border-box;
+  aspect-ratio: 1 / 1.15; /* Rasio mendekati persegi seperti gambar referensi */
+}
+
+/* Pengaturan Cetak Lembaran Stiker (A4 / A3) */
 @media print {
-  /* Sembunyikan elemen non-cetak */
+  /* Hilangkan elemen kontrol website */
   .no-print,
   #appContainer aside,
   #appContainer header,
@@ -20,9 +29,10 @@ body {
     background: #ffffff !important;
     padding: 0 !important;
     margin: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  /* Jika mencetak dari modal batch barcode */
   #batchPrintModal {
     position: static !important;
     display: block !important;
@@ -37,23 +47,33 @@ body {
     margin: 0 !important;
   }
 
-  .print-card {
-    page-break-inside: avoid;
-    break-inside: avoid;
-    border: 1.5px solid #000000 !important;
+  /* Grid Cetak Stiker */
+  .paper-a4 #barcodeGridContainer {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 stiker per baris di A4 */
+    gap: 12mm !important;
   }
 
-  /* Dukungan Ukuran Kertas Dinamis */
-  .paper-a4 {
-    width: 210mm;
+  .paper-a3 #barcodeGridContainer {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important; /* 4 stiker per baris di A3 */
+    gap: 10mm !important;
   }
 
-  .paper-a3 {
-    width: 297mm;
+  /* Pertahankan warna background biru stiker saat dicetak */
+  .dpsa-barcode-badge {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    background-color: #dbeefd !important;
+    border: 1px solid #93c5fd !important;
+    border-radius: 20px !important;
   }
 
   @page {
-    margin: 8mm;
+    margin: 10mm;
     size: auto;
   }
+}
+
+  
 }
