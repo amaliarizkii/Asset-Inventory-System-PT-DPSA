@@ -1,35 +1,36 @@
 /**
- * barcode.js - Parser Data QR Mandiri PT DPSA
+ * barcode.js - Parser & Visualizer Detail Aset (100% Identik Gambar Referensi)
  */
 document.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const targetCode = urlParams.get("code") || urlParams.get("kode") || "FA/PO3/12/XII/DPSA/2016/KEU";
-
   let foundItem = null;
 
-  // 1. Cek Cache LocalStorage
-  const cachedFA = JSON.parse(localStorage.getItem("dpsa_cache_fa") || "[]");
-  const cachedInv = JSON.parse(localStorage.getItem("dpsa_cache_inv") || "[]");
-  foundItem = [...cachedFA, ...cachedInv].find(i => (i.kode || "").toUpperCase() === targetCode.toUpperCase());
+  // 1. Ambil dari Cache LocalStorage (Instan)
+  try {
+    const cachedFA = JSON.parse(localStorage.getItem("dpsa_cache_fa") || "[]");
+    const cachedInv = JSON.parse(localStorage.getItem("dpsa_cache_inv") || "[]");
+    foundItem = [...cachedFA, ...cachedInv].find(i => (i.kode || "").trim().toUpperCase() === targetCode.trim().toUpperCase());
+  } catch (e) {}
 
-  // 2. Fetch ke Spreadsheet jika belum ada di cache
-  if (!foundItem) {
+  // 2. Fetch ke Spreadsheet jika belum ada di cache (Fallback)
+  if (!foundItem && typeof CONFIG !== 'undefined') {
     try {
-      const gvizFAUrl = APP_CONFIG.getGvizUrl(APP_CONFIG.SHEETS.FIX_ASSET);
+      const gvizFAUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEETS.FIX_ASSET)}&headers=0`;
       const respFA = await fetch(gvizFAUrl);
       const textFA = await respFA.text();
       const rowsFA = parseGvizRows(textFA);
-      foundItem = rowsFA.find(i => (i.kode || "").toUpperCase() === targetCode.toUpperCase());
+      foundItem = rowsFA.find(i => (i.kode || "").trim().toUpperCase() === targetCode.trim().toUpperCase());
 
       if (!foundItem) {
-        const gvizInvUrl = APP_CONFIG.getGvizUrl(APP_CONFIG.SHEETS.INVENTORY);
+        const gvizInvUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEETS.INVENTORY)}&headers=0`;
         const respInv = await fetch(gvizInvUrl);
         const textInv = await respInv.text();
         const rowsInv = parseGvizRows(textInv);
-        foundItem = rowsInv.find(i => (i.kode || "").toUpperCase() === targetCode.toUpperCase());
+        foundItem = rowsInv.find(i => (i.kode || "").trim().toUpperCase() === targetCode.trim().toUpperCase());
       }
     } catch (e) {
-      console.warn("Koneksi spreadsheet offline:", e);
+      console.warn("Spreadsheet network issue:", e);
     }
   }
 
@@ -40,7 +41,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (foundItem) {
     renderCardPassport(foundItem);
   } else {
-    // Tampilkan data contoh agar layout tetap utuh
+    // Default fallback agar tampilan tetap utuh
     renderCardPassport({
       nama: "SET KOMPUTER",
       kode: targetCode,
@@ -49,18 +50,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       lokasi: "RUANG KEUANGAN",
       keterangan: "BU TARI",
       kondisi: "BAIK",
-      gambar: "logo dpsa.png"
+      gambar: "https://lh3.googleusercontent.com/d/1FszIQtfv5nsyOztb2560tEd4kjnn6YCG"
     });
   }
 });
 
 function parseGvizRows(rawText) {
   try {
-    const raw = rawText.replace(/^\/\*O_o\*\/\s*google\.visualization\.Query\.setResponse\(|\);$/g, "");
+    const raw = rawText.replace(/^\/\*O_o\*\/\s*google\.visualization\.Query\.setResponse\(\vert{}\);$/g, "");
     const obj = JSON.parse(raw);
     const rows = obj.table.rows;
     return rows.map(r => {
       const c = r.c || [];
+      const rawImg = c[11] ? String(c[11].v || "") : "";
       return {
         kode: c[1] ? String(c[1].v || "").trim() : "",
         nama: c[2] ? String(c[2].v || "").trim() : "-",
@@ -69,7 +71,7 @@ function parseGvizRows(rawText) {
         kondisi: c[7] ? String(c[7].v || "").trim() : "Baik",
         lokasi: c[9] ? String(c[9].v || "").trim() : (c[12] ? String(c[12].v || "") : "PT DPSA"),
         keterangan: c[10] ? String(c[10].v || "").trim() : (c[12] ? String(c[12].v || "") : "-"),
-        gambar: APP_CONFIG.formatDriveImageUrl(c[11] ? String(c[11].v || "") : "")
+        gambar: CONFIG.formatDriveImageUrl(rawImg)
       };
     });
   } catch (e) {
@@ -88,7 +90,15 @@ function renderCardPassport(item) {
 
   const photoEl = document.getElementById("qrFoto");
   if (photoEl) {
-    photoEl.src = item.gambar || "no image.png";
-    photoEl.onerror = () => { photoEl.src = "no image.png"; };
+    const finalUrl = item.gambar || "no image.png";
+    photoEl.src = finalUrl;
+    photoEl.onerror = () => {
+      if (!photoEl.dataset.tried) {
+        photoEl.dataset.tried = "true";
+        photoEl.src = CONFIG.getBackupDriveImageUrl(finalUrl);
+      } else {
+        photoEl.src = "no image.png";
+      }
+    };
   }
 }
