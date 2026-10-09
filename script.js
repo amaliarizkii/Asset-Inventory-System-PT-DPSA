@@ -339,59 +339,97 @@ function openDetailData(kode) {
 }
 
 // ========================================================
-// FITUR CETAK SELURUH BARCODE (PISAHKAN FIX ASSET & INVENTORY)
-// ========================================================
-// ========================================================
-// FITUR CETAK SELURUH BARCODE (PERSIS GAMBAR REFERENSI STIKER)
+// FITUR CETAK SELURUH BARCODE (UKURAN FISIK 5 x 5 CM)
 // ========================================================
 function openBatchPrintModal(type) {
   currentBatchType = type;
-  const isFA = type === 'fixasset';
+  const isFA = (type === 'fixasset');
   const list = isFA ? fixAssets : inventoryItems;
+  
   const modal = document.getElementById("batchPrintModal");
   const title = document.getElementById("batchPrintTitle");
   const sub = document.getElementById("batchPrintSubtitle");
   const container = document.getElementById("barcodeGridContainer");
 
-  title.textContent = isFA ? "Cetak Seluruh Barcode Fix Asset (Aktiva Tetap)" : "Cetak Seluruh Barcode Inventory (Persediaan)";
-  sub.textContent = `Menyiapkan ${list.length} stiker barcode resmi PT DPSA`;
+  if (!modal || !container) {
+    alert("Elemen modal cetak tidak ditemukan!");
+    return;
+  }
 
-  // Render Grid Kartu Barcode (100% Identik Gambar Referensi)
+  title.textContent = isFA 
+    ? "Cetak Seluruh Barcode Fix Asset (Aktiva Tetap)" 
+    : "Cetak Seluruh Barcode Inventory (Persediaan)";
+  sub.textContent = `Total ${list.length} label stiker barcode (Ukuran Standar 5 x 5 cm)`;
+
+  // Bersihkan dan render stiker ukuran 5x5 cm
   container.innerHTML = "";
+  
   list.forEach(item => {
     const qrUrl = getQrCodeUrl(item.kode);
     const card = document.createElement("div");
-    // Kartu berlatar biru muda lembut, sudut rounded lebar, dan padding proporsional
-    card.className = "dpsa-barcode-badge flex flex-col items-center justify-between p-4 rounded-3xl bg-[#dbeefd] border border-blue-200/80 shadow-sm print-card relative";
+    
+    // Kelas sticker-5x5cm mengunci dimensi fisik 50mm x 50mm
+    card.className = "sticker-5x5cm print-card";
     
     card.innerHTML = `
-      <!-- Header Stiker: Logo Kiri & Teks PT DPSA Tengah -->
-      <div class="w-full flex items-center justify-center relative mb-2">
-        <img src="logo dpsa.png" alt="Logo" class="w-8 h-8 object-contain absolute left-0 top-1/2 -translate-y-1/2" onerror="this.src='no image.png';">
-        <div class="text-center pl-6">
-          <h4 class="text-base sm:text-lg font-black tracking-wide leading-none" style="color: #1a2f64; font-family: 'Plus Jakarta Sans', sans-serif;">PT DPSA</h4>
-          <p class="text-[9px] sm:text-[10px] font-semibold tracking-normal mt-0.5" style="color: #1e3a8a;">Asset &amp; Inventory System</p>
+      <!-- Header Stiker -->
+      <div class="sticker-header">
+        <img src="logo dpsa.png" alt="Logo" class="sticker-logo" onerror="this.src='no image.png';">
+        <div class="sticker-brand">
+          <div class="sticker-title">PT DPSA</div>
+          <div class="sticker-subtitle">Asset & Inventory System</div>
         </div>
       </div>
 
-      <!-- Area Tengah: QR Code Tajam -->
-      <div class="my-2 p-1 bg-white rounded-xl shadow-xs">
-        <img src="${qrUrl}" alt="${item.kode}" class="w-32 h-32 sm:w-36 sm:h-36 object-contain">
+      <!-- QR Code 5x5 Fit -->
+      <div class="sticker-qr-wrapper">
+        <img src="${qrUrl}" alt="${item.kode}" class="sticker-qr-img">
       </div>
 
-      <!-- Footer Stiker: Kode Barang Bold Navy -->
-      <div class="w-full text-center mt-1">
-        <p class="text-xs sm:text-sm font-black tracking-wider break-all leading-tight uppercase font-mono" style="color: #142852;">
-          ${item.kode}
-        </p>
+      <!-- Kode Barang -->
+      <div class="sticker-footer">
+        <div class="sticker-code">${item.kode}</div>
       </div>
     `;
     container.appendChild(card);
   });
 
-  setPaperSize('A4'); // Default ukuran A4
+  // Hapus class hidden & tampilkan flex
   modal.classList.remove("hidden");
-  if (window.lucide) lucide.createIcons();
+  modal.style.display = "flex";
+
+  setPaperSize('A4'); // Default mode A4
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+}
+
+function closeBatchPrintModal() {
+  const modal = document.getElementById("batchPrintModal");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.style.display = "none";
+  }
+}
+
+function setPaperSize(size) {
+  currentPaperSize = size;
+  const btnA4 = document.getElementById("btnPaperA4");
+  const btnA3 = document.getElementById("btnPaperA3");
+  const printable = document.getElementById("printableArea");
+
+  if (!btnA4 || !btnA3 || !printable) return;
+
+  if (size === 'A4') {
+    btnA4.className = "px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white transition";
+    btnA3.className = "px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
+    printable.className = "paper-sheet paper-a4";
+  } else {
+    btnA3.className = "px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white transition";
+    btnA4.className = "px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
+    printable.className = "paper-sheet paper-a3";
+  }
 }
 
 function triggerPrint() {
