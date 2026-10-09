@@ -259,52 +259,52 @@
     </main>
   </div>
 
-<!-- MODAL CETAK BATCH BARCODE (PRESISI 5x5 CM) -->
-<div id="batchPrintModal" class="fixed inset-0 z-50 items-center justify-center bg-slate-900/80 backdrop-blur-sm p-2 sm:p-4 hidden">
-  <div class="bg-white rounded-3xl max-w-5xl w-full max-h-[95vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden">
-    
-    <!-- Top Action Bar (Tidak Tercetak) -->
-    <div class="px-6 py-3.5 bg-slate-900 text-white flex items-center justify-between no-print shrink-0">
-      <div>
-        <h3 id="batchPrintTitle" class="text-sm font-bold">Cetak Seluruh Barcode</h3>
-        <p id="batchPrintSubtitle" class="text-[11px] text-slate-400">Ukuran stiker baku 5 x 5 cm</p>
-      </div>
+  <!-- MODAL CETAK BATCH BARCODE (PRESISI 5x5 CM) -->
+  <div id="batchPrintModal" class="fixed inset-0 z-50 items-center justify-center bg-slate-900/80 backdrop-blur-sm p-2 sm:p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-5xl w-full max-h-[95vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden">
       
-      <div class="flex items-center gap-3">
-        <!-- Switcher Ukuran Kertas A4 vs A3 -->
-        <div class="flex items-center gap-1 bg-slate-800 p-1 rounded-xl border border-slate-700">
-          <button type="button" onclick="setPaperSize('A4')" id="btnPaperA4" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition cursor-pointer">
-            Kertas A4 (~20 Label)
+      <!-- Top Action Bar (Tidak Tercetak) -->
+      <div class="px-6 py-3.5 bg-slate-900 text-white flex items-center justify-between no-print shrink-0">
+        <div>
+          <h3 id="batchPrintTitle" class="text-sm font-bold">Cetak Seluruh Barcode</h3>
+          <p id="batchPrintSubtitle" class="text-[11px] text-slate-400">Ukuran stiker baku 5 x 5 cm</p>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <!-- Switcher Ukuran Kertas A4 vs A3 -->
+          <div class="flex items-center gap-1 bg-slate-800 p-1 rounded-xl border border-slate-700">
+            <button type="button" onclick="setPaperSize('A4')" id="btnPaperA4" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition cursor-pointer">
+              Kertas A4 (~20 Label)
+            </button>
+            <button type="button" onclick="setPaperSize('A3')" id="btnPaperA3" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer">
+              Kertas A3 (~30+ Label)
+            </button>
+          </div>
+
+          <!-- Tombol Cetak Langsung -->
+          <button type="button" onclick="triggerPrint()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>Cetak Sekarang</span>
           </button>
-          <button type="button" onclick="setPaperSize('A3')" id="btnPaperA3" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer">
-            Kertas A3 (~30+ Label)
+          
+          <!-- Tombol Tutup -->
+          <button type="button" onclick="closeBatchPrintModal()" class="text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer">
+            <i data-lucide="x" class="w-5 h-5"></i>
           </button>
         </div>
-
-        <!-- Tombol Cetak Langsung -->
-        <button type="button" onclick="triggerPrint()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md">
-          <i data-lucide="printer" class="w-4 h-4"></i>
-          <span>Cetak Sekarang</span>
-        </button>
-        
-        <!-- Tombol Tutup -->
-        <button type="button" onclick="closeBatchPrintModal()" class="text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
       </div>
-    </div>
 
-    <!-- Area Kertas Lembaran Stiker -->
-    <div class="p-6 overflow-y-auto flex-1 bg-slate-100 flex justify-center">
-      <div id="printableArea" class="paper-sheet paper-a4">
-        <div id="barcodeGridContainer" class="grid-a4"></div>
+      <!-- Area Kertas Lembaran Stiker -->
+      <div class="p-6 overflow-y-auto flex-1 bg-slate-100 flex justify-center">
+        <div id="printableArea" class="paper-sheet paper-a4">
+          <div id="barcodeGridContainer" class="grid-a4"></div>
+        </div>
       </div>
-    </div>
 
+    </div>
   </div>
-</div>
 
-  <!-- Modal Login Cepat -->
+  <!-- Modal Login (Dengan Shortcut Cepat & Form Input Manual Lengkap) -->
   <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border border-slate-100">
       <div class="text-center mb-6">
@@ -315,6 +315,10 @@
         <p class="text-xs text-slate-500 font-medium tracking-wide">Asset &amp; Inventory System</p>
       </div>
 
+      <!-- Kotak Pesan Error -->
+      <div id="loginErrorMsg" class="hidden mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded-xl text-center font-medium"></div>
+
+      <!-- Pilihan Cepat 1-Klik -->
       <div class="mb-4 p-3 bg-blue-50/70 border border-blue-100 rounded-xl">
         <p class="text-[11px] font-semibold text-blue-900 mb-2 text-center">Pilih Akun Masuk Langsung:</p>
         <div class="grid grid-cols-3 gap-2">
@@ -329,6 +333,21 @@
           </button>
         </div>
       </div>
+
+      <!-- Form Login Manual Lengkap -->
+      <form onsubmit="event.preventDefault(); doLogin(); return false;" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Username / Email</label>
+          <input type="text" id="loginEmail" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" value="staff.it@dharmaputrainterior.co.id" placeholder="staff.it@dharmaputrainterior.co.id" required />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+          <input type="password" id="loginPassword" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" value="staff.itDPSA88" placeholder="••••••••" required />
+        </div>
+        <button type="button" onclick="doLogin()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-sm font-semibold rounded-xl transition-all shadow-md shadow-blue-500/20 cursor-pointer">
+          Masuk ke Sistem
+        </button>
+      </form>
     </div>
   </div>
 
