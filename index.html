@@ -260,10 +260,10 @@
   </div>
 
 <!-- MODAL CETAK BATCH BARCODE (PRESISI 5x5 CM) -->
-<div id="batchPrintModal" style="display: none;" class="fixed inset-0 z-50 items-center justify-center bg-slate-900/80 backdrop-blur-sm p-2 sm:p-4 hidden">
+<div id="batchPrintModal" class="fixed inset-0 z-50 items-center justify-center bg-slate-900/80 backdrop-blur-sm p-2 sm:p-4 hidden">
   <div class="bg-white rounded-3xl max-w-5xl w-full max-h-[95vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden">
     
-    <!-- Bar Kontrol (Tidak Ikut Tercetak) -->
+    <!-- Top Action Bar (Tidak Tercetak) -->
     <div class="px-6 py-3.5 bg-slate-900 text-white flex items-center justify-between no-print shrink-0">
       <div>
         <h3 id="batchPrintTitle" class="text-sm font-bold">Cetak Seluruh Barcode</h3>
@@ -271,14 +271,18 @@
       </div>
       
       <div class="flex items-center gap-3">
-        <!-- Pilihan Ukuran Kertas -->
+        <!-- Switcher Ukuran Kertas A4 vs A3 -->
         <div class="flex items-center gap-1 bg-slate-800 p-1 rounded-xl border border-slate-700">
-          <button type="button" onclick="setPaperSize('A4')" id="btnPaperA4" class="px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white transition cursor-pointer">Kertas A4</button>
-          <button type="button" onclick="setPaperSize('A3')" id="btnPaperA3" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer">Kertas A3</button>
+          <button type="button" onclick="setPaperSize('A4')" id="btnPaperA4" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition cursor-pointer">
+            Kertas A4 (~20 Label)
+          </button>
+          <button type="button" onclick="setPaperSize('A3')" id="btnPaperA3" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer">
+            Kertas A3 (~30+ Label)
+          </button>
         </div>
 
-        <!-- Tombol Cetak -->
-        <button type="button" onclick="triggerPrint()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer">
+        <!-- Tombol Cetak Langsung -->
+        <button type="button" onclick="triggerPrint()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md">
           <i data-lucide="printer" class="w-4 h-4"></i>
           <span>Cetak Sekarang</span>
         </button>
@@ -290,10 +294,10 @@
       </div>
     </div>
 
-    <!-- Area Pratinjau Kertas Lembaran Stiker -->
+    <!-- Area Kertas Lembaran Stiker -->
     <div class="p-6 overflow-y-auto flex-1 bg-slate-100 flex justify-center">
       <div id="printableArea" class="paper-sheet paper-a4">
-        <div id="barcodeGridContainer"></div>
+        <div id="barcodeGridContainer" class="grid-a4"></div>
       </div>
     </div>
 
