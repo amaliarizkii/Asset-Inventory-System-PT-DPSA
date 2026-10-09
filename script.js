@@ -339,8 +339,11 @@ function openDetailData(kode) {
 }
 
 // ========================================================
-// FITUR CETAK SELURUH BARCODE (UKURAN FISIK 5 x 5 CM)
+// FITUR CETAK SELURUH BARCODE (PRESISI 5 x 5 CM & A4/A3 FIT)
 // ========================================================
+let currentBatchType = 'fixasset';
+let currentPaperSize = 'A4';
+
 function openBatchPrintModal(type) {
   currentBatchType = type;
   const isFA = (type === 'fixasset');
@@ -352,41 +355,43 @@ function openBatchPrintModal(type) {
   const container = document.getElementById("barcodeGridContainer");
 
   if (!modal || !container) {
-    alert("Elemen modal cetak tidak ditemukan!");
+    console.error("Elemen modal batch print tidak ditemukan!");
     return;
   }
 
+  // Set teks judul & deskripsi
   title.textContent = isFA 
-    ? "Cetak Seluruh Barcode Fix Asset (Aktiva Tetap)" 
-    : "Cetak Seluruh Barcode Inventory (Persediaan)";
-  sub.textContent = `Total ${list.length} label stiker barcode (Ukuran Standar 5 x 5 cm)`;
+    ? "Cetak Barcode Fix Asset (Aktiva Tetap)" 
+    : "Cetak Barcode Inventory (Persediaan)";
+  
+  sub.textContent = `Total ${list.length} label stiker terdaftar (Ukuran Presisi 5 x 5 cm)`;
 
-  // Bersihkan dan render stiker ukuran 5x5 cm
+  // Render Grid Barcode Stiker (100% Sesuai Gambar Referensi)
   container.innerHTML = "";
   
-  list.forEach(item => {
+  list.forEach((item, index) => {
     const qrUrl = getQrCodeUrl(item.kode);
     const card = document.createElement("div");
     
-    // Kelas sticker-5x5cm mengunci dimensi fisik 50mm x 50mm
+    // Dimensi stiker terkunci 50mm x 50mm
     card.className = "sticker-5x5cm print-card";
     
     card.innerHTML = `
       <!-- Header Stiker -->
       <div class="sticker-header">
-        <img src="logo dpsa.png" alt="Logo" class="sticker-logo" onerror="this.src='no image.png';">
+        <img src="logo dpsa.png" alt="Logo" class="sticker-logo" onerror="this.onerror=null;this.src='no image.png';">
         <div class="sticker-brand">
           <div class="sticker-title">PT DPSA</div>
           <div class="sticker-subtitle">Asset & Inventory System</div>
         </div>
       </div>
 
-      <!-- QR Code 5x5 Fit -->
+      <!-- QR Code 5x5 cm -->
       <div class="sticker-qr-wrapper">
         <img src="${qrUrl}" alt="${item.kode}" class="sticker-qr-img">
       </div>
 
-      <!-- Kode Barang -->
+      <!-- Kode Barang Bold Navy -->
       <div class="sticker-footer">
         <div class="sticker-code">${item.kode}</div>
       </div>
@@ -394,11 +399,12 @@ function openBatchPrintModal(type) {
     container.appendChild(card);
   });
 
-  // Hapus class hidden & tampilkan flex
+  // Pastikan class 'hidden' terhapus sempurna
   modal.classList.remove("hidden");
   modal.style.display = "flex";
 
-  setPaperSize('A4'); // Default mode A4
+  // Set ukuran kertas default A4
+  setPaperSize('A4');
 
   if (window.lucide) {
     lucide.createIcons();
@@ -417,18 +423,25 @@ function setPaperSize(size) {
   currentPaperSize = size;
   const btnA4 = document.getElementById("btnPaperA4");
   const btnA3 = document.getElementById("btnPaperA3");
-  const printable = document.getElementById("printableArea");
+  const printableArea = document.getElementById("printableArea");
+  const container = document.getElementById("barcodeGridContainer");
 
-  if (!btnA4 || !btnA3 || !printable) return;
+  if (!btnA4 || !btnA3 || !printableArea || !container) return;
 
   if (size === 'A4') {
-    btnA4.className = "px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white transition";
-    btnA3.className = "px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
-    printable.className = "paper-sheet paper-a4";
+    // Mode Kertas A4: Muat 4 kolom (~20 barcode per lembar)
+    btnA4.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition shadow-sm";
+    btnA3.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
+    
+    printableArea.className = "paper-sheet paper-a4";
+    container.className = "grid-a4";
   } else {
-    btnA3.className = "px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white transition";
-    btnA4.className = "px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
-    printable.className = "paper-sheet paper-a3";
+    // Mode Kertas A3: Muat 6 kolom (~30-36 barcode per lembar)
+    btnA3.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition shadow-sm";
+    btnA4.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
+    
+    printableArea.className = "paper-sheet paper-a3";
+    container.className = "grid-a3";
   }
 }
 
