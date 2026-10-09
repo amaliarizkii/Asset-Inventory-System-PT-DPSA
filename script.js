@@ -26,10 +26,15 @@ function formatImageUrl(driveId, rawUrl) {
   return 'no image.png';
 }
 
-// Generator URL QR Code
+// Generator URL QR Code Dinamis Sesuai Kode Masing-Masing
 function getQrCodeUrl(code) {
-  const scanTargetUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}barcode.html?code=${encodeURIComponent(code)}`;
-  return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(scanTargetUrl)}&margin=1`;
+  // Ambil URL dasar halaman tanpa index.html
+  const baseUrl = window.location.href.split('index.html')[0].split('?')[0];
+  // Susun URL barcode dengan parameter code ter-encode rapi
+  const scanTargetUrl = `${baseUrl}barcode.html?code=${encodeURIComponent(code.trim())}`;
+  
+  // Masukkan URL utuh ke QR generator API
+  return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(scanTargetUrl)}&margin=1`;
 }
 
 // ==========================================
