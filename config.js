@@ -9,7 +9,7 @@ const CONFIG = {
     INVENTORY: "Inventory"
   },
 
-  // Helper untuk mengekstrak Google Drive File ID
+  // Ekstrak ID file Google Drive
   extractDriveId: function(url) {
     if (!url || typeof url !== 'string') return null;
     const matchD = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
@@ -19,31 +19,33 @@ const CONFIG = {
     return null;
   },
 
-  // Direct High-Res Image Streamer (Bebas Iframe/CSP block)
+  // Endpoint gambar Google Drive bebas blokir
   formatDriveImageUrl: function(rawUrl) {
     if (!rawUrl || typeof rawUrl !== 'string') return 'no image.png';
     const trimmed = rawUrl.trim();
     if (!trimmed) return 'no image.png';
+
     if (trimmed.startsWith('data:image') || trimmed.endsWith('.png') || trimmed.endsWith('.jpg') || trimmed.endsWith('.jpeg')) {
       return trimmed;
     }
+
     const fileId = this.extractDriveId(trimmed);
     if (fileId) {
-      return `https://lh3.googleusercontent.com/d/${fileId}`;
+      // Thumbnail Google Drive resolusi tinggi
+      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
     }
     return trimmed;
   },
 
-  // Fallback Thumbnail URL jika streaming pertama lambat
+  // Fallback melalui image proxy jika jaringan memblokir domain drive
   getBackupDriveImageUrl: function(rawUrl) {
     const fileId = this.extractDriveId(rawUrl);
     if (fileId) {
-      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+      const driveThumb = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+      return `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=2592000&url=${encodeURIComponent(driveThumb)}`;
     }
     return 'no image.png';
   }
 };
 
-// Aliaskan ke APP_CONFIG agar kompatibel jika ada pemanggilan lama
 window.CONFIG = CONFIG;
-window.APP_CONFIG = CONFIG;
