@@ -14,14 +14,27 @@ let inventoryItems = [];
 let currentBatchType = 'fixasset';
 let currentPaperSize = 'A4';
 
-// Generator URL QR Code Tajam
+// Helper Format Gambar Drive (Fail-Safe jika CONFIG belum siap)
+function formatImageUrl(driveId, rawUrl) {
+  if (typeof CONFIG !== 'undefined' && CONFIG.formatDriveImageUrl) {
+    if (driveId) return CONFIG.formatDriveImageUrl(`https://drive.google.com/file/d/${driveId}/view`);
+    if (rawUrl) return CONFIG.formatDriveImageUrl(rawUrl);
+  }
+  if (driveId) {
+    return `https://lh3.googleusercontent.com/d/${driveId}`;
+  }
+  return 'no image.png';
+}
+
+// Generator URL QR Code
 function getQrCodeUrl(code) {
-  // Langsung mengarah ke URL scanner barcode.html
   const scanTargetUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}barcode.html?code=${encodeURIComponent(code)}`;
   return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(scanTargetUrl)}&margin=1`;
 }
 
-// Data Bawaan Langsung dari Spreadsheet
+// ==========================================
+// DATA BAWAAN LENGKAP DARI SPREADSHEET DPSA
+// ==========================================
 const SEED_FIX_ASSETS = [
   { no: 1, kode: "FA/PO3/12/XII/DPSA/2016/KEU", nama: "Set Komputer", tipe: "Monitor: LG CPU: Delux (Intel Core I7-Gen 2)", satuan: "Set", jumlah: 1, tahun: "2016", kondisi: "Baik", harga: 8612500, lokasi: "Ruang Keuangan", keterangan: "Bu Tari", driveId: "1FszIQtfv5nsyOztb2560tEd4kjnn6YCG" },
   { no: 2, kode: "FA/PO2/2/VI/DPSA/2018/PM", nama: "Phanel Saw/Mesin Felder", tipe: "Hammer/K4 Perfomm SN: 8697", satuan: "Unit", jumlah: 1, tahun: "2018", kondisi: "Baik", harga: 54474624, lokasi: "Produksi Mesin", keterangan: "-", driveId: "1ZVf8fpD147c0enJuPNhS0GJDAPFof1Oq" },
@@ -43,22 +56,72 @@ const SEED_INVENTORY = [
   { no: 24, kode: "INV/DPSA/R.S&M.7/2020/2", nama: "Meteran", tipe: "Krisbow 10106768", satuan: "Unit", jumlah: 1, tahun: "-", kondisi: "Baik", kategori: "Bukan Aktiva Tetap", harga: 1800000, keterangan: "-", driveId: "" }
 ];
 
-function pickAccount(email, pass) {
-  const user = VALID_USERS.find(usr => usr.u.toLowerCase() === email.toLowerCase() && pass === usr.p);
+// ==========================================
+// SISTEM LOGIN & OTENTIKASI LENGKAP
+// ==========================================
+function doLogin() {
+  const emailInput = document.getElementById("loginEmail");
+  const passInput = document.getElementById("loginPassword");
+  const errBox = document.getElementById("loginErrorMsg");
+
+  const inputEmail = emailInput ? emailInput.value.trim().toLowerCase() : "";
+  const inputPass = passInput ? passInput.value.trim() : "";
+
+  const user = VALID_USERS.find(usr => {
+    const fullEmail = usr.u.toLowerCase();
+    const prefix = fullEmail.split("@")[0];
+    return (inputEmail === fullEmail || inputEmail === prefix) && inputPass === usr.p;
+  });
+
   if (user) {
     currentUser = user;
     try { sessionStorage.setItem("dpsa_logged_in", JSON.stringify(user)); } catch (e) {}
-    document.getElementById("loginModal").style.display = "none";
-    const app = document.getElementById("appContainer");
-    app.style.display = "flex";
-    app.classList.remove("hidden");
+    
+    // Sembunyikan Modal Login
+    const modal = document.getElementById("loginModal");
+    if (modal) {
+      modal.classList.add("hidden");
+      modal.style.display = "none";
+    }
 
-    document.getElementById("userProfileName").textContent = user.name;
-    document.getElementById("userProfileRole").textContent = user.role;
-    document.getElementById("userAvatarInitials").textContent = user.initials;
+    // Tampilkan App Container
+    const app = document.getElementById("appContainer");
+    if (app) {
+      app.classList.remove("hidden");
+      app.style.display = "flex";
+    }
+
+    // Update Profil User di Sidebar
+    const nameEl = document.getElementById("userProfileName");
+    const roleEl = document.getElementById("userProfileRole");
+    const initEl = document.getElementById("userAvatarInitials");
+    if (nameEl) nameEl.textContent = user.name;
+    if (roleEl) roleEl.textContent = user.role;
+    if (initEl) initEl.textContent = user.initials;
+
+    if (errBox) {
+      errBox.classList.add("hidden");
+      errBox.style.display = "none";
+    }
 
     initData();
+  } else {
+    if (errBox) {
+      errBox.textContent = "Username atau password salah!";
+      errBox.classList.remove("hidden");
+      errBox.style.display = "block";
+    } else {
+      alert("Username atau password salah!");
+    }
   }
+}
+
+function pickAccount(email, pass) {
+  const emailInput = document.getElementById("loginEmail");
+  const passInput = document.getElementById("loginPassword");
+  if (emailInput) emailInput.value = email;
+  if (passInput) passInput.value = pass;
+  doLogin();
 }
 
 window.onload = function() {
@@ -66,18 +129,32 @@ window.onload = function() {
     const saved = sessionStorage.getItem("dpsa_logged_in");
     if (saved) {
       currentUser = JSON.parse(saved);
-      document.getElementById("loginModal").style.display = "none";
+      const modal = document.getElementById("loginModal");
       const app = document.getElementById("appContainer");
-      app.style.display = "flex";
-      app.classList.remove("hidden");
-      document.getElementById("userProfileName").textContent = currentUser.name;
-      document.getElementById("userProfileRole").textContent = currentUser.role;
-      document.getElementById("userAvatarInitials").textContent = currentUser.initials;
+      if (modal) {
+        modal.classList.add("hidden");
+        modal.style.display = "none";
+      }
+      if (app) {
+        app.classList.remove("hidden");
+        app.style.display = "flex";
+      }
+      const nameEl = document.getElementById("userProfileName");
+      const roleEl = document.getElementById("userProfileRole");
+      const initEl = document.getElementById("userAvatarInitials");
+      if (nameEl) nameEl.textContent = currentUser.name;
+      if (roleEl) roleEl.textContent = currentUser.role;
+      if (initEl) initEl.textContent = currentUser.initials;
       initData();
       return;
     }
   } catch (e) {}
-  document.getElementById("loginModal").style.display = "flex";
+
+  const modal = document.getElementById("loginModal");
+  if (modal) {
+    modal.classList.remove("hidden");
+    modal.style.display = "flex";
+  }
 };
 
 function logout() {
@@ -85,15 +162,16 @@ function logout() {
   location.reload();
 }
 
+// Inisialisasi Data Awal
 function initData() {
   fixAssets = SEED_FIX_ASSETS.map(item => ({
     ...item,
-    gambar: item.driveId ? CONFIG.formatDriveImageUrl(`https://drive.google.com/file/d/${item.driveId}/view`) : 'no image.png'
+    gambar: formatImageUrl(item.driveId, null)
   }));
 
   inventoryItems = SEED_INVENTORY.map(item => ({
     ...item,
-    gambar: item.driveId ? CONFIG.formatDriveImageUrl(`https://drive.google.com/file/d/${item.driveId}/view`) : 'no image.png'
+    gambar: formatImageUrl(item.driveId, null)
   }));
 
   try {
@@ -105,8 +183,10 @@ function initData() {
   syncDataViaJSONP();
 }
 
-// JSONP Sync
+// JSONP Sync Bebas CORS
 function syncDataViaJSONP() {
+  if (typeof CONFIG === 'undefined') return;
+
   window.handleFixAssetData = function(json) {
     if (!json || !json.table || !json.table.rows) return;
     const parsed = [];
@@ -127,7 +207,7 @@ function syncDataViaJSONP() {
         harga: parsePrice(c[8]?.v),
         lokasi: String(c[9]?.v || "PT DPSA"),
         keterangan: String(c[10]?.v || "-"),
-        gambar: CONFIG.formatDriveImageUrl(String(c[11]?.v || ""))
+        gambar: formatImageUrl(null, String(c[11]?.v || ""))
       });
     });
     if (parsed.length > 0) {
@@ -159,7 +239,7 @@ function syncDataViaJSONP() {
         kategori: kat,
         harga: parsePrice(c[10]?.v),
         keterangan: String(c[12]?.v || "-"),
-        gambar: CONFIG.formatDriveImageUrl(String(c[11]?.v || ""))
+        gambar: formatImageUrl(null, String(c[11]?.v || ""))
       });
     });
     if (parsed.length > 0) {
@@ -201,12 +281,19 @@ function renderOverview() {
   const nilaiFA = fixAssets.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0);
   const nilaiInv = inventoryItems.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0);
 
-  document.getElementById("ovTotalItemAll").textContent = `${(totalFA + totalInv).toLocaleString("id-ID")} Item`;
-  document.getElementById("ovTotalNilaiAll").textContent = formatRupiah(nilaiFA + nilaiInv);
-  document.getElementById("ovNilaiFixAsset").textContent = formatRupiah(nilaiFA);
-  document.getElementById("ovNilaiInventory").textContent = formatRupiah(nilaiInv);
-  document.getElementById("badgeCountFixAsset").textContent = fixAssets.length;
-  document.getElementById("badgeCountInventory").textContent = inventoryItems.length;
+  const elItemAll = document.getElementById("ovTotalItemAll");
+  const elNilaiAll = document.getElementById("ovTotalNilaiAll");
+  const elNilaiFA = document.getElementById("ovNilaiFixAsset");
+  const elNilaiInv = document.getElementById("ovNilaiInventory");
+  const badgeFA = document.getElementById("badgeCountFixAsset");
+  const badgeInv = document.getElementById("badgeCountInventory");
+
+  if (elItemAll) elItemAll.textContent = `${(totalFA + totalInv).toLocaleString("id-ID")} Item`;
+  if (elNilaiAll) elNilaiAll.textContent = formatRupiah(nilaiFA + nilaiInv);
+  if (elNilaiFA) elNilaiFA.textContent = formatRupiah(nilaiFA);
+  if (elNilaiInv) elNilaiInv.textContent = formatRupiah(nilaiInv);
+  if (badgeFA) badgeFA.textContent = fixAssets.length;
+  if (badgeInv) badgeInv.textContent = inventoryItems.length;
 
   const topTable = document.getElementById("overviewTopTableBody");
   if (topTable) {
@@ -222,8 +309,7 @@ function renderOverview() {
         <td class="py-3.5 px-6 text-right font-bold text-slate-900">${formatRupiah(item.harga)}</td>
         <td class="py-3.5 px-6 text-center">
           <div class="flex items-center justify-center gap-2">
-            <!-- QR Code berdampingan -->
-            <img src="${qrUrl}" alt="QR" class="w-8 h-8 rounded border border-slate-200 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk scan / buka detail">
+            <img src="${qrUrl}" alt="QR" class="w-8 h-8 rounded border border-slate-200 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
             <button onclick="openDetailData('${item.kode}')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer">
               <i data-lucide="eye" class="w-3.5 h-3.5"></i>
               <span>Lihat Detail Data</span>
@@ -236,15 +322,17 @@ function renderOverview() {
   }
 }
 
-// Render Tabel Fix Asset (QR Code Bersanding di Samping Tombol "Lihat Detail Data")
+// Render Tabel Fix Asset
 function renderFixAssetTable(filtered = null) {
   const tbody = document.getElementById("faTableBody");
   if (!tbody) return;
   tbody.innerHTML = "";
   const data = filtered || fixAssets;
 
-  document.getElementById("faTotalItem").textContent = `${data.length} Unit`;
-  document.getElementById("faTotalNilai").textContent = formatRupiah(data.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0));
+  const totalEl = document.getElementById("faTotalItem");
+  const nilaiEl = document.getElementById("faTotalNilai");
+  if (totalEl) totalEl.textContent = `${data.length} Unit`;
+  if (nilaiEl) nilaiEl.textContent = formatRupiah(data.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0));
 
   data.forEach((item, idx) => {
     const qrUrl = getQrCodeUrl(item.kode);
@@ -267,8 +355,7 @@ function renderFixAssetTable(filtered = null) {
       </td>
       <td class="py-3.5 px-4 text-center whitespace-nowrap">
         <div class="flex items-center justify-center gap-2">
-          <!-- QR Code Berdampingan di samping tombol -->
-          <img src="${qrUrl}" alt="QR" class="w-8 h-8 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk buka paspor detail">
+          <img src="${qrUrl}" alt="QR" class="w-8 h-8 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
           <button onclick="openDetailData('${item.kode}')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
             <i data-lucide="eye" class="w-3.5 h-3.5"></i>
             <span>Lihat Detail Data</span>
@@ -281,16 +368,20 @@ function renderFixAssetTable(filtered = null) {
   if (window.lucide) lucide.createIcons();
 }
 
-// Render Tabel Inventory (QR Code Bersanding di Samping Tombol "Lihat Detail Data")
+// Render Tabel Inventory
 function renderInventoryTable(filtered = null) {
   const tbody = document.getElementById("inventoryTableBody");
   if (!tbody) return;
   tbody.innerHTML = "";
   const data = filtered || inventoryItems;
 
-  document.getElementById("invTotalItem").textContent = `${data.length} SKU`;
-  document.getElementById("invTotalNilai").textContent = formatRupiah(data.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0));
-  document.getElementById("invTotalKuantitas").textContent = data.reduce((s, i) => s + (i.jumlah || 1), 0).toLocaleString("id-ID");
+  const totalEl = document.getElementById("invTotalItem");
+  const nilaiEl = document.getElementById("invTotalNilai");
+  const qtyEl = document.getElementById("invTotalKuantitas");
+
+  if (totalEl) totalEl.textContent = `${data.length} SKU`;
+  if (nilaiEl) nilaiEl.textContent = formatRupiah(data.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0));
+  if (qtyEl) qtyEl.textContent = data.reduce((s, i) => s + (i.jumlah || 1), 0).toLocaleString("id-ID");
 
   data.forEach((item, idx) => {
     const qrUrl = getQrCodeUrl(item.kode);
@@ -320,8 +411,7 @@ function renderInventoryTable(filtered = null) {
       </td>
       <td class="py-3.5 px-4 text-center whitespace-nowrap">
         <div class="flex items-center justify-center gap-2">
-          <!-- QR Code Berdampingan di samping tombol -->
-          <img src="${qrUrl}" alt="QR" class="w-8 h-8 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk buka detail">
+          <img src="${qrUrl}" alt="QR" class="w-8 h-8 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
           <button onclick="openDetailData('${item.kode}')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
             <i data-lucide="eye" class="w-3.5 h-3.5"></i>
             <span>Lihat Detail Data</span>
@@ -341,9 +431,6 @@ function openDetailData(kode) {
 // ========================================================
 // FITUR CETAK SELURUH BARCODE (PRESISI 5 x 5 CM & A4/A3 FIT)
 // ========================================================
-let currentBatchType = 'fixasset';
-let currentPaperSize = 'A4';
-
 function openBatchPrintModal(type) {
   currentBatchType = type;
   const isFA = (type === 'fixasset');
@@ -359,7 +446,6 @@ function openBatchPrintModal(type) {
     return;
   }
 
-  // Set teks judul & deskripsi
   title.textContent = isFA 
     ? "Cetak Barcode Fix Asset (Aktiva Tetap)" 
     : "Cetak Barcode Inventory (Persediaan)";
@@ -369,15 +455,12 @@ function openBatchPrintModal(type) {
   // Render Grid Barcode Stiker (100% Sesuai Gambar Referensi)
   container.innerHTML = "";
   
-  list.forEach((item, index) => {
+  list.forEach((item) => {
     const qrUrl = getQrCodeUrl(item.kode);
     const card = document.createElement("div");
-    
-    // Dimensi stiker terkunci 50mm x 50mm
     card.className = "sticker-5x5cm print-card";
     
     card.innerHTML = `
-      <!-- Header Stiker -->
       <div class="sticker-header">
         <img src="logo dpsa.png" alt="Logo" class="sticker-logo" onerror="this.onerror=null;this.src='no image.png';">
         <div class="sticker-brand">
@@ -386,12 +469,10 @@ function openBatchPrintModal(type) {
         </div>
       </div>
 
-      <!-- QR Code 5x5 cm -->
       <div class="sticker-qr-wrapper">
         <img src="${qrUrl}" alt="${item.kode}" class="sticker-qr-img">
       </div>
 
-      <!-- Kode Barang Bold Navy -->
       <div class="sticker-footer">
         <div class="sticker-code">${item.kode}</div>
       </div>
@@ -399,11 +480,9 @@ function openBatchPrintModal(type) {
     container.appendChild(card);
   });
 
-  // Pastikan class 'hidden' terhapus sempurna
   modal.classList.remove("hidden");
   modal.style.display = "flex";
 
-  // Set ukuran kertas default A4
   setPaperSize('A4');
 
   if (window.lucide) {
@@ -429,17 +508,13 @@ function setPaperSize(size) {
   if (!btnA4 || !btnA3 || !printableArea || !container) return;
 
   if (size === 'A4') {
-    // Mode Kertas A4: Muat 4 kolom (~20 barcode per lembar)
     btnA4.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition shadow-sm";
     btnA3.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
-    
     printableArea.className = "paper-sheet paper-a4";
     container.className = "grid-a4";
   } else {
-    // Mode Kertas A3: Muat 6 kolom (~30-36 barcode per lembar)
     btnA3.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition shadow-sm";
     btnA4.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
-    
     printableArea.className = "paper-sheet paper-a3";
     container.className = "grid-a3";
   }
@@ -462,12 +537,18 @@ function filterInventory() {
 
 function switchTab(tabId) {
   ['overview', 'fixasset', 'inventory'].forEach(s => {
-    document.getElementById(`section-${s}`).classList.add('hidden');
-    document.getElementById(`nav-${s}`).className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition";
+    const el = document.getElementById(`section-${s}`);
+    const nav = document.getElementById(`nav-${s}`);
+    if (el) el.classList.add('hidden');
+    if (nav) nav.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition";
   });
-  document.getElementById(`section-${tabId}`).classList.remove('hidden');
-  document.getElementById(`nav-${tabId}`).className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40";
+  
+  const target = document.getElementById(`section-${tabId}`);
+  const targetNav = document.getElementById(`nav-${tabId}`);
+  if (target) target.classList.remove('hidden');
+  if (targetNav) targetNav.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40";
   
   const titles = { overview: "1. Overview", fixasset: "2. Dashboard Fix Asset", inventory: "3. Dashboard Inventory" };
-  document.getElementById("topBarTitle").textContent = titles[tabId];
+  const topTitle = document.getElementById("topBarTitle");
+  if (topTitle) topTitle.textContent = titles[tabId];
 }
