@@ -69,11 +69,179 @@ body {
     border-radius: 20px !important;
   }
 
-  @page {
-    margin: 10mm;
-    size: auto;
-  }
+/* ========================================================
+   STIKER LABEL BARCODE PRESISI 5 x 5 CM
+   ======================================================== */
+.sticker-5x5cm {
+  width: 50mm !important;
+  height: 50mm !important;
+  min-width: 50mm !important;
+  min-height: 50mm !important;
+  max-width: 50mm !important;
+  max-height: 50mm !important;
+  background-color: #dbeefd !important;
+  border-radius: 8mm !important;
+  border: 1px solid #bfdbfe;
+  box-sizing: border-box;
+  padding: 2.5mm 3mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
-  
+/* Header Stiker */
+.sticker-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.sticker-logo {
+  width: 5.5mm;
+  height: 5.5mm;
+  object-fit: contain;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.sticker-brand {
+  text-align: center;
+  padding-left: 6mm;
+}
+
+.sticker-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 8.5pt;
+  font-weight: 900;
+  color: #1a2f64;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.sticker-subtitle {
+  font-size: 4.8pt;
+  font-weight: 600;
+  color: #1e3a8a;
+  line-height: 1.1;
+  margin-top: 0.5mm;
+}
+
+/* Kotak QR Code di Tengah */
+.sticker-qr-wrapper {
+  background: #ffffff;
+  padding: 1mm;
+  border-radius: 2mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0.5mm 1.5mm rgba(0, 0, 0, 0.05);
+}
+
+.sticker-qr-img {
+  width: 25.5mm !important;
+  height: 25.5mm !important;
+  object-fit: contain;
+  display: block;
+}
+
+/* Footer Kode Barang */
+.sticker-footer {
+  width: 100%;
+  text-align: center;
+}
+
+.sticker-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 5.5pt;
+  font-weight: 900;
+  color: #142852;
+  word-break: break-all;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+/* Preview Wadah Kertas di Layar */
+.paper-sheet {
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.paper-a4 {
+  width: 210mm;
+  padding: 10mm 5mm;
+}
+
+.paper-a3 {
+  width: 297mm;
+  padding: 12mm 6mm;
+}
+
+#barcodeGridContainer {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-start !important;
+  gap: 4mm !important;
+}
+
+/* ========================================================
+   ATURAN CETAK (PRINT MEDIA) A4 & A3
+   ======================================================== */
+@media print {
+  /* Hilangkan antarmuka web */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Tampilkan hanya area lembaran stiker */
+  #batchPrintModal,
+  #batchPrintModal #printableArea,
+  #batchPrintModal #printableArea * {
+    visibility: visible;
+  }
+
+  #batchPrintModal {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    display: block !important;
+  }
+
+  #printableArea {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    padding: 5mm !important;
+    margin: 0 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  /* Pengaturan margin printer */
+  @page {
+    margin: 5mm;
+    size: auto;
+  }
+}  
 }
