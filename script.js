@@ -592,6 +592,7 @@ function switchTab(tabId) {
     const navEl = document.getElementById(`nav-${s}`);
     if (secEl) secEl.classList.add('hidden');
     if (navEl) {
+      // Style saat tab tidak aktif: tetap rata kiri, warna muted
       navEl.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer";
     }
   });
@@ -601,10 +602,11 @@ function switchTab(tabId) {
   const targetNav = document.getElementById(`nav-${tabId}`);
   if (targetSec) targetSec.classList.remove('hidden');
   if (targetNav) {
+    // Style saat tab aktif: warna biru terang, tetap flex-between yang menjaga ikon & teks menempel di kiri
     targetNav.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40 cursor-pointer";
   }
   
-  // Judul Header Bersih Tanpa Penomoran
+  // Judul Header Bersih
   const titles = { 
     overview: "Overview", 
     fixasset: "Dashboard Fix Asset", 
