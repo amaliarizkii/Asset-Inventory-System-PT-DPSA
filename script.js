@@ -26,6 +26,36 @@ function formatImageUrl(driveId, rawUrl) {
   return 'no image.png';
 }
 
+// ==========================================
+// FITUR TOGGLE SIDEBAR (OPEN / CLOSE)
+// ==========================================
+let isSidebarOpen = true;
+
+function toggleSidebar() {
+  const sidebar = document.getElementById("mainSidebar");
+  const toggleIcon = document.getElementById("sidebarToggleIcon");
+  
+  if (!sidebar) return;
+  
+  isSidebarOpen = !isSidebarOpen;
+  
+  if (isSidebarOpen) {
+    // Buka Sidebar
+    sidebar.classList.remove("w-0", "-ml-72");
+    sidebar.classList.add("w-72");
+    if (toggleIcon) toggleIcon.setAttribute("data-lucide", "panel-left-close");
+  } else {
+    // Tutup Sidebar (Membuat Tabel Melebar Penuh)
+    sidebar.classList.remove("w-72");
+    sidebar.classList.add("w-0", "-ml-72");
+    if (toggleIcon) toggleIcon.setAttribute("data-lucide", "panel-left-open");
+  }
+  
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+}
+
 // Generator URL QR Code Dinamis Sesuai Kode Masing-Masing
 function getQrCodeUrl(code) {
   // Ambil URL dasar halaman tanpa index.html
@@ -553,7 +583,7 @@ function switchTab(tabId) {
   if (target) target.classList.remove('hidden');
   if (targetNav) targetNav.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40";
   
-  const titles = { overview: "1. Overview", fixasset: "2. Dashboard Fix Asset", inventory: "3. Dashboard Inventory" };
+  const titles = { overview: "Overview", fixasset: "Dashboard Fix Asset", inventory: "Dashboard Inventory" };
   const topTitle = document.getElementById("topBarTitle");
   if (topTitle) topTitle.textContent = titles[tabId];
 }
