@@ -27,27 +27,42 @@ function formatImageUrl(driveId, rawUrl) {
 }
 
 // ==========================================
-// FITUR TOGGLE SIDEBAR (OPEN / CLOSE)
+// FITUR TOGGLE SIDEBAR (EXPAND & MINI COLLAPSE)
 // ==========================================
-let isSidebarOpen = true;
+let isSidebarExpanded = true;
 
 function toggleSidebar() {
   const sidebar = document.getElementById("mainSidebar");
   const toggleIcon = document.getElementById("sidebarToggleIcon");
+  const textElements = document.querySelectorAll(".sidebar-text");
   
   if (!sidebar) return;
   
-  isSidebarOpen = !isSidebarOpen;
+  isSidebarExpanded = !isSidebarExpanded;
   
-  if (isSidebarOpen) {
-    // Buka Sidebar
-    sidebar.classList.remove("w-0", "-ml-72");
-    sidebar.classList.add("w-72");
+  if (isSidebarExpanded) {
+    // Mode Penuh (Expanded - Lebar 16rem / 256px)
+    sidebar.classList.remove("w-20");
+    sidebar.classList.add("w-64");
+    
+    // Tampilkan label teks menu
+    textElements.forEach(el => {
+      el.style.display = "";
+      el.classList.remove("hidden");
+    });
+
     if (toggleIcon) toggleIcon.setAttribute("data-lucide", "panel-left-close");
   } else {
-    // Tutup Sidebar (Membuat Tabel Melebar Penuh)
-    sidebar.classList.remove("w-72");
-    sidebar.classList.add("w-0", "-ml-72");
+    // Mode Mini Desktop (Collapsed - Tetap Berdiri dengan Lebar 5rem / 80px)
+    sidebar.classList.remove("w-64");
+    sidebar.classList.add("w-20");
+    
+    // Sembunyikan label teks (hanya tampilkan icon menu)
+    textElements.forEach(el => {
+      el.style.display = "none";
+      el.classList.add("hidden");
+    });
+
     if (toggleIcon) toggleIcon.setAttribute("data-lucide", "panel-left-open");
   }
   
