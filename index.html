@@ -35,35 +35,36 @@
           </div>
         </div>
         
-        <!-- Menu Navigasi (Ikon dan Teks Bersandingan Rapat di Kiri) -->
-        <nav class="p-3 space-y-1.5 flex-1 overflow-y-auto">
-          <p class="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 sidebar-text">Navigasi Utama</p>
-          
-          <!-- Menu Overview -->
-          <button onclick="switchTab('overview')" id="nav-overview" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40 cursor-pointer text-left" title="Overview">
-            <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0"></i>
-            <span class="sidebar-text whitespace-nowrap font-medium">Overview</span>
-          </button>
-          
-          <!-- Menu Fix Asset -->
-          <button onclick="switchTab('fixasset')" id="nav-fixasset" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer text-left" title="Fix Asset">
-            <div class="flex items-center gap-3 min-w-0">
-              <i data-lucide="building-2" class="w-5 h-5 shrink-0"></i>
-              <span class="sidebar-text whitespace-nowrap font-medium">Fix Asset</span>
-            </div>
-            <span id="badgeCountFixAsset" class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-slate-800 text-sky-400 sidebar-text shrink-0">0</span>
-          </button>
-          
-          <!-- Menu Inventory -->
-          <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer text-left" title="Inventory">
-            <div class="flex items-center gap-3 min-w-0">
-              <i data-lucide="boxes" class="w-5 h-5 shrink-0"></i>
-              <span class="sidebar-text whitespace-nowrap font-medium">Inventory</span>
-            </div>
-            <span id="badgeCountInventory" class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-slate-800 text-emerald-400 sidebar-text shrink-0">0</span>
-          </button>
-        </nav>
-      </div>
+<!-- Navigasi Menu Rata Kiri Konsisten -->
+<nav class="p-3 space-y-1.5 flex-1 overflow-y-auto">
+  <p class="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 sidebar-text">Navigasi Utama</p>
+  
+  <!-- Menu Overview -->
+  <button type="button" onclick="switchTab('overview')" id="nav-overview" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40 cursor-pointer" title="Overview">
+    <div class="flex items-center gap-3">
+      <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0"></i>
+      <span class="sidebar-text font-medium whitespace-nowrap">Overview</span>
+    </div>
+  </button>
+  
+  <!-- Menu Fix Asset -->
+  <button type="button" onclick="switchTab('fixasset')" id="nav-fixasset" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer" title="Fix Asset">
+    <div class="flex items-center gap-3">
+      <i data-lucide="building-2" class="w-5 h-5 shrink-0"></i>
+      <span class="sidebar-text font-medium whitespace-nowrap">Fix Asset</span>
+    </div>
+    <span id="badgeCountFixAsset" class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-slate-800 text-sky-400 sidebar-text shrink-0">0</span>
+  </button>
+  
+  <!-- Menu Inventory -->
+  <button type="button" onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer" title="Inventory">
+    <div class="flex items-center gap-3">
+      <i data-lucide="boxes" class="w-5 h-5 shrink-0"></i>
+      <span class="sidebar-text font-medium whitespace-nowrap">Inventory</span>
+    </div>
+    <span id="badgeCountInventory" class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-slate-800 text-emerald-400 sidebar-text shrink-0">0</span>
+  </button>
+</nav>
 
       <!-- Bagian Bawah: Profil Pengguna -->
       <div class="p-3 border-t border-slate-800/80 shrink-0">
