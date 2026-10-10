@@ -585,28 +585,37 @@ function filterInventory() {
   renderInventoryTable(inventoryItems.filter(i => i.kode.toLowerCase().includes(q) || i.nama.toLowerCase().includes(q) || i.keterangan.toLowerCase().includes(q)));
 }
 
+// ==========================================
+// NAVIGASI TAB (POSISI RATA KIRI TERKUNCI)
+// ==========================================
 function switchTab(tabId) {
-  // Sembunyikan semua section
-  ['overview', 'fixasset', 'inventory'].forEach(s => {
+  const tabs = ['overview', 'fixasset', 'inventory'];
+  
+  tabs.forEach(s => {
     const secEl = document.getElementById(`section-${s}`);
     const navEl = document.getElementById(`nav-${s}`);
+    
+    // Sembunyikan section lain
     if (secEl) secEl.classList.add('hidden');
+    
+    // Kembalikan tombol ke status tidak aktif (inactive)
     if (navEl) {
-      // Style saat tab tidak aktif: tetap rata kiri, warna muted
       navEl.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer";
     }
   });
   
-  // Tampilkan section target
+  // Munculkan section yang dipilih
   const targetSec = document.getElementById(`section-${tabId}`);
   const targetNav = document.getElementById(`nav-${tabId}`);
+  
   if (targetSec) targetSec.classList.remove('hidden');
+  
+  // Set tombol aktif (active)
   if (targetNav) {
-    // Style saat tab aktif: warna biru terang, tetap flex-between yang menjaga ikon & teks menempel di kiri
     targetNav.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40 cursor-pointer";
   }
   
-  // Judul Header Bersih
+  // Ubah judul header atas
   const titles = { 
     overview: "Overview", 
     fixasset: "Dashboard Fix Asset", 
