@@ -10,10 +10,10 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased h-screen w-screen overflow-hidden font-sans select-none">
   
-  <!-- Container Utama Aplikasi Desktop (Kunci Viewport Penuh) -->
+  <!-- Container Utama Aplikasi Desktop -->
   <div id="appContainer" style="display: none;" class="h-full w-full overflow-hidden flex">
     
-    <!-- Sidebar Desktop (Sticky, Bebas Geser, Menu Rata Kiri Rapi) -->
+    <!-- Sidebar Desktop -->
     <aside id="mainSidebar" class="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 border-r border-slate-800 h-full transition-all duration-300 z-30 select-none">
       
       <!-- Bagian Atas: Brand & Menu Navigasi -->
@@ -35,30 +35,30 @@
           </div>
         </div>
         
-        <!-- Menu Navigasi (Rata Kiri, Tanpa Nomor 1-3, Ikon & Teks Berdampingan Rapi) -->
+        <!-- Menu Navigasi (Ikon dan Teks Bersandingan Rapat di Kiri) -->
         <nav class="p-3 space-y-1.5 flex-1 overflow-y-auto">
           <p class="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 sidebar-text">Navigasi Utama</p>
           
           <!-- Menu Overview -->
-          <button onclick="switchTab('overview')" id="nav-overview" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40 cursor-pointer" title="Overview">
+          <button onclick="switchTab('overview')" id="nav-overview" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40 cursor-pointer text-left" title="Overview">
             <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0"></i>
-            <span class="sidebar-text whitespace-nowrap truncate font-medium">Overview</span>
+            <span class="sidebar-text whitespace-nowrap font-medium">Overview</span>
           </button>
           
           <!-- Menu Fix Asset -->
-          <button onclick="switchTab('fixasset')" id="nav-fixasset" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer" title="Fix Asset">
+          <button onclick="switchTab('fixasset')" id="nav-fixasset" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer text-left" title="Fix Asset">
             <div class="flex items-center gap-3 min-w-0">
               <i data-lucide="building-2" class="w-5 h-5 shrink-0"></i>
-              <span class="sidebar-text whitespace-nowrap truncate font-medium">Fix Asset</span>
+              <span class="sidebar-text whitespace-nowrap font-medium">Fix Asset</span>
             </div>
             <span id="badgeCountFixAsset" class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-slate-800 text-sky-400 sidebar-text shrink-0">0</span>
           </button>
           
           <!-- Menu Inventory -->
-          <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer" title="Inventory">
+          <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer text-left" title="Inventory">
             <div class="flex items-center gap-3 min-w-0">
               <i data-lucide="boxes" class="w-5 h-5 shrink-0"></i>
-              <span class="sidebar-text whitespace-nowrap truncate font-medium">Inventory</span>
+              <span class="sidebar-text whitespace-nowrap font-medium">Inventory</span>
             </div>
             <span id="badgeCountInventory" class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-slate-800 text-emerald-400 sidebar-text shrink-0">0</span>
           </button>
@@ -67,7 +67,7 @@
 
       <!-- Bagian Bawah: Profil Pengguna -->
       <div class="p-3 border-t border-slate-800/80 shrink-0">
-        <div class="bg-slate-800/60 p-2.5 rounded-2xl flex items-center justify-between border border-slate-700/50">
+        <div class="bg-slate-800/60 p-2 rounded-2xl flex items-center justify-between border border-slate-700/50">
           <div class="flex items-center gap-2.5 min-w-0">
             <div id="userAvatarInitials" class="w-9 h-9 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold text-xs border border-sky-400/30 shrink-0">
               IT
@@ -84,13 +84,12 @@
       </div>
     </aside>
 
-    <!-- Main Workspace (Desktop Full Height, Scroll Vertikal Mandiri) -->
+    <!-- Main Content -->
     <main class="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-slate-100">
       
       <!-- Header Atas Sticky -->
       <header class="h-20 bg-white border-b border-slate-200/90 px-6 flex items-center justify-between shrink-0 z-20 shadow-xs">
         <div class="flex items-center gap-3.5">
-          <!-- Tombol Buka/Tutup Mini Sidebar -->
           <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="p-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition cursor-pointer" title="Perluas / Perkecil Sidebar">
             <i data-lucide="panel-left-close" id="sidebarToggleIcon" class="w-5 h-5"></i>
           </button>
@@ -134,7 +133,7 @@
             </div>
           </div>
 
-          <!-- Top 5 High Value Table -->
+          <!-- Top 5 High Value Table (Header Rata Tengah) -->
           <div class="bg-white rounded-3xl shadow-xs border border-slate-200/90 overflow-hidden">
             <div class="p-5 border-b border-slate-100 flex items-center justify-between">
               <div>
@@ -144,13 +143,13 @@
               <button onclick="switchTab('fixasset')" class="text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer">Lihat Semua Fix Asset &rarr;</button>
             </div>
             <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs text-slate-600">
+              <table class="w-full text-xs text-slate-600">
                 <thead class="bg-slate-50 text-[11px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
                   <tr>
-                    <th class="py-3.5 px-6">Kode Barang</th>
-                    <th class="py-3.5 px-6">Nama & Spesifikasi</th>
-                    <th class="py-3.5 px-6">Lokasi</th>
-                    <th class="py-3.5 px-6 text-right">Harga Perolehan</th>
+                    <th class="py-3.5 px-6 text-center">Kode Barang</th>
+                    <th class="py-3.5 px-6 text-center">Nama & Spesifikasi</th>
+                    <th class="py-3.5 px-6 text-center">Lokasi</th>
+                    <th class="py-3.5 px-6 text-center">Harga Perolehan</th>
                     <th class="py-3.5 px-6 text-center">Aksi & Barcode</th>
                   </tr>
                 </thead>
@@ -190,23 +189,23 @@
             </button>
           </div>
 
-          <!-- Tabel Fix Asset -->
+          <!-- Tabel Fix Asset (SEMUA HEADER RATA TENGAH) -->
           <div class="bg-white rounded-3xl shadow-xs border border-slate-200/90 overflow-hidden">
             <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs text-slate-600">
+              <table class="w-full text-xs text-slate-600">
                 <thead class="bg-slate-50 text-[11px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
                   <tr>
-                    <th class="py-4 px-3 text-center w-10">No</th>
-                    <th class="py-4 px-3">Kode Barang</th>
-                    <th class="py-4 px-3">Nama Barang</th>
-                    <th class="py-4 px-3">Tipe / Ukuran</th>
+                    <th class="py-4 px-3 text-center w-12">No</th>
+                    <th class="py-4 px-3 text-center">Kode Barang</th>
+                    <th class="py-4 px-3 text-center">Nama Barang</th>
+                    <th class="py-4 px-3 text-center">Tipe / Ukuran</th>
                     <th class="py-4 px-2 text-center">Satuan</th>
                     <th class="py-4 px-2 text-center">Qty</th>
                     <th class="py-4 px-2 text-center">Tahun</th>
                     <th class="py-4 px-2 text-center">Kondisi</th>
-                    <th class="py-4 px-3 text-right">Harga Perolehan</th>
-                    <th class="py-4 px-3">Lokasi</th>
-                    <th class="py-4 px-3">Keterangan</th>
+                    <th class="py-4 px-3 text-center">Harga Perolehan</th>
+                    <th class="py-4 px-3 text-center">Lokasi</th>
+                    <th class="py-4 px-3 text-center">Keterangan</th>
                     <th class="py-4 px-3 text-center">Foto</th>
                     <th class="py-4 px-4 text-center">Aksi & Barcode</th>
                   </tr>
@@ -247,23 +246,23 @@
             </button>
           </div>
 
-          <!-- Tabel Inventory -->
+          <!-- Tabel Inventory (SEMUA HEADER RATA TENGAH) -->
           <div class="bg-white rounded-3xl shadow-xs border border-slate-200/90 overflow-hidden">
             <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs text-slate-600">
+              <table class="w-full text-xs text-slate-600">
                 <thead class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-700 uppercase tracking-wider">
                   <tr>
-                    <th class="py-4 px-3 text-center w-10">No</th>
-                    <th class="py-4 px-3">Kode Barang</th>
-                    <th class="py-4 px-3">Nama Barang</th>
-                    <th class="py-4 px-3">Tipe / Ukuran</th>
+                    <th class="py-4 px-3 text-center w-12">No</th>
+                    <th class="py-4 px-3 text-center">Kode Barang</th>
+                    <th class="py-4 px-3 text-center">Nama Barang</th>
+                    <th class="py-4 px-3 text-center">Tipe / Ukuran</th>
                     <th class="py-4 px-2 text-center">Satuan</th>
                     <th class="py-4 px-2 text-center">Qty</th>
                     <th class="py-4 px-2 text-center">Tahun</th>
                     <th class="py-4 px-2 text-center">Kondisi</th>
                     <th class="py-4 px-3 text-center">Kategori</th>
-                    <th class="py-4 px-3 text-right">Harga Perolehan</th>
-                    <th class="py-4 px-3">Keterangan (Letak)</th>
+                    <th class="py-4 px-3 text-center">Harga Perolehan</th>
+                    <th class="py-4 px-3 text-center">Keterangan (Letak)</th>
                     <th class="py-4 px-3 text-center">Foto</th>
                     <th class="py-4 px-4 text-center">Aksi & Barcode</th>
                   </tr>
