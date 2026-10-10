@@ -362,7 +362,7 @@ function renderOverview() {
             <img src="${qrUrl}" alt="QR" class="w-8 h-8 rounded border border-slate-200 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
             <button onclick="openDetailData('${item.kode}')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer">
               <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-              <span>Lihat Detail Data</span>
+              <span>Detail</span>
             </button>
           </div>
         </td>
@@ -408,7 +408,7 @@ function renderFixAssetTable(filtered = null) {
           <img src="${qrUrl}" alt="QR" class="w-8 h-8 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
           <button onclick="openDetailData('${item.kode}')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
             <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-            <span>Lihat Detail Data</span>
+            <span>Detail</span>
           </button>
         </div>
       </td>
@@ -464,7 +464,7 @@ function renderInventoryTable(filtered = null) {
           <img src="${qrUrl}" alt="QR" class="w-8 h-8 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
           <button onclick="openDetailData('${item.kode}')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
             <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-            <span>Lihat Detail Data</span>
+            <span>Detail</span>
           </button>
         </div>
       </td>
