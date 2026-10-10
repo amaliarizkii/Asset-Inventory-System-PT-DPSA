@@ -586,19 +586,30 @@ function filterInventory() {
 }
 
 function switchTab(tabId) {
+  // Sembunyikan semua section
   ['overview', 'fixasset', 'inventory'].forEach(s => {
-    const el = document.getElementById(`section-${s}`);
-    const nav = document.getElementById(`nav-${s}`);
-    if (el) el.classList.add('hidden');
-    if (nav) nav.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition";
+    const secEl = document.getElementById(`section-${s}`);
+    const navEl = document.getElementById(`nav-${s}`);
+    if (secEl) secEl.classList.add('hidden');
+    if (navEl) {
+      navEl.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer";
+    }
   });
   
-  const target = document.getElementById(`section-${tabId}`);
+  // Tampilkan section target
+  const targetSec = document.getElementById(`section-${tabId}`);
   const targetNav = document.getElementById(`nav-${tabId}`);
-  if (target) target.classList.remove('hidden');
-  if (targetNav) targetNav.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40";
+  if (targetSec) targetSec.classList.remove('hidden');
+  if (targetNav) {
+    targetNav.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40 cursor-pointer";
+  }
   
-  const titles = { overview: "Overview", fixasset: "Dashboard Fix Asset", inventory: "Dashboard Inventory" };
+  // Judul Header Bersih Tanpa Penomoran
+  const titles = { 
+    overview: "Overview", 
+    fixasset: "Dashboard Fix Asset", 
+    inventory: "Dashboard Inventory" 
+  };
   const topTitle = document.getElementById("topBarTitle");
   if (topTitle) topTitle.textContent = titles[tabId];
 }
