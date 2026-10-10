@@ -8,16 +8,15 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="style.css">
 </head>
-<!-- Lock viewport height pada desktop: h-screen overflow-hidden -->
-<body class="bg-slate-100 text-slate-800 antialiased h-screen overflow-hidden flex flex-col font-sans select-none">
+<body class="bg-slate-100 text-slate-800 antialiased h-screen w-screen overflow-hidden font-sans select-none">
   
-  <!-- Container Utama Aplikasi Desktop -->
-  <div id="appContainer" style="display: none;" class="h-screen w-screen overflow-hidden flex">
+  <!-- Container Utama Aplikasi Desktop (Kunci Viewport Penuh) -->
+  <div id="appContainer" style="display: none;" class="h-full w-full overflow-hidden flex">
     
-    <!-- Sidebar Stay (Tinggi 100% Layar, Tetap Diam, Collapsible ke Mode Mini Icon) -->
+    <!-- Sidebar Desktop (Sticky, Bebas Geser, Menu Rata Kiri Rapi) -->
     <aside id="mainSidebar" class="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 border-r border-slate-800 h-full transition-all duration-300 z-30 select-none">
       
-      <!-- Bagian Atas: Brand & Navigasi -->
+      <!-- Bagian Atas: Brand & Menu Navigasi -->
       <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
         <!-- Logo Header -->
         <div class="h-20 flex items-center px-5 border-b border-slate-800/80 gap-3 shrink-0">
@@ -28,7 +27,7 @@
           </div>
         </div>
         
-        <!-- Live Sync Badge -->
+        <!-- Status Sinkronisasi -->
         <div class="px-5 py-2.5 border-b border-slate-800/50 bg-slate-950/40 shrink-0">
           <div class="flex items-center gap-2.5">
             <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
@@ -36,36 +35,39 @@
           </div>
         </div>
         
-        <!-- Menu Navigasi -->
+        <!-- Menu Navigasi (Rata Kiri, Tanpa Nomor 1-3, Ikon & Teks Berdampingan Rapi) -->
         <nav class="p-3 space-y-1.5 flex-1 overflow-y-auto">
           <p class="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 sidebar-text">Navigasi Utama</p>
           
+          <!-- Menu Overview -->
           <button onclick="switchTab('overview')" id="nav-overview" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40 cursor-pointer" title="Overview">
             <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0"></i>
-            <span class="sidebar-text whitespace-nowrap truncate">1. Overview</span>
+            <span class="sidebar-text whitespace-nowrap truncate font-medium">Overview</span>
           </button>
           
+          <!-- Menu Fix Asset -->
           <button onclick="switchTab('fixasset')" id="nav-fixasset" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer" title="Fix Asset">
             <div class="flex items-center gap-3 min-w-0">
               <i data-lucide="building-2" class="w-5 h-5 shrink-0"></i>
-              <span class="sidebar-text whitespace-nowrap truncate">2. Fix Asset</span>
+              <span class="sidebar-text whitespace-nowrap truncate font-medium">Fix Asset</span>
             </div>
             <span id="badgeCountFixAsset" class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-slate-800 text-sky-400 sidebar-text shrink-0">0</span>
           </button>
           
+          <!-- Menu Inventory -->
           <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer" title="Inventory">
             <div class="flex items-center gap-3 min-w-0">
               <i data-lucide="boxes" class="w-5 h-5 shrink-0"></i>
-              <span class="sidebar-text whitespace-nowrap truncate">3. Inventory</span>
+              <span class="sidebar-text whitespace-nowrap truncate font-medium">Inventory</span>
             </div>
             <span id="badgeCountInventory" class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-slate-800 text-emerald-400 sidebar-text shrink-0">0</span>
           </button>
         </nav>
       </div>
 
-      <!-- Bagian Bawah: User Session -->
+      <!-- Bagian Bawah: Profil Pengguna -->
       <div class="p-3 border-t border-slate-800/80 shrink-0">
-        <div class="bg-slate-800/60 p-2 rounded-2xl flex items-center justify-between border border-slate-700/50">
+        <div class="bg-slate-800/60 p-2.5 rounded-2xl flex items-center justify-between border border-slate-700/50">
           <div class="flex items-center gap-2.5 min-w-0">
             <div id="userAvatarInitials" class="w-9 h-9 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold text-xs border border-sky-400/30 shrink-0">
               IT
@@ -82,18 +84,18 @@
       </div>
     </aside>
 
-    <!-- Main Workspace (Hanya Area Ini yang Ter-scroll Mandiri) -->
+    <!-- Main Workspace (Desktop Full Height, Scroll Vertikal Mandiri) -->
     <main class="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-slate-100">
       
-      <!-- Top Sticky Header -->
+      <!-- Header Atas Sticky -->
       <header class="h-20 bg-white border-b border-slate-200/90 px-6 flex items-center justify-between shrink-0 z-20 shadow-xs">
         <div class="flex items-center gap-3.5">
-          <!-- Tombol Toggle Mini/Full Sidebar -->
+          <!-- Tombol Buka/Tutup Mini Sidebar -->
           <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="p-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition cursor-pointer" title="Perluas / Perkecil Sidebar">
             <i data-lucide="panel-left-close" id="sidebarToggleIcon" class="w-5 h-5"></i>
           </button>
           <div>
-            <h2 id="topBarTitle" class="text-lg font-black text-slate-900 tracking-tight leading-tight">1. Overview</h2>
+            <h2 id="topBarTitle" class="text-lg font-black text-slate-900 tracking-tight leading-tight">Overview</h2>
             <p id="topBarSubtitle" class="text-xs text-slate-500 font-medium">PT DPSA Asset & Inventory Management Portal</p>
           </div>
         </div>
@@ -104,7 +106,7 @@
         </div>
       </header>
 
-      <!-- Scrollable Content Area -->
+      <!-- Scrollable Content Desktop Container -->
       <div class="flex-1 overflow-y-auto p-6 space-y-6">
         
         <!-- SECTION 1: OVERVIEW -->
@@ -175,7 +177,7 @@
             </div>
           </div>
 
-          <!-- Controls & Batch Print Action -->
+          <!-- Action Bar -->
           <div class="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
             <div class="relative flex-1 max-w-md">
               <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
@@ -232,7 +234,7 @@
             </div>
           </div>
 
-          <!-- Controls & Batch Print Action -->
+          <!-- Action Bar -->
           <div class="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
             <div class="relative flex-1 max-w-md">
               <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
