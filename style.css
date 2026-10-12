@@ -245,19 +245,28 @@ body {
   }
 }  
 
-  /* Pastikan body dan container terkunci 100% pada viewport ponsel */
+/* Kunci Viewport Bebas Offside */
 html, body {
+  width: 100vw;
+  max-width: 100vw;
+  overflow-x: hidden !important;
+}
+
+#appContainer {
   width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  touch-action: manipulation;
+  max-width: 100vw;
+}
+
+main {
+  min-width: 0 !important;
+  max-width: 100% !important;
 }
 
 /* Hanya pembungkus tabel yang boleh bergeser horizontal */
 .overflow-x-auto {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
   -webkit-overflow-scrolling: touch;
 }
-  
 }
