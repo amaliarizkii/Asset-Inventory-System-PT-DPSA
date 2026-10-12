@@ -1,16 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
 
 html, body {
-  width: 100%;
-  height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  touch-action: manipulation;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Scrollbar Tipis & Modern */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
