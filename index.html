@@ -10,10 +10,10 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased h-screen w-screen overflow-hidden font-sans select-none text-xs">
   
-  <!-- Container Utama Aplikasi (Compact Viewport) -->
-  <div id="appContainer" style="display: none;" class="h-full w-full overflow-hidden flex">
+  <!-- Container Utama Aplikasi (Kunci Lebar Penuh Tanpa Offside) -->
+  <div id="appContainer" style="display: none;" class="h-full w-full max-w-full overflow-hidden flex relative">
     
-  <!-- Sidebar Desktop & Mobile: Transisi penuh saat ditutup/dibuka -->
+    <!-- Sidebar Ramping & Bisa Sembunyi Total -->
     <aside id="mainSidebar" class="w-60 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 border-r border-slate-800 h-full transition-all duration-300 ease-in-out z-30 select-none overflow-hidden">
       
       <!-- Brand & Menu -->
@@ -83,69 +83,68 @@
       </div>
     </aside>
 
-    <!-- Main Workspace (Compact Header + Content) -->
-    <main class="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-slate-100">
+    <!-- Main Workspace (Anti-Offside: min-w-0 max-w-full) -->
+    <main class="flex-1 flex flex-col h-full w-full min-w-0 max-w-full overflow-hidden bg-slate-100">
       
       <!-- Top Action Bar Ramping (h-14) -->
-      <header class="h-14 bg-white border-b border-slate-200/90 px-3.5 sm:px-5 flex items-center justify-between shrink-0 z-20 shadow-xs">
-        <div class="flex items-center gap-2.5">
-          <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition cursor-pointer" title="Buka / Tutup Sidebar">
+      <header class="h-14 bg-white border-b border-slate-200/90 px-3.5 sm:px-5 flex items-center justify-between shrink-0 z-20 shadow-xs w-full max-w-full">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition cursor-pointer shrink-0" title="Buka / Tutup Sidebar">
             <i data-lucide="panel-left-close" id="sidebarToggleIcon" class="w-4 h-4"></i>
           </button>
-          <div>
-            <h2 id="topBarTitle" class="text-xs sm:text-sm font-black text-slate-900 tracking-tight leading-none">Overview</h2>
-            <p id="topBarSubtitle" class="text-[9px] text-slate-500 font-medium hidden sm:block mt-0.5">Asset & Inventory Management Portal</p>
+          <div class="min-w-0 overflow-hidden">
+            <h2 id="topBarTitle" class="text-xs sm:text-sm font-black text-slate-900 tracking-tight leading-none truncate">Overview</h2>
+            <p id="topBarSubtitle" class="text-[9px] text-slate-500 font-medium hidden sm:block mt-0.5 truncate">PT DPSA Asset & Inventory Management Portal</p>
           </div>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 shrink-0">
           <button onclick="initData()" class="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition cursor-pointer" title="Refresh Data">
             <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
           </button>
         </div>
       </header>
 
-      <!-- Scroll Area Padat (p-3 sm:p-5) -->
-      <div class="flex-1 overflow-y-auto p-3 sm:p-5 space-y-3.5 sm:space-y-4">
+      <!-- Scroll Area (Terkunci di Lebar Layar) -->
+      <div class="flex-1 overflow-y-auto p-3 sm:p-5 space-y-3.5 sm:space-y-4 w-full max-w-full min-w-0">
         
         <!-- SECTION 1: OVERVIEW -->
-        <section id="section-overview" class="space-y-3 sm:space-y-4">
-          <!-- 4 Kartu Metrik Padat (Grid 2 Kolom di Layar Kecil, 4 di Desktop) -->
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-            <div class="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-3 sm:p-3.5 rounded-2xl shadow-sm border border-slate-800 flex flex-col justify-between">
+        <section id="section-overview" class="space-y-3 sm:space-y-4 w-full max-w-full min-w-0">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 w-full">
+            <div class="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-3 sm:p-3.5 rounded-2xl shadow-sm border border-slate-800 flex flex-col justify-between min-w-0">
               <div>
                 <span class="text-[9px] font-bold uppercase tracking-wider text-sky-400">Total Akumulasi</span>
-                <h3 id="ovTotalNilaiAll" class="text-sm sm:text-base font-black mt-1 text-white leading-tight">Rp 0</h3>
+                <h3 id="ovTotalNilaiAll" class="text-xs sm:text-base font-black mt-1 text-white leading-tight truncate">Rp 0</h3>
               </div>
-              <p class="text-[9px] text-slate-400 mt-2 pt-1.5 border-t border-slate-800/80">Fix Asset + Inventory</p>
+              <p class="text-[9px] text-slate-400 mt-2 pt-1.5 border-t border-slate-800/80 truncate">Fix Asset + Inventory</p>
             </div>
             
-            <div class="bg-white p-3 sm:p-3.5 rounded-2xl shadow-xs border border-slate-200/90 flex flex-col justify-between">
+            <div class="bg-white p-3 sm:p-3.5 rounded-2xl shadow-xs border border-slate-200/90 flex flex-col justify-between min-w-0">
               <div>
                 <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Total Item</span>
-                <h3 id="ovTotalItemAll" class="text-sm sm:text-base font-black mt-1 text-slate-900 leading-tight">0 Item</h3>
+                <h3 id="ovTotalItemAll" class="text-xs sm:text-base font-black mt-1 text-slate-900 leading-tight truncate">0 Item</h3>
               </div>
-              <p class="text-[9px] text-emerald-600 font-semibold mt-2 pt-1.5 border-t border-slate-100">Aktiva & persediaan</p>
+              <p class="text-[9px] text-emerald-600 font-semibold mt-2 pt-1.5 border-t border-slate-100 truncate">Aktiva & persediaan</p>
             </div>
             
-            <div class="bg-white p-3 sm:p-3.5 rounded-2xl shadow-xs border border-slate-200/90 flex flex-col justify-between">
+            <div class="bg-white p-3 sm:p-3.5 rounded-2xl shadow-xs border border-slate-200/90 flex flex-col justify-between min-w-0">
               <div>
                 <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Nilai Fix Asset</span>
-                <h3 id="ovNilaiFixAsset" class="text-sm sm:text-base font-black mt-1 text-blue-700 leading-tight">Rp 0</h3>
+                <h3 id="ovNilaiFixAsset" class="text-xs sm:text-base font-black mt-1 text-blue-700 leading-tight truncate">Rp 0</h3>
               </div>
-              <p class="text-[9px] text-slate-500 mt-2 pt-1.5 border-t border-slate-100">Unit Aktiva Tetap</p>
+              <p class="text-[9px] text-slate-500 mt-2 pt-1.5 border-t border-slate-100 truncate">Unit Aktiva Tetap</p>
             </div>
             
-            <div class="bg-white p-3 sm:p-3.5 rounded-2xl shadow-xs border border-slate-200/90 flex flex-col justify-between">
+            <div class="bg-white p-3 sm:p-3.5 rounded-2xl shadow-xs border border-slate-200/90 flex flex-col justify-between min-w-0">
               <div>
                 <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Nilai Inventory</span>
-                <h3 id="ovNilaiInventory" class="text-sm sm:text-base font-black mt-1 text-emerald-700 leading-tight">Rp 0</h3>
+                <h3 id="ovNilaiInventory" class="text-xs sm:text-base font-black mt-1 text-emerald-700 leading-tight truncate">Rp 0</h3>
               </div>
-              <p class="text-[9px] text-slate-500 mt-2 pt-1.5 border-t border-slate-100">SKU Persediaan</p>
+              <p class="text-[9px] text-slate-500 mt-2 pt-1.5 border-t border-slate-100 truncate">SKU Persediaan</p>
             </div>
           </div>
 
-          <!-- Top 5 High Value Table Padat -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
+          <!-- Top 5 Table -->
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden w-full max-w-full">
             <div class="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between">
               <div>
                 <h3 class="text-xs font-bold text-slate-900">5 Aset dengan Nilai Tertinggi</h3>
@@ -153,7 +152,7 @@
               </div>
               <button onclick="switchTab('fixasset')" class="text-[10px] font-bold text-blue-600 hover:text-blue-700 cursor-pointer">Semua Fix Asset &rarr;</button>
             </div>
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto w-full max-w-full block">
               <table class="w-full text-[11px] text-slate-600 min-w-[700px]">
                 <thead class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
                   <tr>
@@ -171,39 +170,39 @@
         </section>
 
         <!-- SECTION 2: FIX ASSET -->
-        <section id="section-fixasset" class="hidden space-y-3 sm:space-y-4">
-          <div class="grid grid-cols-3 gap-2.5">
-            <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90">
+        <section id="section-fixasset" class="hidden space-y-3 sm:space-y-4 w-full max-w-full min-w-0">
+          <div class="grid grid-cols-3 gap-2.5 w-full">
+            <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90 min-w-0">
               <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Nilai Perolehan</span>
-              <h3 id="faTotalNilai" class="text-xs sm:text-sm font-black mt-0.5 text-blue-700 leading-tight">Rp 0</h3>
+              <h3 id="faTotalNilai" class="text-xs sm:text-sm font-black mt-0.5 text-blue-700 leading-tight truncate">Rp 0</h3>
             </div>
-            <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90">
+            <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90 min-w-0">
               <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Total Item</span>
-              <h3 id="faTotalItem" class="text-xs sm:text-sm font-black mt-0.5 text-slate-900 leading-tight">0 Unit</h3>
+              <h3 id="faTotalItem" class="text-xs sm:text-sm font-black mt-0.5 text-slate-900 leading-tight truncate">0 Unit</h3>
             </div>
-            <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90">
+            <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90 min-w-0">
               <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Kondisi Baik</span>
-              <h3 id="faKondisiBaik" class="text-xs sm:text-sm font-black mt-0.5 text-emerald-600 leading-tight">100%</h3>
+              <h3 id="faKondisiBaik" class="text-xs sm:text-sm font-black mt-0.5 text-emerald-600 leading-tight truncate">100%</h3>
             </div>
           </div>
 
-          <!-- Controls Padat -->
-          <div class="bg-white p-2.5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+          <!-- Controls -->
+          <div class="bg-white p-2.5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 w-full">
             <div class="relative flex-1 max-w-sm">
               <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
               <input type="text" id="faSearchInput" oninput="filterFixAsset()" placeholder="Cari kode, nama, lokasi..." class="w-full pl-8 pr-3 py-1.5 text-[11px] bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:ring-blue-500">
             </div>
             
-            <button onclick="openBatchPrintModal('fixasset')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[11px] font-bold shadow-xs transition cursor-pointer">
+            <button onclick="openBatchPrintModal('fixasset')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[11px] font-bold shadow-xs transition cursor-pointer shrink-0">
               <i data-lucide="printer" class="w-3.5 h-3.5"></i>
               <span>Cetak Barcode Fix Asset</span>
             </button>
           </div>
 
-          <!-- Tabel Fix Asset Padat -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="w-full text-[11px] text-slate-600 min-w-[980px]">
+          <!-- Tabel Fix Asset (Scroll Mandiri di Dalam Kotak Saja) -->
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden w-full max-w-full">
+            <div class="overflow-x-auto w-full max-w-full block">
+              <table class="w-full text-[11px] text-slate-600 min-w-[950px]">
                 <thead class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
                   <tr>
                     <th class="py-2.5 px-2 text-center w-8">No</th>
@@ -228,39 +227,39 @@
         </section>
 
         <!-- SECTION 3: INVENTORY -->
-        <section id="section-inventory" class="hidden space-y-3 sm:space-y-4">
-          <div class="grid grid-cols-3 gap-2.5">
-            <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90">
+        <section id="section-inventory" class="hidden space-y-3 sm:space-y-4 w-full max-w-full min-w-0">
+          <div class="grid grid-cols-3 gap-2.5 w-full">
+            <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90 min-w-0">
               <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Nilai Persediaan</span>
-              <h3 id="invTotalNilai" class="text-xs sm:text-sm font-black mt-0.5 text-emerald-700 leading-tight">Rp 0</h3>
+              <h3 id="invTotalNilai" class="text-xs sm:text-sm font-black mt-0.5 text-emerald-700 leading-tight truncate">Rp 0</h3>
             </div>
-            <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90">
+            <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90 min-w-0">
               <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Total SKU</span>
-              <h3 id="invTotalItem" class="text-xs sm:text-sm font-black mt-0.5 text-slate-900 leading-tight">0 SKU</h3>
+              <h3 id="invTotalItem" class="text-xs sm:text-sm font-black mt-0.5 text-slate-900 leading-tight truncate">0 SKU</h3>
             </div>
-            <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90">
+            <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90 min-w-0">
               <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Total Kuantitas</span>
-              <h3 id="invTotalKuantitas" class="text-xs sm:text-sm font-black mt-0.5 text-sky-600 leading-tight">0</h3>
+              <h3 id="invTotalKuantitas" class="text-xs sm:text-sm font-black mt-0.5 text-sky-600 leading-tight truncate">0</h3>
             </div>
           </div>
 
-          <!-- Controls Padat -->
-          <div class="bg-white p-2.5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+          <!-- Controls -->
+          <div class="bg-white p-2.5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 w-full">
             <div class="relative flex-1 max-w-sm">
               <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
               <input type="text" id="invSearchInput" oninput="filterInventory()" placeholder="Cari kode, nama, letak..." class="w-full pl-8 pr-3 py-1.5 text-[11px] bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:ring-emerald-500">
             </div>
 
-            <button onclick="openBatchPrintModal('inventory')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-bold shadow-xs transition cursor-pointer">
+            <button onclick="openBatchPrintModal('inventory')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-bold shadow-xs transition cursor-pointer shrink-0">
               <i data-lucide="printer" class="w-3.5 h-3.5"></i>
               <span>Cetak Barcode Inventory</span>
             </button>
           </div>
 
-          <!-- Tabel Inventory Padat -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="w-full text-[11px] text-slate-600 min-w-[980px]">
+          <!-- Tabel Inventory (Scroll Mandiri di Dalam Kotak Saja) -->
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden w-full max-w-full">
+            <div class="overflow-x-auto w-full max-w-full block">
+              <table class="w-full text-[11px] text-slate-600 min-w-[950px]">
                 <thead class="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-700 uppercase tracking-wider">
                   <tr>
                     <th class="py-2.5 px-2 text-center w-8">No</th>
@@ -314,7 +313,7 @@
           </button>
           
           <button type="button" onclick="closeBatchPrintModal()" class="text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer">
-            <i data-lucide="x" class="w-4 h-4"></i>
+            <i data-lucide="x" class="w-5 h-5"></i>
           </button>
         </div>
       </div>
