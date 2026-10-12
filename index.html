@@ -8,17 +8,17 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-100 text-slate-800 antialiased h-screen w-screen overflow-hidden font-sans select-none text-xs">
+<body class="bg-slate-100 text-slate-800 antialiased font-sans select-none text-xs">
   
-  <!-- Container Utama Aplikasi (Kunci Lebar Penuh Tanpa Offside) -->
-  <div id="appContainer" style="display: none;" class="h-full w-full max-w-full overflow-hidden flex relative">
+  <!-- Container Utama Aplikasi (Dikunci Ketat 100%) -->
+  <div id="appContainer" style="display: none;" class="h-full w-full overflow-hidden flex relative">
     
-    <!-- Sidebar Ramping & Bisa Sembunyi Total -->
+    <!-- Sidebar Ramping (Bisa Minimize Bersih) -->
     <aside id="mainSidebar" class="w-60 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 border-r border-slate-800 h-full transition-all duration-300 ease-in-out z-30 select-none overflow-hidden">
       
       <!-- Brand & Menu -->
       <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
-        <!-- Logo Header Ramping (h-14) -->
+        <!-- Logo Header -->
         <div class="h-14 flex items-center px-4 border-b border-slate-800/80 gap-2.5 shrink-0">
           <img src="logo dpsa.png" alt="PT DPSA" class="w-8 h-8 object-contain shrink-0" onerror="this.src='no image.png'">
           <div class="sidebar-text whitespace-nowrap overflow-hidden">
@@ -27,7 +27,7 @@
           </div>
         </div>
         
-        <!-- Live Status -->
+        <!-- Status Sheets -->
         <div class="px-4 py-1.5 border-b border-slate-800/50 bg-slate-950/40 shrink-0">
           <div class="flex items-center gap-2">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
@@ -64,7 +64,7 @@
         </nav>
       </div>
 
-      <!-- User Profile Ramping -->
+      <!-- User Profile -->
       <div class="p-2.5 border-t border-slate-800/80 shrink-0">
         <div class="bg-slate-800/60 p-2 rounded-xl flex items-center justify-between border border-slate-700/50">
           <div class="flex items-center gap-2 min-w-0">
@@ -83,11 +83,11 @@
       </div>
     </aside>
 
-    <!-- Main Workspace (Anti-Offside: min-w-0 max-w-full) -->
-    <main class="flex-1 flex flex-col h-full w-full min-w-0 max-w-full overflow-hidden bg-slate-100">
+    <!-- Main Workspace (Terkunci Sempurna: flex-1 min-w-0 max-w-full) -->
+    <main class="flex-1 flex flex-col h-full min-w-0 max-w-full overflow-hidden bg-slate-100">
       
-      <!-- Top Action Bar Ramping (h-14) -->
-      <header class="h-14 bg-white border-b border-slate-200/90 px-3.5 sm:px-5 flex items-center justify-between shrink-0 z-20 shadow-xs w-full max-w-full">
+      <!-- Top Action Bar -->
+      <header class="h-14 bg-white border-b border-slate-200/90 px-3.5 sm:px-5 flex items-center justify-between shrink-0 z-20 shadow-xs w-full">
         <div class="flex items-center gap-2.5 min-w-0">
           <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition cursor-pointer shrink-0" title="Buka / Tutup Sidebar">
             <i data-lucide="panel-left-close" id="sidebarToggleIcon" class="w-4 h-4"></i>
@@ -104,13 +104,13 @@
         </div>
       </header>
 
-      <!-- Scroll Area (Terkunci di Lebar Layar) -->
-      <div class="flex-1 overflow-y-auto p-3 sm:p-5 space-y-3.5 sm:space-y-4 w-full max-w-full min-w-0">
+      <!-- Scroll Area Konten (Hanya Vertikal, Nol Offside) -->
+      <div class="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-5 space-y-3.5 w-full max-w-full">
         
         <!-- SECTION 1: OVERVIEW -->
-        <section id="section-overview" class="space-y-3 sm:space-y-4 w-full max-w-full min-w-0">
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 w-full">
-            <div class="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-3 sm:p-3.5 rounded-2xl shadow-sm border border-slate-800 flex flex-col justify-between min-w-0">
+        <section id="section-overview" class="space-y-3.5 w-full max-w-full">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 w-full">
+            <div class="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-3 rounded-2xl shadow-sm border border-slate-800 flex flex-col justify-between min-w-0">
               <div>
                 <span class="text-[9px] font-bold uppercase tracking-wider text-sky-400">Total Akumulasi</span>
                 <h3 id="ovTotalNilaiAll" class="text-xs sm:text-base font-black mt-1 text-white leading-tight truncate">Rp 0</h3>
@@ -118,7 +118,7 @@
               <p class="text-[9px] text-slate-400 mt-2 pt-1.5 border-t border-slate-800/80 truncate">Fix Asset + Inventory</p>
             </div>
             
-            <div class="bg-white p-3 sm:p-3.5 rounded-2xl shadow-xs border border-slate-200/90 flex flex-col justify-between min-w-0">
+            <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90 flex flex-col justify-between min-w-0">
               <div>
                 <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Total Item</span>
                 <h3 id="ovTotalItemAll" class="text-xs sm:text-base font-black mt-1 text-slate-900 leading-tight truncate">0 Item</h3>
@@ -126,7 +126,7 @@
               <p class="text-[9px] text-emerald-600 font-semibold mt-2 pt-1.5 border-t border-slate-100 truncate">Aktiva & persediaan</p>
             </div>
             
-            <div class="bg-white p-3 sm:p-3.5 rounded-2xl shadow-xs border border-slate-200/90 flex flex-col justify-between min-w-0">
+            <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90 flex flex-col justify-between min-w-0">
               <div>
                 <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Nilai Fix Asset</span>
                 <h3 id="ovNilaiFixAsset" class="text-xs sm:text-base font-black mt-1 text-blue-700 leading-tight truncate">Rp 0</h3>
@@ -134,7 +134,7 @@
               <p class="text-[9px] text-slate-500 mt-2 pt-1.5 border-t border-slate-100 truncate">Unit Aktiva Tetap</p>
             </div>
             
-            <div class="bg-white p-3 sm:p-3.5 rounded-2xl shadow-xs border border-slate-200/90 flex flex-col justify-between min-w-0">
+            <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90 flex flex-col justify-between min-w-0">
               <div>
                 <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Nilai Inventory</span>
                 <h3 id="ovNilaiInventory" class="text-xs sm:text-base font-black mt-1 text-emerald-700 leading-tight truncate">Rp 0</h3>
@@ -143,7 +143,7 @@
             </div>
           </div>
 
-          <!-- Top 5 Table -->
+          <!-- Top 5 Table Box -->
           <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden w-full max-w-full">
             <div class="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between">
               <div>
@@ -152,7 +152,9 @@
               </div>
               <button onclick="switchTab('fixasset')" class="text-[10px] font-bold text-blue-600 hover:text-blue-700 cursor-pointer">Semua Fix Asset &rarr;</button>
             </div>
-            <div class="overflow-x-auto w-full max-w-full block">
+            
+            <!-- Pembungkus Tabel Anti-Offside -->
+            <div class="table-responsive-box">
               <table class="w-full text-[11px] text-slate-600 min-w-[700px]">
                 <thead class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
                   <tr>
@@ -170,7 +172,7 @@
         </section>
 
         <!-- SECTION 2: FIX ASSET -->
-        <section id="section-fixasset" class="hidden space-y-3 sm:space-y-4 w-full max-w-full min-w-0">
+        <section id="section-fixasset" class="hidden space-y-3.5 w-full max-w-full">
           <div class="grid grid-cols-3 gap-2.5 w-full">
             <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90 min-w-0">
               <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Nilai Perolehan</span>
@@ -199,9 +201,9 @@
             </button>
           </div>
 
-          <!-- Tabel Fix Asset (Scroll Mandiri di Dalam Kotak Saja) -->
+          <!-- Tabel Fix Asset Box Anti-Offside -->
           <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden w-full max-w-full">
-            <div class="overflow-x-auto w-full max-w-full block">
+            <div class="table-responsive-box">
               <table class="w-full text-[11px] text-slate-600 min-w-[950px]">
                 <thead class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
                   <tr>
@@ -227,7 +229,7 @@
         </section>
 
         <!-- SECTION 3: INVENTORY -->
-        <section id="section-inventory" class="hidden space-y-3 sm:space-y-4 w-full max-w-full min-w-0">
+        <section id="section-inventory" class="hidden space-y-3.5 w-full max-w-full">
           <div class="grid grid-cols-3 gap-2.5 w-full">
             <div class="bg-white p-3 rounded-2xl shadow-xs border border-slate-200/90 min-w-0">
               <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Nilai Persediaan</span>
@@ -256,9 +258,9 @@
             </button>
           </div>
 
-          <!-- Tabel Inventory (Scroll Mandiri di Dalam Kotak Saja) -->
+          <!-- Tabel Inventory Box Anti-Offside -->
           <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden w-full max-w-full">
-            <div class="overflow-x-auto w-full max-w-full block">
+            <div class="table-responsive-box">
               <table class="w-full text-[11px] text-slate-600 min-w-[950px]">
                 <thead class="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-700 uppercase tracking-wider">
                   <tr>
@@ -313,7 +315,7 @@
           </button>
           
           <button type="button" onclick="closeBatchPrintModal()" class="text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer">
-            <i data-lucide="x" class="w-5 h-5"></i>
+            <i data-lucide="x" class="w-4 h-4"></i>
           </button>
         </div>
       </div>
