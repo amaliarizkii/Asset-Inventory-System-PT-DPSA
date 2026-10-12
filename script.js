@@ -372,7 +372,7 @@ function renderOverview() {
   }
 }
 
-// Render Tabel Fix Asset
+// Render Fix Asset Table (Versi Padat & Fit HP)
 function renderFixAssetTable(filtered = null) {
   const tbody = document.getElementById("faTableBody");
   if (!tbody) return;
@@ -387,27 +387,27 @@ function renderFixAssetTable(filtered = null) {
   data.forEach((item, idx) => {
     const qrUrl = getQrCodeUrl(item.kode);
     const tr = document.createElement("tr");
-    tr.className = "hover:bg-blue-50/40 border-b border-slate-100 text-xs";
+    tr.className = "hover:bg-blue-50/40 border-b border-slate-100 text-[11px]";
     tr.innerHTML = `
-      <td class="py-3.5 px-3 text-center text-slate-500">${idx + 1}</td>
-      <td class="py-3.5 px-3 font-mono font-bold text-blue-900 whitespace-nowrap">${item.kode}</td>
-      <td class="py-3.5 px-3 font-semibold text-slate-800">${item.nama}</td>
-      <td class="py-3.5 px-3 text-slate-600 text-[11px] max-w-xs">${item.tipe}</td>
-      <td class="py-3.5 px-2 text-center text-slate-600">${item.satuan}</td>
-      <td class="py-3.5 px-2 text-center font-bold text-slate-800">${item.jumlah}</td>
-      <td class="py-3.5 px-2 text-center text-slate-600">${item.tahun}</td>
-      <td class="py-3.5 px-2 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">${item.kondisi}</span></td>
-      <td class="py-3.5 px-3 text-right font-bold text-slate-900 whitespace-nowrap">${formatRupiah(item.harga)}</td>
-      <td class="py-3.5 px-3 text-slate-700 whitespace-nowrap">${item.lokasi}</td>
-      <td class="py-3.5 px-3 text-slate-500 text-[11px]">${item.keterangan}</td>
-      <td class="py-3.5 px-3 text-center">
-        <img src="${item.gambar}" alt="${item.nama}" class="w-9 h-9 object-cover rounded-lg border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
+      <td class="py-2 px-2 text-center text-slate-500">${idx + 1}</td>
+      <td class="py-2 px-2.5 font-mono font-bold text-blue-900 whitespace-nowrap text-center">${item.kode}</td>
+      <td class="py-2 px-2.5 font-semibold text-slate-800 text-center">${item.nama}</td>
+      <td class="py-2 px-2.5 text-slate-600 text-[10px] text-center">${item.tipe}</td>
+      <td class="py-2 px-1.5 text-center text-slate-600">${item.satuan}</td>
+      <td class="py-2 px-1.5 text-center font-bold text-slate-800">${item.jumlah}</td>
+      <td class="py-2 px-1.5 text-center text-slate-600">${item.tahun}</td>
+      <td class="py-2 px-1.5 text-center"><span class="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">${item.kondisi}</span></td>
+      <td class="py-2 px-2.5 text-right font-bold text-slate-900 whitespace-nowrap">${formatRupiah(item.harga)}</td>
+      <td class="py-2 px-2.5 text-slate-700 whitespace-nowrap text-center">${item.lokasi}</td>
+      <td class="py-2 px-2.5 text-slate-500 text-[10px] text-center">${item.keterangan}</td>
+      <td class="py-2 px-2 text-center">
+        <img src="${item.gambar}" alt="${item.nama}" class="w-7 h-7 object-cover rounded border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
       </td>
-      <td class="py-3.5 px-4 text-center whitespace-nowrap">
-        <div class="flex items-center justify-center gap-2">
-          <img src="${qrUrl}" alt="QR" class="w-8 h-8 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
-          <button onclick="openDetailData('${item.kode}')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
-            <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+      <td class="py-2 px-2.5 text-center whitespace-nowrap">
+        <div class="flex items-center justify-center gap-1.5">
+          <img src="${qrUrl}" alt="QR" class="w-7 h-7 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
+          <button onclick="openDetailData('${item.kode}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-[10px] font-bold transition flex items-center gap-1 cursor-pointer">
+            <i data-lucide="eye" class="w-3 h-3"></i>
             <span>Detail</span>
           </button>
         </div>
@@ -418,7 +418,7 @@ function renderFixAssetTable(filtered = null) {
   if (window.lucide) lucide.createIcons();
 }
 
-// Render Tabel Inventory
+// Render Inventory Table (Versi Padat & Fit HP)
 function renderInventoryTable(filtered = null) {
   const tbody = document.getElementById("inventoryTableBody");
   if (!tbody) return;
@@ -439,31 +439,31 @@ function renderInventoryTable(filtered = null) {
     const badgeClass = isAktiva ? "bg-amber-100 text-amber-800" : "bg-teal-100 text-teal-800";
 
     const tr = document.createElement("tr");
-    tr.className = "hover:bg-blue-50/40 border-b border-slate-100 text-xs";
+    tr.className = "hover:bg-blue-50/40 border-b border-slate-100 text-[11px]";
     tr.innerHTML = `
-      <td class="py-3.5 px-3 text-center text-slate-500">${idx + 1}</td>
-      <td class="py-3.5 px-3 font-mono font-bold text-blue-900 whitespace-nowrap">${item.kode}</td>
-      <td class="py-3.5 px-3 font-semibold text-slate-800">${item.nama}</td>
-      <td class="py-3.5 px-3 text-slate-600 text-[11px] max-w-xs">${item.tipe}</td>
-      <td class="py-3.5 px-2 text-center text-slate-600">${item.satuan}</td>
-      <td class="py-3.5 px-2 text-center font-bold text-slate-800">${item.jumlah}</td>
-      <td class="py-3.5 px-2 text-center text-slate-600">${item.tahun}</td>
-      <td class="py-3.5 px-2 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">${item.kondisi}</span></td>
-      <td class="py-3.5 px-3 text-center whitespace-nowrap">
-        <span class="inline-block px-2.5 py-0.5 text-[10px] font-bold rounded-full ${badgeClass}">
+      <td class="py-2 px-2 text-center text-slate-500">${idx + 1}</td>
+      <td class="py-2 px-2.5 font-mono font-bold text-blue-900 whitespace-nowrap text-center">${item.kode}</td>
+      <td class="py-2 px-2.5 font-semibold text-slate-800 text-center">${item.nama}</td>
+      <td class="py-2 px-2.5 text-slate-600 text-[10px] text-center">${item.tipe}</td>
+      <td class="py-2 px-1.5 text-center text-slate-600">${item.satuan}</td>
+      <td class="py-2 px-1.5 text-center font-bold text-slate-800">${item.jumlah}</td>
+      <td class="py-2 px-1.5 text-center text-slate-600">${item.tahun}</td>
+      <td class="py-2 px-1.5 text-center"><span class="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">${item.kondisi}</span></td>
+      <td class="py-2 px-2 text-center whitespace-nowrap">
+        <span class="inline-block px-2 py-0.2 text-[9px] font-bold rounded-full ${badgeClass}">
           ${item.kategori}
         </span>
       </td>
-      <td class="py-3.5 px-3 text-right font-bold text-slate-900 whitespace-nowrap">${formatRupiah(item.harga)}</td>
-      <td class="py-3.5 px-3 text-slate-500 text-[11px]">${item.keterangan}</td>
-      <td class="py-3.5 px-3 text-center">
-        <img src="${item.gambar}" alt="${item.nama}" class="w-9 h-9 object-cover rounded-lg border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
+      <td class="py-2 px-2.5 text-right font-bold text-slate-900 whitespace-nowrap">${formatRupiah(item.harga)}</td>
+      <td class="py-2 px-2.5 text-slate-500 text-[10px] text-center">${item.keterangan}</td>
+      <td class="py-2 px-2 text-center">
+        <img src="${item.gambar}" alt="${item.nama}" class="w-7 h-7 object-cover rounded border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
       </td>
-      <td class="py-3.5 px-4 text-center whitespace-nowrap">
-        <div class="flex items-center justify-center gap-2">
-          <img src="${qrUrl}" alt="QR" class="w-8 h-8 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
-          <button onclick="openDetailData('${item.kode}')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
-            <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+      <td class="py-2 px-2.5 text-center whitespace-nowrap">
+        <div class="flex items-center justify-center gap-1.5">
+          <img src="${qrUrl}" alt="QR" class="w-7 h-7 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
+          <button onclick="openDetailData('${item.kode}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-[10px] font-bold transition flex items-center gap-1 cursor-pointer">
+            <i data-lucide="eye" class="w-3 h-3"></i>
             <span>Detail</span>
           </button>
         </div>
@@ -474,6 +474,53 @@ function renderInventoryTable(filtered = null) {
   if (window.lucide) lucide.createIcons();
 }
 
+// Render Top 5 Overview Padat
+function renderOverview() {
+  const totalFA = fixAssets.reduce((s, i) => s + (i.jumlah || 1), 0);
+  const totalInv = inventoryItems.reduce((s, i) => s + (i.jumlah || 1), 0);
+  const nilaiFA = fixAssets.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0);
+  const nilaiInv = inventoryItems.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0);
+
+  const elItemAll = document.getElementById("ovTotalItemAll");
+  const elNilaiAll = document.getElementById("ovTotalNilaiAll");
+  const elNilaiFA = document.getElementById("ovNilaiFixAsset");
+  const elNilaiInv = document.getElementById("ovNilaiInventory");
+  const badgeFA = document.getElementById("badgeCountFixAsset");
+  const badgeInv = document.getElementById("badgeCountInventory");
+
+  if (elItemAll) elItemAll.textContent = `${(totalFA + totalInv).toLocaleString("id-ID")} Item`;
+  if (elNilaiAll) elNilaiAll.textContent = formatRupiah(nilaiFA + nilaiInv);
+  if (elNilaiFA) elNilaiFA.textContent = formatRupiah(nilaiFA);
+  if (elNilaiInv) elNilaiInv.textContent = formatRupiah(nilaiInv);
+  if (badgeFA) badgeFA.textContent = fixAssets.length;
+  if (badgeInv) badgeInv.textContent = inventoryItems.length;
+
+  const topTable = document.getElementById("overviewTopTableBody");
+  if (topTable) {
+    topTable.innerHTML = "";
+    [...fixAssets].sort((a, b) => b.harga - a.harga).slice(0, 5).forEach(item => {
+      const qrUrl = getQrCodeUrl(item.kode);
+      const tr = document.createElement("tr");
+      tr.className = "hover:bg-slate-50 border-b border-slate-100 text-[11px]";
+      tr.innerHTML = `
+        <td class="py-2.5 px-3 font-mono font-bold text-blue-700 text-center">${item.kode}</td>
+        <td class="py-2.5 px-3 font-semibold text-slate-800 text-center">${item.nama}</td>
+        <td class="py-2.5 px-3 text-slate-600 text-center">${item.lokasi}</td>
+        <td class="py-2.5 px-3 text-right font-bold text-slate-900">${formatRupiah(item.harga)}</td>
+        <td class="py-2.5 px-3 text-center">
+          <div class="flex items-center justify-center gap-1.5">
+            <img src="${qrUrl}" alt="QR" class="w-7 h-7 rounded border border-slate-200 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
+            <button onclick="openDetailData('${item.kode}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-[10px] font-bold transition flex items-center gap-1 cursor-pointer">
+              <i data-lucide="eye" class="w-3 h-3"></i>
+              <span>Detail</span>
+            </button>
+          </div>
+        </td>
+      `;
+      topTable.appendChild(tr);
+    });
+  }
+}
 function openDetailData(kode) {
   window.open(`barcode.html?code=${encodeURIComponent(kode)}`, '_blank');
 }
