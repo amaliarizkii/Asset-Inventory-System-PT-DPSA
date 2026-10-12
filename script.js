@@ -27,45 +27,31 @@ function formatImageUrl(driveId, rawUrl) {
 }
 
 // ==========================================
-// FITUR TOGGLE SIDEBAR (EXPAND & MINI COLLAPSE)
+// FITUR TOGGLE SIDEBAR (BENAR-BENAR HIDDEN TOTAL)
 // ==========================================
-let isSidebarExpanded = true;
+let isSidebarOpen = true;
 
 function toggleSidebar() {
   const sidebar = document.getElementById("mainSidebar");
   const toggleIcon = document.getElementById("sidebarToggleIcon");
-  const textElements = document.querySelectorAll(".sidebar-text");
   
   if (!sidebar) return;
   
-  isSidebarExpanded = !isSidebarExpanded;
+  isSidebarOpen = !isSidebarOpen;
   
-  if (isSidebarExpanded) {
-    // Mode Penuh (Expanded - Lebar 16rem / 256px)
-    sidebar.classList.remove("w-20");
-    sidebar.classList.add("w-64");
-    
-    // Tampilkan label teks menu
-    textElements.forEach(el => {
-      el.style.display = "";
-      el.classList.remove("hidden");
-    });
-
+  if (isSidebarOpen) {
+    // Mode Buka: Tampilkan kembali dengan lebar w-60 dan border kanan
+    sidebar.classList.remove("w-0", "-ml-60", "border-r-0");
+    sidebar.classList.add("w-60", "border-r");
     if (toggleIcon) toggleIcon.setAttribute("data-lucide", "panel-left-close");
   } else {
-    // Mode Mini Desktop (Collapsed - Tetap Berdiri dengan Lebar 5rem / 80px)
-    sidebar.classList.remove("w-64");
-    sidebar.classList.add("w-20");
-    
-    // Sembunyikan label teks (hanya tampilkan icon menu)
-    textElements.forEach(el => {
-      el.style.display = "none";
-      el.classList.add("hidden");
-    });
-
+    // Mode Tutup: Benar-benar hilang total (lebar 0, margin negatif, tanpa border)
+    sidebar.classList.remove("w-60", "border-r");
+    sidebar.classList.add("w-0", "-ml-60", "border-r-0");
     if (toggleIcon) toggleIcon.setAttribute("data-lucide", "panel-left-open");
   }
   
+  // Refresh ikon lucide untuk tombol toggle
   if (window.lucide) {
     lucide.createIcons();
   }
