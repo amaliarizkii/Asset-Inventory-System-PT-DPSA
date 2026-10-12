@@ -2,18 +2,19 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Set viewport agar browser HP merender resolusi desktop utuh -->
+  <meta name="viewport" content="width=1280, initial-scale=0.35, minimum-scale=0.25, maximum-scale=2.0, user-scalable=yes">
   <title>PT DPSA - Asset & Inventory System</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-100 text-slate-800 antialiased h-screen w-screen overflow-hidden font-sans select-none">
+<body class="bg-slate-100 text-slate-800 antialiased h-screen w-screen overflow-hidden font-sans select-none min-w-[1280px]">
   
-  <!-- Container Utama Aplikasi Desktop -->
-  <div id="appContainer" style="display: none;" class="h-full w-full overflow-hidden flex">
+  <!-- Container Utama Aplikasi Desktop (Kunci Ukuran Desktop Penuh di HP Maupun PC) -->
+  <div id="appContainer" style="display: none;" class="h-full w-full overflow-hidden flex min-w-[1280px]">
     
-    <!-- Sidebar Desktop -->
+    <!-- Sidebar Desktop (Stay di Kiri, Rata Kiri, Ikon & Teks Berdampingan Rapi) -->
     <aside id="mainSidebar" class="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 border-r border-slate-800 h-full transition-all duration-300 z-30 select-none">
       
       <!-- Bagian Atas: Brand & Menu Navigasi -->
@@ -35,36 +36,37 @@
           </div>
         </div>
         
-<!-- Navigasi Menu Rata Kiri Konsisten -->
-<nav class="p-3 space-y-1.5 flex-1 overflow-y-auto">
-  <p class="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 sidebar-text">Navigasi Utama</p>
-  
-  <!-- Menu Overview -->
-  <button type="button" onclick="switchTab('overview')" id="nav-overview" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40 cursor-pointer" title="Overview">
-    <div class="flex items-center gap-3">
-      <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0"></i>
-      <span class="sidebar-text font-medium whitespace-nowrap">Overview</span>
-    </div>
-  </button>
-  
-  <!-- Menu Fix Asset -->
-  <button type="button" onclick="switchTab('fixasset')" id="nav-fixasset" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer" title="Fix Asset">
-    <div class="flex items-center gap-3">
-      <i data-lucide="building-2" class="w-5 h-5 shrink-0"></i>
-      <span class="sidebar-text font-medium whitespace-nowrap">Fix Asset</span>
-    </div>
-    <span id="badgeCountFixAsset" class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-slate-800 text-sky-400 sidebar-text shrink-0">0</span>
-  </button>
-  
-  <!-- Menu Inventory -->
-  <button type="button" onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer" title="Inventory">
-    <div class="flex items-center gap-3">
-      <i data-lucide="boxes" class="w-5 h-5 shrink-0"></i>
-      <span class="sidebar-text font-medium whitespace-nowrap">Inventory</span>
-    </div>
-    <span id="badgeCountInventory" class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-slate-800 text-emerald-400 sidebar-text shrink-0">0</span>
-  </button>
-</nav>
+        <!-- Menu Navigasi (Konsisten, Rata Kiri, Ikon & Teks Rapat di Kiri) -->
+        <nav class="p-3 space-y-1.5 flex-1 overflow-y-auto">
+          <p class="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 sidebar-text">Navigasi Utama</p>
+          
+          <!-- Menu Overview -->
+          <button type="button" onclick="switchTab('overview')" id="nav-overview" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40 cursor-pointer text-left" title="Overview">
+            <div class="flex items-center gap-3">
+              <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0"></i>
+              <span class="sidebar-text font-medium whitespace-nowrap">Overview</span>
+            </div>
+          </button>
+          
+          <!-- Menu Fix Asset -->
+          <button type="button" onclick="switchTab('fixasset')" id="nav-fixasset" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer text-left" title="Fix Asset">
+            <div class="flex items-center gap-3 min-w-0">
+              <i data-lucide="building-2" class="w-5 h-5 shrink-0"></i>
+              <span class="sidebar-text font-medium whitespace-nowrap">Fix Asset</span>
+            </div>
+            <span id="badgeCountFixAsset" class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-slate-800 text-sky-400 sidebar-text shrink-0">0</span>
+          </button>
+          
+          <!-- Menu Inventory -->
+          <button type="button" onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer text-left" title="Inventory">
+            <div class="flex items-center gap-3 min-w-0">
+              <i data-lucide="boxes" class="w-5 h-5 shrink-0"></i>
+              <span class="sidebar-text font-medium whitespace-nowrap">Inventory</span>
+            </div>
+            <span id="badgeCountInventory" class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-slate-800 text-emerald-400 sidebar-text shrink-0">0</span>
+          </button>
+        </nav>
+      </div>
 
       <!-- Bagian Bawah: Profil Pengguna -->
       <div class="p-3 border-t border-slate-800/80 shrink-0">
@@ -85,7 +87,7 @@
       </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Main Workspace Desktop (Scroll Vertikal Mandiri) -->
     <main class="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-slate-100">
       
       <!-- Header Atas Sticky -->
@@ -111,7 +113,7 @@
         
         <!-- SECTION 1: OVERVIEW -->
         <section id="section-overview" class="space-y-6">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="grid grid-cols-4 gap-4">
             <div class="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-5 rounded-3xl shadow-lg border border-slate-800">
               <span class="text-[11px] font-bold uppercase tracking-wider text-sky-400">Total Akumulasi Nilai</span>
               <h3 id="ovTotalNilaiAll" class="text-2xl font-black mt-2 text-white">Rp 0</h3>
@@ -134,7 +136,7 @@
             </div>
           </div>
 
-          <!-- Top 5 High Value Table (Header Rata Tengah) -->
+          <!-- Top 5 High Value Table -->
           <div class="bg-white rounded-3xl shadow-xs border border-slate-200/90 overflow-hidden">
             <div class="p-5 border-b border-slate-100 flex items-center justify-between">
               <div>
@@ -144,7 +146,7 @@
               <button onclick="switchTab('fixasset')" class="text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer">Lihat Semua Fix Asset &rarr;</button>
             </div>
             <div class="overflow-x-auto">
-              <table class="w-full text-xs text-slate-600">
+              <table class="w-full text-xs text-slate-600 min-w-[900px]">
                 <thead class="bg-slate-50 text-[11px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
                   <tr>
                     <th class="py-3.5 px-6 text-center">Kode Barang</th>
@@ -162,7 +164,7 @@
 
         <!-- SECTION 2: FIX ASSET -->
         <section id="section-fixasset" class="hidden space-y-6">
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="grid grid-cols-3 gap-4">
             <div class="bg-white p-5 rounded-3xl shadow-xs border border-slate-200/90">
               <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Nilai Fix Asset</span>
               <h3 id="faTotalNilai" class="text-2xl font-black mt-2 text-blue-700">Rp 0</h3>
@@ -178,7 +180,7 @@
           </div>
 
           <!-- Action Bar -->
-          <div class="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+          <div class="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs flex items-center justify-between gap-4">
             <div class="relative flex-1 max-w-md">
               <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
               <input type="text" id="faSearchInput" oninput="filterFixAsset()" placeholder="Cari kode, nama, PIC, lokasi..." class="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500">
@@ -190,10 +192,10 @@
             </button>
           </div>
 
-          <!-- Tabel Fix Asset (SEMUA HEADER RATA TENGAH) -->
+          <!-- Tabel Fix Asset (Header Rata Tengah & Lebar Penuh Desktop) -->
           <div class="bg-white rounded-3xl shadow-xs border border-slate-200/90 overflow-hidden">
             <div class="overflow-x-auto">
-              <table class="w-full text-xs text-slate-600">
+              <table class="w-full text-xs text-slate-600 min-w-[1200px]">
                 <thead class="bg-slate-50 text-[11px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
                   <tr>
                     <th class="py-4 px-3 text-center w-12">No</th>
@@ -219,7 +221,7 @@
 
         <!-- SECTION 3: INVENTORY -->
         <section id="section-inventory" class="hidden space-y-6">
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="grid grid-cols-3 gap-4">
             <div class="bg-white p-5 rounded-3xl shadow-xs border border-slate-200/90">
               <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Nilai Inventory</span>
               <h3 id="invTotalNilai" class="text-2xl font-black mt-2 text-emerald-700">Rp 0</h3>
@@ -235,7 +237,7 @@
           </div>
 
           <!-- Action Bar -->
-          <div class="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+          <div class="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs flex items-center justify-between gap-4">
             <div class="relative flex-1 max-w-md">
               <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
               <input type="text" id="invSearchInput" oninput="filterInventory()" placeholder="Cari kode, nama, letak..." class="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
@@ -247,10 +249,10 @@
             </button>
           </div>
 
-          <!-- Tabel Inventory (SEMUA HEADER RATA TENGAH) -->
+          <!-- Tabel Inventory (Header Rata Tengah & Lebar Penuh Desktop) -->
           <div class="bg-white rounded-3xl shadow-xs border border-slate-200/90 overflow-hidden">
             <div class="overflow-x-auto">
-              <table class="w-full text-xs text-slate-600">
+              <table class="w-full text-xs text-slate-600 min-w-[1200px]">
                 <thead class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-700 uppercase tracking-wider">
                   <tr>
                     <th class="py-4 px-3 text-center w-12">No</th>
@@ -320,7 +322,7 @@
     </div>
   </div>
 
-  <!-- Modal Login -->
+  <!-- Modal Login (Pasti Tampil Awal) -->
   <div id="loginModal" style="display: flex;" class="fixed inset-0 z-50 items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border border-slate-100">
       <div class="text-center mb-6">
