@@ -151,29 +151,41 @@ function logout() {
 // ==========================================
 // TOGGLE SIDEBAR (GAYA GEMINI - BISA HIDDEN PENUH)
 // ==========================================
+// ==========================================
+// TOGGLE SIDEBAR RESPONSIVE (DESKTOP & MOBILE)
+// ==========================================
+let isSidebarOpenDesktop = true;
+let isSidebarOpenMobile = false;
+
 function toggleSidebar(forceState) {
   const sidebar = document.getElementById("mainSidebar");
   const backdrop = document.getElementById("sidebarBackdrop");
   const isDesktop = window.innerWidth >= 768;
 
-  if (typeof forceState === "boolean") {
-    isSidebarOpen = forceState;
-  } else {
-    isSidebarOpen = !isSidebarOpen;
-  }
-
   if (isDesktop) {
-    // Mode Desktop: Saat ditutup, sidebar dihidden (w-0) dan konten melebar penuh
-    if (isSidebarOpen) {
-      sidebar.classList.remove("md:w-0", "md:hidden");
-      sidebar.classList.add("md:w-64", "md:flex");
+    if (typeof forceState === "boolean") {
+      isSidebarOpenDesktop = forceState;
     } else {
-      sidebar.classList.remove("md:w-64", "md:flex");
-      sidebar.classList.add("md:w-0", "md:hidden");
+      isSidebarOpenDesktop = !isSidebarOpenDesktop;
+    }
+
+    // Desktop: Sembunyikan sidebar ke w-0 tanpa merusak flex layout
+    if (isSidebarOpenDesktop) {
+      sidebar.classList.remove("md:hidden");
+      sidebar.classList.add("md:flex");
+    } else {
+      sidebar.classList.remove("md:flex");
+      sidebar.classList.add("md:hidden");
     }
   } else {
-    // Mode Mobile (HP): Slide in/out drawer dengan backdrop blur
-    if (isSidebarOpen) {
+    if (typeof forceState === "boolean") {
+      isSidebarOpenMobile = forceState;
+    } else {
+      isSidebarOpenMobile = !isSidebarOpenMobile;
+    }
+
+    // HP: Drawer bergeser mulus
+    if (isSidebarOpenMobile) {
       sidebar.classList.remove("-translate-x-full");
       sidebar.classList.add("translate-x-0");
       if (backdrop) {
@@ -193,6 +205,51 @@ function toggleSidebar(forceState) {
   if (window.lucide) lucide.createIcons();
 }
 
+function onMobileNavClick() {
+  if (window.innerWidth < 768) {
+    toggleSidebar(false);
+  }
+}
+
+// Inisialisasi awal saat halaman dibuka
+window.onload = function() {
+  const isDesktop = window.innerWidth >= 768;
+  const sidebar = document.getElementById("mainSidebar");
+  
+  if (sidebar) {
+    if (isDesktop) {
+      sidebar.classList.remove("md:hidden");
+      sidebar.classList.add("md:flex");
+      isSidebarOpenDesktop = true;
+    } else {
+      sidebar.classList.add("-translate-x-full");
+      isSidebarOpenMobile = false;
+    }
+  }
+
+  try {
+    const saved = sessionStorage.getItem("dpsa_logged_in");
+    if (saved) {
+      currentUser = JSON.parse(saved);
+      const modal = document.getElementById("loginModal");
+      const app = document.getElementById("appContainer");
+      if (modal) modal.style.display = "none";
+      if (app) app.style.display = "flex";
+
+      const nameEl = document.getElementById("userProfileName");
+      const roleEl = document.getElementById("userProfileRole");
+      const initEl = document.getElementById("userAvatarInitials");
+      if (nameEl) nameEl.textContent = currentUser.name;
+      if (roleEl) roleEl.textContent = currentUser.role;
+      if (initEl) initEl.textContent = currentUser.initials;
+      initData();
+      return;
+    }
+  } catch (e) {}
+
+  const modal = document.getElementById("loginModal");
+  if (modal) modal.style.display = "flex";
+};
 function onMobileNavClick() {
   // Jika di HP, tutup sidebar setelah menu diklik
   if (window.innerWidth < 768) {
