@@ -10,14 +10,14 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased h-screen w-screen overflow-hidden font-sans select-none">
 
-  <!-- Container Utama Aplikasi -->
+  <!-- Container Utama Aplikasi Desktop & HP -->
   <div id="appContainer" style="display: none;" class="h-full w-full overflow-hidden flex relative">
     
-    <!-- Backdrop Blur saat Sidebar Terbuka di HP (Persis Gemini) -->
+    <!-- Backdrop saat Sidebar Terbuka di Layar HP (Mobile Drawer) -->
     <div id="sidebarBackdrop" onclick="toggleSidebar(false)" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-30 transition-opacity duration-300 opacity-0 pointer-events-none md:hidden"></div>
 
-    <!-- Sidebar (Model Gemini: Bisa Dihidden Penuh dan Masuk Mulus) -->
-    <aside id="mainSidebar" class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 border-r border-slate-800 h-full transition-transform duration-300 ease-in-out z-40 -translate-x-full md:translate-x-0 select-none shadow-2xl md:shadow-none">
+    <!-- Sidebar: Di Desktop Tetap Berdiri (flex-shrink-0), Di HP berupa Drawer -->
+    <aside id="mainSidebar" class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 border-r border-slate-800 h-full transition-all duration-300 ease-in-out z-40 -translate-x-full md:translate-x-0 select-none shadow-2xl md:shadow-none">
       
       <!-- Bagian Atas Sidebar -->
       <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
@@ -30,7 +30,7 @@
               <p class="text-[9px] text-sky-400 font-semibold tracking-wide uppercase mt-0.5">Asset & Inventory</p>
             </div>
           </div>
-          <!-- Tombol Tutup Sidebar di HP -->
+          <!-- Tombol Tutup Sidebar Khusus HP -->
           <button onclick="toggleSidebar(false)" class="p-1.5 rounded-lg text-slate-400 hover:text-white md:hidden cursor-pointer" title="Tutup Menu">
             <i data-lucide="x" class="w-4 h-4"></i>
           </button>
@@ -44,7 +44,7 @@
           </div>
         </div>
         
-        <!-- Menu Navigasi (Rata Kiri, Ikon & Teks Berdampingan, Tanpa Penomoran) -->
+        <!-- Menu Navigasi -->
         <nav class="p-2.5 space-y-1 flex-1 overflow-y-auto">
           <p class="px-3 py-1 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Navigasi Utama</p>
           
@@ -95,207 +95,217 @@
       </div>
     </aside>
 
-    <!-- Main Workspace (Desktop & HP Fit Compact) -->
+    <!-- Main Workspace (Desktop & Mobile Content Wrapper) -->
     <main class="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-slate-100">
       
-      <!-- Header Atas (Tinggi Lebih Ringkas h-14) -->
-      <header class="h-14 bg-white border-b border-slate-200/90 px-3.5 sm:px-6 flex items-center justify-between shrink-0 z-20 shadow-xs">
-        <div class="flex items-center gap-2.5">
-          <!-- Tombol Toggle Sidebar (Gaya Gemini) -->
-          <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition cursor-pointer" title="Buka / Sembunyikan Sidebar">
+      <!-- Header Atas Sticky -->
+      <header class="h-16 bg-white border-b border-slate-200/90 px-4 sm:px-6 flex items-center justify-between shrink-0 z-20 shadow-xs">
+        <div class="flex items-center gap-3">
+          <!-- Tombol Toggle Sidebar (Buka/Tutup di Desktop dan HP) -->
+          <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition cursor-pointer" title="Buka / Sembunyikan Sidebar">
             <i data-lucide="panel-left" id="sidebarToggleIcon" class="w-4 h-4"></i>
           </button>
           <div>
             <h2 id="topBarTitle" class="text-sm sm:text-base font-black text-slate-900 tracking-tight leading-none">Overview</h2>
-            <p id="topBarSubtitle" class="text-[10px] text-slate-500 font-medium hidden sm:block mt-0.5">PT DPSA Asset & Inventory Portal</p>
+            <p id="topBarSubtitle" class="text-[10px] text-slate-500 font-medium hidden sm:block mt-0.5">PT DPSA Asset & Inventory Management</p>
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="initData()" class="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition cursor-pointer" title="Refresh Data Spreadsheet">
-            <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+          <button onclick="initData()" class="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition cursor-pointer" title="Refresh Data">
+            <i data-lucide="rotate-cw" class="w-4 h-4"></i>
           </button>
         </div>
       </header>
 
-      <!-- Scrollable Content Container (Padding & Spasi Lebih Fit) -->
-      <div class="flex-1 overflow-y-auto p-3 sm:p-5 space-y-4">
-        
-        <!-- SECTION 1: OVERVIEW -->
-        <section id="section-overview" class="space-y-4">
-          <!-- Metrik Ringkas: 2 Kolom di Layar HP, 4 Kolom di PC -->
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
-            <div class="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-3.5 sm:p-4 rounded-2xl shadow-sm border border-slate-800">
-              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-sky-400">Total Nilai</span>
-              <h3 id="ovTotalNilaiAll" class="text-base sm:text-xl font-black mt-1 text-white leading-tight">Rp 0</h3>
-              <p class="text-[9px] text-slate-400 mt-2 pt-1.5 border-t border-slate-800 truncate">Fix Asset + Inventory</p>
-            </div>
-            <div class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
-              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500">Total Item</span>
-              <h3 id="ovTotalItemAll" class="text-base sm:text-xl font-extrabold mt-1 text-slate-900 leading-tight">0 Item</h3>
-              <p class="text-[9px] text-emerald-600 font-semibold mt-2 pt-1.5 border-t border-slate-100 truncate">Semua aktiva</p>
-            </div>
-            <div class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
-              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500">Nilai Fix Asset</span>
-              <h3 id="ovNilaiFixAsset" class="text-base sm:text-xl font-extrabold mt-1 text-blue-700 leading-tight">Rp 0</h3>
-              <p class="text-[9px] text-slate-500 mt-2 pt-1.5 border-t border-slate-100 truncate">Unit Aktiva Tetap</p>
-            </div>
-            <div class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
-              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500">Nilai Inventory</span>
-              <h3 id="ovNilaiInventory" class="text-base sm:text-xl font-extrabold mt-1 text-emerald-700 leading-tight">Rp 0</h3>
-              <p class="text-[9px] text-slate-500 mt-2 pt-1.5 border-t border-slate-100 truncate">SKU Persediaan</p>
-            </div>
-          </div>
-
-          <!-- Top 5 High Value Table -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
-            <div class="p-3.5 sm:p-4 border-b border-slate-100 flex items-center justify-between">
-              <div>
-                <h3 class="text-xs sm:text-sm font-bold text-slate-900">5 Aset Nilai Tertinggi</h3>
-                <p class="text-[10px] text-slate-500">Aktiva signifikan di PT DPSA</p>
+      <!-- Scrollable Content Area: Max-Width Terkendali agar Tidak Melar Ekstrem di Desktop -->
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6">
+        <div class="max-w-7xl mx-auto space-y-6">
+          
+          <!-- SECTION 1: OVERVIEW -->
+          <section id="section-overview" class="space-y-6">
+            <!-- Grid Metrik 4 Kolom Proporsional -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div class="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-4 rounded-2xl shadow-sm border border-slate-800 flex flex-col justify-between">
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-sky-400">Total Akumulasi Nilai</span>
+                  <h3 id="ovTotalNilaiAll" class="text-lg sm:text-2xl font-black mt-1 text-white leading-tight">Rp 0</h3>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-3 pt-2 border-t border-slate-800 truncate">Fix Asset + Inventory</p>
               </div>
-              <button onclick="switchTab('fixasset')" class="text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer">Lihat Semua &rarr;</button>
+              <div class="bg-white p-4 rounded-2xl shadow-xs border border-slate-200/90 flex flex-col justify-between">
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Total Keseluruhan Item</span>
+                  <h3 id="ovTotalItemAll" class="text-lg sm:text-2xl font-extrabold mt-1 text-slate-900 leading-tight">0 Item</h3>
+                </div>
+                <p class="text-[10px] text-emerald-600 font-semibold mt-3 pt-2 border-t border-slate-100 truncate">Aktiva terdaftar</p>
+              </div>
+              <div class="bg-white p-4 rounded-2xl shadow-xs border border-slate-200/90 flex flex-col justify-between">
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Nilai Perolehan Fix Asset</span>
+                  <h3 id="ovNilaiFixAsset" class="text-lg sm:text-2xl font-extrabold mt-1 text-blue-700 leading-tight">Rp 0</h3>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-3 pt-2 border-t border-slate-100 truncate">Unit Aktiva Tetap</p>
+              </div>
+              <div class="bg-white p-4 rounded-2xl shadow-xs border border-slate-200/90 flex flex-col justify-between">
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Nilai Perolehan Inventory</span>
+                  <h3 id="ovNilaiInventory" class="text-lg sm:text-2xl font-extrabold mt-1 text-emerald-700 leading-tight">Rp 0</h3>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-3 pt-2 border-t border-slate-100 truncate">SKU Persediaan</p>
+              </div>
             </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-xs text-slate-600 min-w-[700px]">
-                <thead class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
-                  <tr>
-                    <th class="py-2.5 px-3 text-center">Kode Barang</th>
-                    <th class="py-2.5 px-3 text-center">Nama & Spesifikasi</th>
-                    <th class="py-2.5 px-3 text-center">Lokasi</th>
-                    <th class="py-2.5 px-3 text-center">Harga Perolehan</th>
-                    <th class="py-2.5 px-3 text-center">Aksi & Barcode</th>
-                  </tr>
-                </thead>
-                <tbody id="overviewTopTableBody" class="divide-y divide-slate-100 text-[11px]"></tbody>
-              </table>
-            </div>
-          </div>
-        </section>
 
-        <!-- SECTION 2: FIX ASSET -->
-        <section id="section-fixasset" class="hidden space-y-4">
-          <!-- Metrik Compact Fix Asset -->
-          <div class="grid grid-cols-3 gap-2.5 sm:gap-3.5">
-            <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
-              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate block">Total Nilai</span>
-              <h3 id="faTotalNilai" class="text-xs sm:text-lg font-black mt-1 text-blue-700 leading-tight">Rp 0</h3>
+            <!-- Top 5 High Value Table -->
+            <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
+              <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h3 class="text-xs sm:text-sm font-bold text-slate-900">5 Aset dengan Nilai Perolehan Tertinggi</h3>
+                  <p class="text-[10px] text-slate-500 mt-0.5">Aktiva paling signifikan di lingkungan PT DPSA</p>
+                </div>
+                <button onclick="switchTab('fixasset')" class="text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer">Lihat Semua Fix Asset &rarr;</button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs text-slate-600">
+                  <thead class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
+                    <tr>
+                      <th class="py-3 px-4 text-center">Kode Barang</th>
+                      <th class="py-3 px-4 text-center">Nama & Spesifikasi</th>
+                      <th class="py-3 px-4 text-center">Lokasi</th>
+                      <th class="py-3 px-4 text-center">Harga Perolehan</th>
+                      <th class="py-3 px-4 text-center">Aksi & Barcode</th>
+                    </tr>
+                  </thead>
+                  <tbody id="overviewTopTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
+                </table>
+              </div>
             </div>
-            <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
-              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate block">Total Unit</span>
-              <h3 id="faTotalItem" class="text-xs sm:text-lg font-black mt-1 text-slate-900 leading-tight">0 Unit</h3>
-            </div>
-            <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
-              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate block">Kondisi Baik</span>
-              <h3 id="faKondisiBaik" class="text-xs sm:text-lg font-black mt-1 text-emerald-600 leading-tight">100%</h3>
-            </div>
-          </div>
+          </section>
 
-          <!-- Action Bar Ringkas -->
-          <div class="bg-white p-3 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-            <div class="relative flex-1">
-              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-              <input type="text" id="faSearchInput" oninput="filterFixAsset()" placeholder="Cari kode, nama, lokasi..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500">
+          <!-- SECTION 2: FIX ASSET -->
+          <section id="section-fixasset" class="hidden space-y-6">
+            <div class="grid grid-cols-3 gap-3 sm:gap-4">
+              <div class="bg-white p-4 rounded-2xl shadow-xs border border-slate-200/90">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block truncate">Total Nilai Fix Asset</span>
+                <h3 id="faTotalNilai" class="text-sm sm:text-2xl font-black mt-1 text-blue-700 leading-tight">Rp 0</h3>
+              </div>
+              <div class="bg-white p-4 rounded-2xl shadow-xs border border-slate-200/90">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block truncate">Total Unit Terdaftar</span>
+                <h3 id="faTotalItem" class="text-sm sm:text-2xl font-black mt-1 text-slate-900 leading-tight">0 Unit</h3>
+              </div>
+              <div class="bg-white p-4 rounded-2xl shadow-xs border border-slate-200/90">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block truncate">Kondisi Fisik Baik</span>
+                <h3 id="faKondisiBaik" class="text-sm sm:text-2xl font-black mt-1 text-emerald-600 leading-tight">100%</h3>
+              </div>
             </div>
-            <button onclick="openBatchPrintModal('fixasset')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer shrink-0">
-              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-              <span>Cetak Seluruh Barcode Fix Asset</span>
-            </button>
-          </div>
 
-          <!-- Tabel Fix Asset (Header Rata Tengah) -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="w-full text-slate-600 min-w-[980px]">
-                <thead class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
-                  <tr>
-                    <th class="py-2.5 px-2 text-center w-10">No</th>
-                    <th class="py-2.5 px-2.5 text-center">Kode Barang</th>
-                    <th class="py-2.5 px-3 text-center">Nama Barang</th>
-                    <th class="py-2.5 px-3 text-center">Tipe / Ukuran</th>
-                    <th class="py-2.5 px-2 text-center">Satuan</th>
-                    <th class="py-2.5 px-2 text-center">Qty</th>
-                    <th class="py-2.5 px-2 text-center">Tahun</th>
-                    <th class="py-2.5 px-2 text-center">Kondisi</th>
-                    <th class="py-2.5 px-2.5 text-center">Harga Perolehan</th>
-                    <th class="py-2.5 px-2.5 text-center">Lokasi</th>
-                    <th class="py-2.5 px-2.5 text-center">Keterangan</th>
-                    <th class="py-2.5 px-2 text-center">Foto</th>
-                    <th class="py-2.5 px-3 text-center">Aksi & Barcode</th>
-                  </tr>
-                </thead>
-                <tbody id="faTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
-              </table>
+            <!-- Controls & Action Button -->
+            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div class="relative flex-1 max-w-md">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                <input type="text" id="faSearchInput" oninput="filterFixAsset()" placeholder="Cari kode, nama, PIC, lokasi..." class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500">
+              </div>
+              
+              <button onclick="openBatchPrintModal('fixasset')" class="inline-flex items-center justify-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer shrink-0">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                <span>Cetak Seluruh Barcode Fix Asset</span>
+              </button>
             </div>
-          </div>
-        </section>
 
-        <!-- SECTION 3: INVENTORY -->
-        <section id="section-inventory" class="hidden space-y-4">
-          <!-- Metrik Compact Inventory -->
-          <div class="grid grid-cols-3 gap-2.5 sm:gap-3.5">
-            <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
-              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate block">Total Nilai</span>
-              <h3 id="invTotalNilai" class="text-xs sm:text-lg font-black mt-1 text-emerald-700 leading-tight">Rp 0</h3>
+            <!-- Table Fix Asset -->
+            <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-slate-600 min-w-[1000px]">
+                  <thead class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
+                    <tr>
+                      <th class="py-3 px-3 text-center w-12">No</th>
+                      <th class="py-3 px-3 text-center">Kode Barang</th>
+                      <th class="py-3 px-4 text-center">Nama Barang</th>
+                      <th class="py-3 px-4 text-center">Tipe / Ukuran</th>
+                      <th class="py-3 px-2 text-center">Satuan</th>
+                      <th class="py-3 px-2 text-center">Qty</th>
+                      <th class="py-3 px-2 text-center">Tahun</th>
+                      <th class="py-3 px-2 text-center">Kondisi</th>
+                      <th class="py-3 px-3 text-center">Harga Perolehan</th>
+                      <th class="py-3 px-3 text-center">Lokasi</th>
+                      <th class="py-3 px-3 text-center">Keterangan</th>
+                      <th class="py-3 px-2 text-center">Foto</th>
+                      <th class="py-3 px-4 text-center">Aksi & Barcode</th>
+                    </tr>
+                  </thead>
+                  <tbody id="faTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
+                </table>
+              </div>
             </div>
-            <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
-              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate block">Total SKU</span>
-              <h3 id="invTotalItem" class="text-xs sm:text-lg font-black mt-1 text-slate-900 leading-tight">0 SKU</h3>
-            </div>
-            <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
-              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate block">Kuantitas Fisik</span>
-              <h3 id="invTotalKuantitas" class="text-xs sm:text-lg font-black mt-1 text-sky-600 leading-tight">0</h3>
-            </div>
-          </div>
+          </section>
 
-          <!-- Action Bar Ringkas -->
-          <div class="bg-white p-3 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-            <div class="relative flex-1">
-              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-              <input type="text" id="invSearchInput" oninput="filterInventory()" placeholder="Cari kode, nama, letak..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
+          <!-- SECTION 3: INVENTORY -->
+          <section id="section-inventory" class="hidden space-y-6">
+            <div class="grid grid-cols-3 gap-3 sm:gap-4">
+              <div class="bg-white p-4 rounded-2xl shadow-xs border border-slate-200/90">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block truncate">Total Nilai Inventory</span>
+                <h3 id="invTotalNilai" class="text-sm sm:text-2xl font-black mt-1 text-emerald-700 leading-tight">Rp 0</h3>
+              </div>
+              <div class="bg-white p-4 rounded-2xl shadow-xs border border-slate-200/90">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block truncate">Total SKU Terdaftar</span>
+                <h3 id="invTotalItem" class="text-sm sm:text-2xl font-black mt-1 text-slate-900 leading-tight">0 SKU</h3>
+              </div>
+              <div class="bg-white p-4 rounded-2xl shadow-xs border border-slate-200/90">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block truncate">Total Kuantitas Fisik</span>
+                <h3 id="invTotalKuantitas" class="text-sm sm:text-2xl font-black mt-1 text-sky-600 leading-tight">0</h3>
+              </div>
             </div>
-            <button onclick="openBatchPrintModal('inventory')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer shrink-0">
-              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-              <span>Cetak Seluruh Barcode Inventory</span>
-            </button>
-          </div>
 
-          <!-- Tabel Inventory (Header Rata Tengah) -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="w-full text-slate-600 min-w-[980px]">
-                <thead class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
-                  <tr>
-                    <th class="py-2.5 px-2 text-center w-10">No</th>
-                    <th class="py-2.5 px-2.5 text-center">Kode Barang</th>
-                    <th class="py-2.5 px-3 text-center">Nama Barang</th>
-                    <th class="py-2.5 px-3 text-center">Tipe / Ukuran</th>
-                    <th class="py-2.5 px-2 text-center">Satuan</th>
-                    <th class="py-2.5 px-2 text-center">Qty</th>
-                    <th class="py-2.5 px-2 text-center">Tahun</th>
-                    <th class="py-2.5 px-2 text-center">Kondisi</th>
-                    <th class="py-2.5 px-2 text-center">Kategori</th>
-                    <th class="py-2.5 px-2.5 text-center">Harga Perolehan</th>
-                    <th class="py-2.5 px-2.5 text-center">Keterangan (Letak)</th>
-                    <th class="py-2.5 px-2 text-center">Foto</th>
-                    <th class="py-2.5 px-3 text-center">Aksi & Barcode</th>
-                  </tr>
-                </thead>
-                <tbody id="inventoryTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
-              </table>
+            <!-- Controls & Action Button -->
+            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div class="relative flex-1 max-w-md">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                <input type="text" id="invSearchInput" oninput="filterInventory()" placeholder="Cari kode, nama, letak..." class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
+              </div>
+
+              <button onclick="openBatchPrintModal('inventory')" class="inline-flex items-center justify-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer shrink-0">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                <span>Cetak Seluruh Barcode Inventory</span>
+              </button>
             </div>
-          </div>
-        </section>
 
+            <!-- Table Inventory -->
+            <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-slate-600 min-w-[1000px]">
+                  <thead class="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                    <tr>
+                      <th class="py-3 px-3 text-center w-12">No</th>
+                      <th class="py-3 px-3 text-center">Kode Barang</th>
+                      <th class="py-3 px-4 text-center">Nama Barang</th>
+                      <th class="py-3 px-4 text-center">Tipe / Ukuran</th>
+                      <th class="py-3 px-2 text-center">Satuan</th>
+                      <th class="py-3 px-2 text-center">Qty</th>
+                      <th class="py-3 px-2 text-center">Tahun</th>
+                      <th class="py-3 px-2 text-center">Kondisi</th>
+                      <th class="py-3 px-2 text-center">Kategori</th>
+                      <th class="py-3 px-3 text-center">Harga Perolehan</th>
+                      <th class="py-3 px-3 text-center">Keterangan (Letak)</th>
+                      <th class="py-3 px-2 text-center">Foto</th>
+                      <th class="py-3 px-4 text-center">Aksi & Barcode</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inventoryTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+        </div>
       </div>
     </main>
   </div>
 
   <!-- MODAL CETAK BATCH BARCODE (PRESISI 5x5 CM) -->
-  <div id="batchPrintModal" style="display: none;" class="fixed inset-0 z-50 items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
-    <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden">
+  <div id="batchPrintModal" style="display: none;" class="fixed inset-0 z-50 items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden">
       
       <!-- Top Action Bar Modal Print -->
-      <div class="px-4 py-3 bg-slate-900 text-white flex items-center justify-between no-print shrink-0">
+      <div class="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between no-print shrink-0">
         <div>
           <h3 id="batchPrintTitle" class="text-xs sm:text-sm font-bold">Cetak Seluruh Barcode</h3>
           <p id="batchPrintSubtitle" class="text-[10px] text-slate-400">Ukuran stiker baku 5 x 5 cm</p>
@@ -311,7 +321,7 @@
             </button>
           </div>
 
-          <button type="button" onclick="triggerPrint()" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1 transition cursor-pointer shadow-sm">
+          <button type="button" onclick="triggerPrint()" class="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1 transition cursor-pointer shadow-sm">
             <i data-lucide="printer" class="w-3.5 h-3.5"></i>
             <span>Cetak</span>
           </button>
@@ -323,7 +333,7 @@
       </div>
 
       <!-- Area Preview Kertas -->
-      <div class="p-3 sm:p-5 overflow-y-auto flex-1 bg-slate-100 flex justify-center">
+      <div class="p-4 sm:p-6 overflow-y-auto flex-1 bg-slate-100 flex justify-center">
         <div id="printableArea" class="paper-sheet paper-a4">
           <div id="barcodeGridContainer" class="grid-a4"></div>
         </div>
