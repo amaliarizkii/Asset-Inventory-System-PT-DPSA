@@ -13,64 +13,28 @@ let fixAssets = [];
 let inventoryItems = [];
 let currentBatchType = 'fixasset';
 let currentPaperSize = 'A4';
+let isSidebarOpen = false;
 
-// Helper Format Gambar Drive (Fail-Safe jika CONFIG belum siap)
+// Helper Format Gambar Drive
 function formatImageUrl(driveId, rawUrl) {
   if (typeof CONFIG !== 'undefined' && CONFIG.formatDriveImageUrl) {
     if (driveId) return CONFIG.formatDriveImageUrl(`https://drive.google.com/file/d/${driveId}/view`);
     if (rawUrl) return CONFIG.formatDriveImageUrl(rawUrl);
   }
   if (driveId) {
-    return `https://lh3.googleusercontent.com/d/${driveId}`;
+    return `https://drive.google.com/thumbnail?id=${driveId}&sz=w800`;
   }
   return 'no image.png';
 }
 
-// ==========================================
-// FITUR TOGGLE SIDEBAR (BENAR-BENAR HIDDEN TOTAL)
-// ==========================================
-let isSidebarOpen = true;
-
-function toggleSidebar() {
-  const sidebar = document.getElementById("mainSidebar");
-  const toggleIcon = document.getElementById("sidebarToggleIcon");
-  
-  if (!sidebar) return;
-  
-  isSidebarOpen = !isSidebarOpen;
-  
-  if (isSidebarOpen) {
-    // Mode Buka: Tampilkan kembali dengan lebar w-60 dan border kanan
-    sidebar.classList.remove("w-0", "-ml-60", "border-r-0");
-    sidebar.classList.add("w-60", "border-r");
-    if (toggleIcon) toggleIcon.setAttribute("data-lucide", "panel-left-close");
-  } else {
-    // Mode Tutup: Benar-benar hilang total (lebar 0, margin negatif, tanpa border)
-    sidebar.classList.remove("w-60", "border-r");
-    sidebar.classList.add("w-0", "-ml-60", "border-r-0");
-    if (toggleIcon) toggleIcon.setAttribute("data-lucide", "panel-left-open");
-  }
-  
-  // Refresh ikon lucide untuk tombol toggle
-  if (window.lucide) {
-    lucide.createIcons();
-  }
-}
-
-// Generator URL QR Code Dinamis Sesuai Kode Masing-Masing
+// Generator URL QR Code
 function getQrCodeUrl(code) {
-  // Ambil URL dasar halaman tanpa index.html
   const baseUrl = window.location.href.split('index.html')[0].split('?')[0];
-  // Susun URL barcode dengan parameter code ter-encode rapi
   const scanTargetUrl = `${baseUrl}barcode.html?code=${encodeURIComponent(code.trim())}`;
-  
-  // Masukkan URL utuh ke QR generator API
-  return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(scanTargetUrl)}&margin=1`;
+  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(scanTargetUrl)}&margin=1`;
 }
 
-// ==========================================
-// DATA BAWAAN LENGKAP DARI SPREADSHEET DPSA
-// ==========================================
+// Data Bawaan Lengkap Spreadsheet
 const SEED_FIX_ASSETS = [
   { no: 1, kode: "FA/PO3/12/XII/DPSA/2016/KEU", nama: "Set Komputer", tipe: "Monitor: LG CPU: Delux (Intel Core I7-Gen 2)", satuan: "Set", jumlah: 1, tahun: "2016", kondisi: "Baik", harga: 8612500, lokasi: "Ruang Keuangan", keterangan: "Bu Tari", driveId: "1FszIQtfv5nsyOztb2560tEd4kjnn6YCG" },
   { no: 2, kode: "FA/PO2/2/VI/DPSA/2018/PM", nama: "Phanel Saw/Mesin Felder", tipe: "Hammer/K4 Perfomm SN: 8697", satuan: "Unit", jumlah: 1, tahun: "2018", kondisi: "Baik", harga: 54474624, lokasi: "Produksi Mesin", keterangan: "-", driveId: "1ZVf8fpD147c0enJuPNhS0GJDAPFof1Oq" },
@@ -93,7 +57,7 @@ const SEED_INVENTORY = [
 ];
 
 // ==========================================
-// SISTEM LOGIN & OTENTIKASI LENGKAP
+// SISTEM LOGIN
 // ==========================================
 function doLogin() {
   const emailInput = document.getElementById("loginEmail");
@@ -113,21 +77,12 @@ function doLogin() {
     currentUser = user;
     try { sessionStorage.setItem("dpsa_logged_in", JSON.stringify(user)); } catch (e) {}
     
-    // Sembunyikan Modal Login
     const modal = document.getElementById("loginModal");
-    if (modal) {
-      modal.classList.add("hidden");
-      modal.style.display = "none";
-    }
+    if (modal) modal.style.display = "none";
 
-    // Tampilkan App Container
     const app = document.getElementById("appContainer");
-    if (app) {
-      app.classList.remove("hidden");
-      app.style.display = "flex";
-    }
+    if (app) app.style.display = "flex";
 
-    // Update Profil User di Sidebar
     const nameEl = document.getElementById("userProfileName");
     const roleEl = document.getElementById("userProfileRole");
     const initEl = document.getElementById("userAvatarInitials");
@@ -135,16 +90,12 @@ function doLogin() {
     if (roleEl) roleEl.textContent = user.role;
     if (initEl) initEl.textContent = user.initials;
 
-    if (errBox) {
-      errBox.classList.add("hidden");
-      errBox.style.display = "none";
-    }
+    if (errBox) errBox.style.display = "none";
 
     initData();
   } else {
     if (errBox) {
       errBox.textContent = "Username atau password salah!";
-      errBox.classList.remove("hidden");
       errBox.style.display = "block";
     } else {
       alert("Username atau password salah!");
@@ -161,20 +112,22 @@ function pickAccount(email, pass) {
 }
 
 window.onload = function() {
+  // Inisialisasi status default sidebar
+  if (window.innerWidth >= 768) {
+    isSidebarOpen = true; // Terbuka di PC
+  } else {
+    isSidebarOpen = false; // Tersembunyi rapi di HP
+  }
+
   try {
     const saved = sessionStorage.getItem("dpsa_logged_in");
     if (saved) {
       currentUser = JSON.parse(saved);
       const modal = document.getElementById("loginModal");
       const app = document.getElementById("appContainer");
-      if (modal) {
-        modal.classList.add("hidden");
-        modal.style.display = "none";
-      }
-      if (app) {
-        app.classList.remove("hidden");
-        app.style.display = "flex";
-      }
+      if (modal) modal.style.display = "none";
+      if (app) app.style.display = "flex";
+
       const nameEl = document.getElementById("userProfileName");
       const roleEl = document.getElementById("userProfileRole");
       const initEl = document.getElementById("userAvatarInitials");
@@ -187,10 +140,7 @@ window.onload = function() {
   } catch (e) {}
 
   const modal = document.getElementById("loginModal");
-  if (modal) {
-    modal.classList.remove("hidden");
-    modal.style.display = "flex";
-  }
+  if (modal) modal.style.display = "flex";
 };
 
 function logout() {
@@ -198,7 +148,59 @@ function logout() {
   location.reload();
 }
 
-// Inisialisasi Data Awal
+// ==========================================
+// TOGGLE SIDEBAR (GAYA GEMINI - BISA HIDDEN PENUH)
+// ==========================================
+function toggleSidebar(forceState) {
+  const sidebar = document.getElementById("mainSidebar");
+  const backdrop = document.getElementById("sidebarBackdrop");
+  const isDesktop = window.innerWidth >= 768;
+
+  if (typeof forceState === "boolean") {
+    isSidebarOpen = forceState;
+  } else {
+    isSidebarOpen = !isSidebarOpen;
+  }
+
+  if (isDesktop) {
+    // Mode Desktop: Saat ditutup, sidebar dihidden (w-0) dan konten melebar penuh
+    if (isSidebarOpen) {
+      sidebar.classList.remove("md:w-0", "md:hidden");
+      sidebar.classList.add("md:w-64", "md:flex");
+    } else {
+      sidebar.classList.remove("md:w-64", "md:flex");
+      sidebar.classList.add("md:w-0", "md:hidden");
+    }
+  } else {
+    // Mode Mobile (HP): Slide in/out drawer dengan backdrop blur
+    if (isSidebarOpen) {
+      sidebar.classList.remove("-translate-x-full");
+      sidebar.classList.add("translate-x-0");
+      if (backdrop) {
+        backdrop.classList.remove("opacity-0", "pointer-events-none");
+        backdrop.classList.add("opacity-100", "pointer-events-auto");
+      }
+    } else {
+      sidebar.classList.add("-translate-x-full");
+      sidebar.classList.remove("translate-x-0");
+      if (backdrop) {
+        backdrop.classList.add("opacity-0", "pointer-events-none");
+        backdrop.classList.remove("opacity-100", "pointer-events-auto");
+      }
+    }
+  }
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function onMobileNavClick() {
+  // Jika di HP, tutup sidebar setelah menu diklik
+  if (window.innerWidth < 768) {
+    toggleSidebar(false);
+  }
+}
+
+// Inisialisasi Data
 function initData() {
   fixAssets = SEED_FIX_ASSETS.map(item => ({
     ...item,
@@ -219,7 +221,7 @@ function initData() {
   syncDataViaJSONP();
 }
 
-// JSONP Sync Bebas CORS
+// JSONP Sinkronisasi Bebas CORS
 function syncDataViaJSONP() {
   if (typeof CONFIG === 'undefined') return;
 
@@ -337,17 +339,17 @@ function renderOverview() {
     [...fixAssets].sort((a, b) => b.harga - a.harga).slice(0, 5).forEach(item => {
       const qrUrl = getQrCodeUrl(item.kode);
       const tr = document.createElement("tr");
-      tr.className = "hover:bg-slate-50 border-b border-slate-100 text-xs";
+      tr.className = "hover:bg-slate-50 border-b border-slate-100";
       tr.innerHTML = `
-        <td class="py-3.5 px-6 font-mono font-bold text-blue-700">${item.kode}</td>
-        <td class="py-3.5 px-6 font-semibold text-slate-800">${item.nama}</td>
-        <td class="py-3.5 px-6 text-slate-600">${item.lokasi}</td>
-        <td class="py-3.5 px-6 text-right font-bold text-slate-900">${formatRupiah(item.harga)}</td>
-        <td class="py-3.5 px-6 text-center">
-          <div class="flex items-center justify-center gap-2">
-            <img src="${qrUrl}" alt="QR" class="w-8 h-8 rounded border border-slate-200 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
-            <button onclick="openDetailData('${item.kode}')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer">
-              <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+        <td class="py-2.5 px-3 font-mono font-bold text-blue-700 text-center">${item.kode}</td>
+        <td class="py-2.5 px-3 font-semibold text-slate-800 text-center">${item.nama}</td>
+        <td class="py-2.5 px-3 text-slate-600 text-center">${item.lokasi}</td>
+        <td class="py-2.5 px-3 font-bold text-slate-900 text-center">${formatRupiah(item.harga)}</td>
+        <td class="py-2.5 px-3 text-center">
+          <div class="flex items-center justify-center gap-1.5">
+            <img src="${qrUrl}" alt="QR" class="w-6 h-6 rounded border border-slate-200 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
+            <button onclick="openDetailData('${item.kode}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-[10px] font-bold transition flex items-center gap-1 cursor-pointer">
+              <i data-lucide="eye" class="w-3 h-3"></i>
               <span>Detail</span>
             </button>
           </div>
@@ -358,7 +360,7 @@ function renderOverview() {
   }
 }
 
-// Render Fix Asset Table (Versi Padat & Fit HP)
+// Render Tabel Fix Asset (Header & Isi Rata Tengah)
 function renderFixAssetTable(filtered = null) {
   const tbody = document.getElementById("faTableBody");
   if (!tbody) return;
@@ -373,23 +375,23 @@ function renderFixAssetTable(filtered = null) {
   data.forEach((item, idx) => {
     const qrUrl = getQrCodeUrl(item.kode);
     const tr = document.createElement("tr");
-    tr.className = "hover:bg-blue-50/40 border-b border-slate-100 text-[11px]";
+    tr.className = "hover:bg-blue-50/40 border-b border-slate-100";
     tr.innerHTML = `
-      <td class="py-2 px-2 text-center text-slate-500">${idx + 1}</td>
-      <td class="py-2 px-2.5 font-mono font-bold text-blue-900 whitespace-nowrap text-center">${item.kode}</td>
-      <td class="py-2 px-2.5 font-semibold text-slate-800 text-center">${item.nama}</td>
-      <td class="py-2 px-2.5 text-slate-600 text-[10px] text-center">${item.tipe}</td>
-      <td class="py-2 px-1.5 text-center text-slate-600">${item.satuan}</td>
-      <td class="py-2 px-1.5 text-center font-bold text-slate-800">${item.jumlah}</td>
-      <td class="py-2 px-1.5 text-center text-slate-600">${item.tahun}</td>
-      <td class="py-2 px-1.5 text-center"><span class="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">${item.kondisi}</span></td>
-      <td class="py-2 px-2.5 text-right font-bold text-slate-900 whitespace-nowrap">${formatRupiah(item.harga)}</td>
-      <td class="py-2 px-2.5 text-slate-700 whitespace-nowrap text-center">${item.lokasi}</td>
-      <td class="py-2 px-2.5 text-slate-500 text-[10px] text-center">${item.keterangan}</td>
-      <td class="py-2 px-2 text-center">
-        <img src="${item.gambar}" alt="${item.nama}" class="w-7 h-7 object-cover rounded border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
+      <td class="py-2.5 px-2 text-center text-slate-500">${idx + 1}</td>
+      <td class="py-2.5 px-2.5 font-mono font-bold text-blue-900 whitespace-nowrap text-center">${item.kode}</td>
+      <td class="py-2.5 px-3 font-semibold text-slate-800 text-center">${item.nama}</td>
+      <td class="py-2.5 px-3 text-slate-600 text-[11px] max-w-xs text-center">${item.tipe}</td>
+      <td class="py-2.5 px-2 text-center text-slate-600">${item.satuan}</td>
+      <td class="py-2.5 px-2 text-center font-bold text-slate-800">${item.jumlah}</td>
+      <td class="py-2.5 px-2 text-center text-slate-600">${item.tahun}</td>
+      <td class="py-2.5 px-2 text-center"><span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">${item.kondisi}</span></td>
+      <td class="py-2.5 px-2.5 font-bold text-slate-900 whitespace-nowrap text-center">${formatRupiah(item.harga)}</td>
+      <td class="py-2.5 px-2.5 text-slate-700 whitespace-nowrap text-center">${item.lokasi}</td>
+      <td class="py-2.5 px-2.5 text-slate-500 text-[11px] text-center">${item.keterangan}</td>
+      <td class="py-2.5 px-2 text-center">
+        <img src="${item.gambar}" alt="${item.nama}" class="w-8 h-8 object-cover rounded-lg border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
       </td>
-      <td class="py-2 px-2.5 text-center whitespace-nowrap">
+      <td class="py-2.5 px-3 text-center whitespace-nowrap">
         <div class="flex items-center justify-center gap-1.5">
           <img src="${qrUrl}" alt="QR" class="w-7 h-7 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
           <button onclick="openDetailData('${item.kode}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-[10px] font-bold transition flex items-center gap-1 cursor-pointer">
@@ -404,7 +406,7 @@ function renderFixAssetTable(filtered = null) {
   if (window.lucide) lucide.createIcons();
 }
 
-// Render Inventory Table (Versi Padat & Fit HP)
+// Render Tabel Inventory (Header & Isi Rata Tengah)
 function renderInventoryTable(filtered = null) {
   const tbody = document.getElementById("inventoryTableBody");
   if (!tbody) return;
@@ -425,27 +427,27 @@ function renderInventoryTable(filtered = null) {
     const badgeClass = isAktiva ? "bg-amber-100 text-amber-800" : "bg-teal-100 text-teal-800";
 
     const tr = document.createElement("tr");
-    tr.className = "hover:bg-blue-50/40 border-b border-slate-100 text-[11px]";
+    tr.className = "hover:bg-blue-50/40 border-b border-slate-100";
     tr.innerHTML = `
-      <td class="py-2 px-2 text-center text-slate-500">${idx + 1}</td>
-      <td class="py-2 px-2.5 font-mono font-bold text-blue-900 whitespace-nowrap text-center">${item.kode}</td>
-      <td class="py-2 px-2.5 font-semibold text-slate-800 text-center">${item.nama}</td>
-      <td class="py-2 px-2.5 text-slate-600 text-[10px] text-center">${item.tipe}</td>
-      <td class="py-2 px-1.5 text-center text-slate-600">${item.satuan}</td>
-      <td class="py-2 px-1.5 text-center font-bold text-slate-800">${item.jumlah}</td>
-      <td class="py-2 px-1.5 text-center text-slate-600">${item.tahun}</td>
-      <td class="py-2 px-1.5 text-center"><span class="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">${item.kondisi}</span></td>
-      <td class="py-2 px-2 text-center whitespace-nowrap">
-        <span class="inline-block px-2 py-0.2 text-[9px] font-bold rounded-full ${badgeClass}">
+      <td class="py-2.5 px-2 text-center text-slate-500">${idx + 1}</td>
+      <td class="py-2.5 px-2.5 font-mono font-bold text-blue-900 whitespace-nowrap text-center">${item.kode}</td>
+      <td class="py-2.5 px-3 font-semibold text-slate-800 text-center">${item.nama}</td>
+      <td class="py-2.5 px-3 text-slate-600 text-[11px] max-w-xs text-center">${item.tipe}</td>
+      <td class="py-2.5 px-2 text-center text-slate-600">${item.satuan}</td>
+      <td class="py-2.5 px-2 text-center font-bold text-slate-800">${item.jumlah}</td>
+      <td class="py-2.5 px-2 text-center text-slate-600">${item.tahun}</td>
+      <td class="py-2.5 px-2 text-center"><span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">${item.kondisi}</span></td>
+      <td class="py-2.5 px-2 text-center whitespace-nowrap">
+        <span class="inline-block px-2 py-0.5 text-[9px] font-bold rounded-full ${badgeClass}">
           ${item.kategori}
         </span>
       </td>
-      <td class="py-2 px-2.5 text-right font-bold text-slate-900 whitespace-nowrap">${formatRupiah(item.harga)}</td>
-      <td class="py-2 px-2.5 text-slate-500 text-[10px] text-center">${item.keterangan}</td>
-      <td class="py-2 px-2 text-center">
-        <img src="${item.gambar}" alt="${item.nama}" class="w-7 h-7 object-cover rounded border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
+      <td class="py-2.5 px-2.5 font-bold text-slate-900 whitespace-nowrap text-center">${formatRupiah(item.harga)}</td>
+      <td class="py-2.5 px-2.5 text-slate-500 text-[11px] text-center">${item.keterangan}</td>
+      <td class="py-2.5 px-2 text-center">
+        <img src="${item.gambar}" alt="${item.nama}" class="w-8 h-8 object-cover rounded-lg border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
       </td>
-      <td class="py-2 px-2.5 text-center whitespace-nowrap">
+      <td class="py-2.5 px-3 text-center whitespace-nowrap">
         <div class="flex items-center justify-center gap-1.5">
           <img src="${qrUrl}" alt="QR" class="w-7 h-7 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
           <button onclick="openDetailData('${item.kode}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-[10px] font-bold transition flex items-center gap-1 cursor-pointer">
@@ -460,60 +462,42 @@ function renderInventoryTable(filtered = null) {
   if (window.lucide) lucide.createIcons();
 }
 
-// Render Top 5 Overview Padat
-function renderOverview() {
-  const totalFA = fixAssets.reduce((s, i) => s + (i.jumlah || 1), 0);
-  const totalInv = inventoryItems.reduce((s, i) => s + (i.jumlah || 1), 0);
-  const nilaiFA = fixAssets.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0);
-  const nilaiInv = inventoryItems.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0);
-
-  const elItemAll = document.getElementById("ovTotalItemAll");
-  const elNilaiAll = document.getElementById("ovTotalNilaiAll");
-  const elNilaiFA = document.getElementById("ovNilaiFixAsset");
-  const elNilaiInv = document.getElementById("ovNilaiInventory");
-  const badgeFA = document.getElementById("badgeCountFixAsset");
-  const badgeInv = document.getElementById("badgeCountInventory");
-
-  if (elItemAll) elItemAll.textContent = `${(totalFA + totalInv).toLocaleString("id-ID")} Item`;
-  if (elNilaiAll) elNilaiAll.textContent = formatRupiah(nilaiFA + nilaiInv);
-  if (elNilaiFA) elNilaiFA.textContent = formatRupiah(nilaiFA);
-  if (elNilaiInv) elNilaiInv.textContent = formatRupiah(nilaiInv);
-  if (badgeFA) badgeFA.textContent = fixAssets.length;
-  if (badgeInv) badgeInv.textContent = inventoryItems.length;
-
-  const topTable = document.getElementById("overviewTopTableBody");
-  if (topTable) {
-    topTable.innerHTML = "";
-    [...fixAssets].sort((a, b) => b.harga - a.harga).slice(0, 5).forEach(item => {
-      const qrUrl = getQrCodeUrl(item.kode);
-      const tr = document.createElement("tr");
-      tr.className = "hover:bg-slate-50 border-b border-slate-100 text-[11px]";
-      tr.innerHTML = `
-        <td class="py-2.5 px-3 font-mono font-bold text-blue-700 text-center">${item.kode}</td>
-        <td class="py-2.5 px-3 font-semibold text-slate-800 text-center">${item.nama}</td>
-        <td class="py-2.5 px-3 text-slate-600 text-center">${item.lokasi}</td>
-        <td class="py-2.5 px-3 text-right font-bold text-slate-900">${formatRupiah(item.harga)}</td>
-        <td class="py-2.5 px-3 text-center">
-          <div class="flex items-center justify-center gap-1.5">
-            <img src="${qrUrl}" alt="QR" class="w-7 h-7 rounded border border-slate-200 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
-            <button onclick="openDetailData('${item.kode}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-[10px] font-bold transition flex items-center gap-1 cursor-pointer">
-              <i data-lucide="eye" class="w-3 h-3"></i>
-              <span>Detail</span>
-            </button>
-          </div>
-        </td>
-      `;
-      topTable.appendChild(tr);
-    });
-  }
-}
 function openDetailData(kode) {
   window.open(`barcode.html?code=${encodeURIComponent(kode)}`, '_blank');
 }
 
-// ========================================================
-// FITUR CETAK SELURUH BARCODE (PRESISI 5 x 5 CM & A4/A3 FIT)
-// ========================================================
+// Navigasi Tab
+function switchTab(tabId) {
+  const tabs = ['overview', 'fixasset', 'inventory'];
+  
+  tabs.forEach(s => {
+    const secEl = document.getElementById(`section-${s}`);
+    const navEl = document.getElementById(`nav-${s}`);
+    
+    if (secEl) secEl.classList.add('hidden');
+    if (navEl) {
+      navEl.className = "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer text-left";
+    }
+  });
+  
+  const targetSec = document.getElementById(`section-${tabId}`);
+  const targetNav = document.getElementById(`nav-${tabId}`);
+  
+  if (targetSec) targetSec.classList.remove('hidden');
+  if (targetNav) {
+    targetNav.className = "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition text-white bg-blue-600 shadow-sm shadow-blue-900/40 cursor-pointer text-left";
+  }
+  
+  const titles = { 
+    overview: "Overview", 
+    fixasset: "Dashboard Fix Asset", 
+    inventory: "Dashboard Inventory" 
+  };
+  const topTitle = document.getElementById("topBarTitle");
+  if (topTitle) topTitle.textContent = titles[tabId];
+}
+
+// Batch Print Barcode 5x5 cm
 function openBatchPrintModal(type) {
   currentBatchType = type;
   const isFA = (type === 'fixasset');
@@ -524,20 +508,12 @@ function openBatchPrintModal(type) {
   const sub = document.getElementById("batchPrintSubtitle");
   const container = document.getElementById("barcodeGridContainer");
 
-  if (!modal || !container) {
-    console.error("Elemen modal batch print tidak ditemukan!");
-    return;
-  }
+  if (!modal || !container) return;
 
-  title.textContent = isFA 
-    ? "Cetak Barcode Fix Asset (Aktiva Tetap)" 
-    : "Cetak Barcode Inventory (Persediaan)";
-  
-  sub.textContent = `Total ${list.length} label stiker terdaftar (Ukuran Presisi 5 x 5 cm)`;
+  title.textContent = isFA ? "Cetak Barcode Fix Asset" : "Cetak Barcode Inventory";
+  sub.textContent = `Total ${list.length} label stiker (5 x 5 cm)`;
 
-  // Render Grid Barcode Stiker (100% Sesuai Gambar Referensi)
   container.innerHTML = "";
-  
   list.forEach((item) => {
     const qrUrl = getQrCodeUrl(item.kode);
     const card = document.createElement("div");
@@ -551,11 +527,9 @@ function openBatchPrintModal(type) {
           <div class="sticker-subtitle">Asset & Inventory System</div>
         </div>
       </div>
-
       <div class="sticker-qr-wrapper">
         <img src="${qrUrl}" alt="${item.kode}" class="sticker-qr-img">
       </div>
-
       <div class="sticker-footer">
         <div class="sticker-code">${item.kode}</div>
       </div>
@@ -565,12 +539,8 @@ function openBatchPrintModal(type) {
 
   modal.classList.remove("hidden");
   modal.style.display = "flex";
-
   setPaperSize('A4');
-
-  if (window.lucide) {
-    lucide.createIcons();
-  }
+  if (window.lucide) lucide.createIcons();
 }
 
 function closeBatchPrintModal() {
@@ -591,13 +561,13 @@ function setPaperSize(size) {
   if (!btnA4 || !btnA3 || !printableArea || !container) return;
 
   if (size === 'A4') {
-    btnA4.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition shadow-sm";
-    btnA3.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
+    btnA4.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-600 text-white transition";
+    btnA3.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-400 hover:text-white transition";
     printableArea.className = "paper-sheet paper-a4";
     container.className = "grid-a4";
   } else {
-    btnA3.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition shadow-sm";
-    btnA4.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
+    btnA3.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-600 text-white transition";
+    btnA4.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-400 hover:text-white transition";
     printableArea.className = "paper-sheet paper-a3";
     container.className = "grid-a3";
   }
@@ -607,7 +577,7 @@ function triggerPrint() {
   window.print();
 }
 
-// Navigasi & Filter
+// Filter Pencarian
 function filterFixAsset() {
   const q = document.getElementById("faSearchInput").value.toLowerCase();
   renderFixAssetTable(fixAssets.filter(i => i.kode.toLowerCase().includes(q) || i.nama.toLowerCase().includes(q) || i.lokasi.toLowerCase().includes(q)));
@@ -616,44 +586,4 @@ function filterFixAsset() {
 function filterInventory() {
   const q = document.getElementById("invSearchInput").value.toLowerCase();
   renderInventoryTable(inventoryItems.filter(i => i.kode.toLowerCase().includes(q) || i.nama.toLowerCase().includes(q) || i.keterangan.toLowerCase().includes(q)));
-}
-
-// ==========================================
-// NAVIGASI TAB (POSISI RATA KIRI TERKUNCI)
-// ==========================================
-function switchTab(tabId) {
-  const tabs = ['overview', 'fixasset', 'inventory'];
-  
-  tabs.forEach(s => {
-    const secEl = document.getElementById(`section-${s}`);
-    const navEl = document.getElementById(`nav-${s}`);
-    
-    // Sembunyikan section lain
-    if (secEl) secEl.classList.add('hidden');
-    
-    // Kembalikan tombol ke status tidak aktif (inactive)
-    if (navEl) {
-      navEl.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer";
-    }
-  });
-  
-  // Munculkan section yang dipilih
-  const targetSec = document.getElementById(`section-${tabId}`);
-  const targetNav = document.getElementById(`nav-${tabId}`);
-  
-  if (targetSec) targetSec.classList.remove('hidden');
-  
-  // Set tombol aktif (active)
-  if (targetNav) {
-    targetNav.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold transition text-white bg-blue-600 shadow-md shadow-blue-900/40 cursor-pointer";
-  }
-  
-  // Ubah judul header atas
-  const titles = { 
-    overview: "Overview", 
-    fixasset: "Dashboard Fix Asset", 
-    inventory: "Dashboard Inventory" 
-  };
-  const topTitle = document.getElementById("topBarTitle");
-  if (topTitle) topTitle.textContent = titles[tabId];
 }
