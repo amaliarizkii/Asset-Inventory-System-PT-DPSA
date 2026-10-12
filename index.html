@@ -2,25 +2,25 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <!-- Set viewport agar browser HP merender resolusi desktop utuh -->
-  <meta name="viewport" content="width=1280, initial-scale=0.35, minimum-scale=0.25, maximum-scale=2.0, user-scalable=yes">
+  <!-- Viewport responsif alami: tidak perlu zoom manual -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>PT DPSA - Asset & Inventory System</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-100 text-slate-800 antialiased h-screen w-screen overflow-hidden font-sans select-none min-w-[1280px]">
+<body class="bg-slate-100 text-slate-800 antialiased h-screen w-screen overflow-hidden font-sans select-none">
   
-  <!-- Container Utama Aplikasi Desktop (Kunci Ukuran Desktop Penuh di HP Maupun PC) -->
-  <div id="appContainer" style="display: none;" class="h-full w-full overflow-hidden flex min-w-[1280px]">
+  <!-- Container Utama Aplikasi -->
+  <div id="appContainer" style="display: none;" class="h-full w-full overflow-hidden flex">
     
-    <!-- Sidebar Desktop (Stay di Kiri, Rata Kiri, Ikon & Teks Berdampingan Rapi) -->
+    <!-- Sidebar Desktop / Mobile Stay -->
     <aside id="mainSidebar" class="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 border-r border-slate-800 h-full transition-all duration-300 z-30 select-none">
       
       <!-- Bagian Atas: Brand & Menu Navigasi -->
       <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
         <!-- Logo Header -->
-        <div class="h-20 flex items-center px-5 border-b border-slate-800/80 gap-3 shrink-0">
+        <div class="h-20 flex items-center px-4 sm:px-5 border-b border-slate-800/80 gap-3 shrink-0">
           <img src="logo dpsa.png" alt="PT DPSA" class="w-10 h-10 object-contain shrink-0" onerror="this.src='no image.png'">
           <div class="sidebar-text whitespace-nowrap overflow-hidden transition-opacity duration-200">
             <h1 class="text-base font-black text-white tracking-wider leading-none">PT DPSA</h1>
@@ -29,14 +29,14 @@
         </div>
         
         <!-- Status Sinkronisasi -->
-        <div class="px-5 py-2.5 border-b border-slate-800/50 bg-slate-950/40 shrink-0">
+        <div class="px-4 sm:px-5 py-2.5 border-b border-slate-800/50 bg-slate-950/40 shrink-0">
           <div class="flex items-center gap-2.5">
             <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
             <span class="text-[10px] text-emerald-300 font-bold sidebar-text whitespace-nowrap">Sheets Terhubung</span>
           </div>
         </div>
         
-        <!-- Menu Navigasi (Konsisten, Rata Kiri, Ikon & Teks Rapat di Kiri) -->
+        <!-- Menu Navigasi Rata Kiri Konsisten -->
         <nav class="p-3 space-y-1.5 flex-1 overflow-y-auto">
           <p class="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 sidebar-text">Navigasi Utama</p>
           
@@ -87,18 +87,18 @@
       </div>
     </aside>
 
-    <!-- Main Workspace Desktop (Scroll Vertikal Mandiri) -->
+    <!-- Main Workspace (Scroll Mandiri Tanpa Zoom In/Out) -->
     <main class="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-slate-100">
       
       <!-- Header Atas Sticky -->
-      <header class="h-20 bg-white border-b border-slate-200/90 px-6 flex items-center justify-between shrink-0 z-20 shadow-xs">
+      <header class="h-20 bg-white border-b border-slate-200/90 px-4 sm:px-6 flex items-center justify-between shrink-0 z-20 shadow-xs">
         <div class="flex items-center gap-3.5">
           <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="p-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition cursor-pointer" title="Perluas / Perkecil Sidebar">
             <i data-lucide="panel-left-close" id="sidebarToggleIcon" class="w-5 h-5"></i>
           </button>
           <div>
-            <h2 id="topBarTitle" class="text-lg font-black text-slate-900 tracking-tight leading-tight">Overview</h2>
-            <p id="topBarSubtitle" class="text-xs text-slate-500 font-medium">PT DPSA Asset & Inventory Management Portal</p>
+            <h2 id="topBarTitle" class="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-tight">Overview</h2>
+            <p id="topBarSubtitle" class="text-[11px] sm:text-xs text-slate-500 font-medium">PT DPSA Asset & Inventory Management Portal</p>
           </div>
         </div>
         <div class="flex items-center gap-3">
@@ -109,11 +109,12 @@
       </header>
 
       <!-- Scrollable Content Desktop Container -->
-      <div class="flex-1 overflow-y-auto p-6 space-y-6">
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
         
         <!-- SECTION 1: OVERVIEW -->
         <section id="section-overview" class="space-y-6">
-          <div class="grid grid-cols-4 gap-4">
+          <!-- Metrik Responsif (1 baris di PC, 2 baris proporsional di layar sedang/kecil) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <div class="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-5 rounded-3xl shadow-lg border border-slate-800">
               <span class="text-[11px] font-bold uppercase tracking-wider text-sky-400">Total Akumulasi Nilai</span>
               <h3 id="ovTotalNilaiAll" class="text-2xl font-black mt-2 text-white">Rp 0</h3>
@@ -146,7 +147,7 @@
               <button onclick="switchTab('fixasset')" class="text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer">Lihat Semua Fix Asset &rarr;</button>
             </div>
             <div class="overflow-x-auto">
-              <table class="w-full text-xs text-slate-600 min-w-[900px]">
+              <table class="w-full text-xs text-slate-600 min-w-[800px]">
                 <thead class="bg-slate-50 text-[11px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
                   <tr>
                     <th class="py-3.5 px-6 text-center">Kode Barang</th>
@@ -164,7 +165,7 @@
 
         <!-- SECTION 2: FIX ASSET -->
         <section id="section-fixasset" class="hidden space-y-6">
-          <div class="grid grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="bg-white p-5 rounded-3xl shadow-xs border border-slate-200/90">
               <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Nilai Fix Asset</span>
               <h3 id="faTotalNilai" class="text-2xl font-black mt-2 text-blue-700">Rp 0</h3>
@@ -180,7 +181,7 @@
           </div>
 
           <!-- Action Bar -->
-          <div class="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs flex items-center justify-between gap-4">
+          <div class="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
             <div class="relative flex-1 max-w-md">
               <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
               <input type="text" id="faSearchInput" oninput="filterFixAsset()" placeholder="Cari kode, nama, PIC, lokasi..." class="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500">
@@ -192,10 +193,10 @@
             </button>
           </div>
 
-          <!-- Tabel Fix Asset (Header Rata Tengah & Lebar Penuh Desktop) -->
+          <!-- Tabel Fix Asset (Header Rata Tengah & Scroll Horizontal Meja Saja) -->
           <div class="bg-white rounded-3xl shadow-xs border border-slate-200/90 overflow-hidden">
             <div class="overflow-x-auto">
-              <table class="w-full text-xs text-slate-600 min-w-[1200px]">
+              <table class="w-full text-xs text-slate-600 min-w-[1100px]">
                 <thead class="bg-slate-50 text-[11px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
                   <tr>
                     <th class="py-4 px-3 text-center w-12">No</th>
@@ -221,7 +222,7 @@
 
         <!-- SECTION 3: INVENTORY -->
         <section id="section-inventory" class="hidden space-y-6">
-          <div class="grid grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="bg-white p-5 rounded-3xl shadow-xs border border-slate-200/90">
               <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Nilai Inventory</span>
               <h3 id="invTotalNilai" class="text-2xl font-black mt-2 text-emerald-700">Rp 0</h3>
@@ -237,7 +238,7 @@
           </div>
 
           <!-- Action Bar -->
-          <div class="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs flex items-center justify-between gap-4">
+          <div class="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
             <div class="relative flex-1 max-w-md">
               <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
               <input type="text" id="invSearchInput" oninput="filterInventory()" placeholder="Cari kode, nama, letak..." class="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
@@ -249,10 +250,10 @@
             </button>
           </div>
 
-          <!-- Tabel Inventory (Header Rata Tengah & Lebar Penuh Desktop) -->
+          <!-- Tabel Inventory (Header Rata Tengah & Scroll Horizontal Meja Saja) -->
           <div class="bg-white rounded-3xl shadow-xs border border-slate-200/90 overflow-hidden">
             <div class="overflow-x-auto">
-              <table class="w-full text-xs text-slate-600 min-w-[1200px]">
+              <table class="w-full text-xs text-slate-600 min-w-[1100px]">
                 <thead class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-700 uppercase tracking-wider">
                   <tr>
                     <th class="py-4 px-3 text-center w-12">No</th>
@@ -281,11 +282,11 @@
   </div>
 
   <!-- MODAL CETAK BATCH BARCODE (PRESISI 5x5 CM) -->
-  <div id="batchPrintModal" style="display: none;" class="fixed inset-0 z-50 items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+  <div id="batchPrintModal" style="display: none;" class="fixed inset-0 z-50 items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3 sm:p-4">
     <div class="bg-white rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden">
       
       <!-- Top Action Bar Modal Print -->
-      <div class="px-6 py-3.5 bg-slate-900 text-white flex items-center justify-between no-print shrink-0">
+      <div class="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between no-print shrink-0">
         <div>
           <h3 id="batchPrintTitle" class="text-sm font-bold">Cetak Seluruh Barcode</h3>
           <p id="batchPrintSubtitle" class="text-[11px] text-slate-400">Ukuran stiker baku 5 x 5 cm</p>
@@ -293,17 +294,17 @@
         
         <div class="flex items-center gap-3">
           <div class="flex items-center gap-1 bg-slate-800 p-1 rounded-xl border border-slate-700">
-            <button type="button" onclick="setPaperSize('A4')" id="btnPaperA4" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition cursor-pointer">
-              Kertas A4 (~20 Label)
+            <button type="button" onclick="setPaperSize('A4')" id="btnPaperA4" class="px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white transition cursor-pointer">
+              A4 (~20)
             </button>
-            <button type="button" onclick="setPaperSize('A3')" id="btnPaperA3" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer">
-              Kertas A3 (~30+ Label)
+            <button type="button" onclick="setPaperSize('A3')" id="btnPaperA3" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer">
+              A3 (~30+)
             </button>
           </div>
 
-          <button type="button" onclick="triggerPrint()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md">
+          <button type="button" onclick="triggerPrint()" class="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md">
             <i data-lucide="printer" class="w-4 h-4"></i>
-            <span>Cetak Sekarang</span>
+            <span>Cetak</span>
           </button>
           
           <button type="button" onclick="closeBatchPrintModal()" class="text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer">
@@ -313,7 +314,7 @@
       </div>
 
       <!-- Area Preview Kertas -->
-      <div class="p-6 overflow-y-auto flex-1 bg-slate-100 flex justify-center">
+      <div class="p-4 sm:p-6 overflow-y-auto flex-1 bg-slate-100 flex justify-center">
         <div id="printableArea" class="paper-sheet paper-a4">
           <div id="barcodeGridContainer" class="grid-a4"></div>
         </div>
@@ -322,9 +323,9 @@
     </div>
   </div>
 
-  <!-- Modal Login (Pasti Tampil Awal) -->
+  <!-- Modal Login -->
   <div id="loginModal" style="display: flex;" class="fixed inset-0 z-50 items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border border-slate-100">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 border border-slate-100">
       <div class="text-center mb-6">
         <div class="w-16 h-16 bg-blue-50 border border-blue-200 rounded-2xl mx-auto flex items-center justify-center mb-3">
           <img src="logo dpsa.png" alt="PT DPSA" class="w-10 h-10 object-contain" onerror="this.onerror=null;this.src='no image.png';">
