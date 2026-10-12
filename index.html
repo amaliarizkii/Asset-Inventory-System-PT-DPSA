@@ -121,3 +121,264 @@
       <div class="flex-1 overflow-y-auto p-3 sm:p-5 space-y-4">
         
         <!-- SECTION 1: OVERVIEW -->
+        <section id="section-overview" class="space-y-4">
+          <!-- Metrik Ringkas: 2 Kolom di Layar HP, 4 Kolom di PC -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+            <div class="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-3.5 sm:p-4 rounded-2xl shadow-sm border border-slate-800">
+              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-sky-400">Total Nilai</span>
+              <h3 id="ovTotalNilaiAll" class="text-base sm:text-xl font-black mt-1 text-white leading-tight">Rp 0</h3>
+              <p class="text-[9px] text-slate-400 mt-2 pt-1.5 border-t border-slate-800 truncate">Fix Asset + Inventory</p>
+            </div>
+            <div class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
+              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500">Total Item</span>
+              <h3 id="ovTotalItemAll" class="text-base sm:text-xl font-extrabold mt-1 text-slate-900 leading-tight">0 Item</h3>
+              <p class="text-[9px] text-emerald-600 font-semibold mt-2 pt-1.5 border-t border-slate-100 truncate">Semua aktiva</p>
+            </div>
+            <div class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
+              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500">Nilai Fix Asset</span>
+              <h3 id="ovNilaiFixAsset" class="text-base sm:text-xl font-extrabold mt-1 text-blue-700 leading-tight">Rp 0</h3>
+              <p class="text-[9px] text-slate-500 mt-2 pt-1.5 border-t border-slate-100 truncate">Unit Aktiva Tetap</p>
+            </div>
+            <div class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
+              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500">Nilai Inventory</span>
+              <h3 id="ovNilaiInventory" class="text-base sm:text-xl font-extrabold mt-1 text-emerald-700 leading-tight">Rp 0</h3>
+              <p class="text-[9px] text-slate-500 mt-2 pt-1.5 border-t border-slate-100 truncate">SKU Persediaan</p>
+            </div>
+          </div>
+
+          <!-- Top 5 High Value Table -->
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
+            <div class="p-3.5 sm:p-4 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 class="text-xs sm:text-sm font-bold text-slate-900">5 Aset Nilai Tertinggi</h3>
+                <p class="text-[10px] text-slate-500">Aktiva signifikan di PT DPSA</p>
+              </div>
+              <button onclick="switchTab('fixasset')" class="text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer">Lihat Semua &rarr;</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs text-slate-600 min-w-[700px]">
+                <thead class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th class="py-2.5 px-3 text-center">Kode Barang</th>
+                    <th class="py-2.5 px-3 text-center">Nama & Spesifikasi</th>
+                    <th class="py-2.5 px-3 text-center">Lokasi</th>
+                    <th class="py-2.5 px-3 text-center">Harga Perolehan</th>
+                    <th class="py-2.5 px-3 text-center">Aksi & Barcode</th>
+                  </tr>
+                </thead>
+                <tbody id="overviewTopTableBody" class="divide-y divide-slate-100 text-[11px]"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 2: FIX ASSET -->
+        <section id="section-fixasset" class="hidden space-y-4">
+          <!-- Metrik Compact Fix Asset -->
+          <div class="grid grid-cols-3 gap-2.5 sm:gap-3.5">
+            <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
+              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate block">Total Nilai</span>
+              <h3 id="faTotalNilai" class="text-xs sm:text-lg font-black mt-1 text-blue-700 leading-tight">Rp 0</h3>
+            </div>
+            <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
+              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate block">Total Unit</span>
+              <h3 id="faTotalItem" class="text-xs sm:text-lg font-black mt-1 text-slate-900 leading-tight">0 Unit</h3>
+            </div>
+            <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
+              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate block">Kondisi Baik</span>
+              <h3 id="faKondisiBaik" class="text-xs sm:text-lg font-black mt-1 text-emerald-600 leading-tight">100%</h3>
+            </div>
+          </div>
+
+          <!-- Action Bar Ringkas -->
+          <div class="bg-white p-3 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+            <div class="relative flex-1">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input type="text" id="faSearchInput" oninput="filterFixAsset()" placeholder="Cari kode, nama, lokasi..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button onclick="openBatchPrintModal('fixasset')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer shrink-0">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+              <span>Cetak Seluruh Barcode Fix Asset</span>
+            </button>
+          </div>
+
+          <!-- Tabel Fix Asset (Header Rata Tengah) -->
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-slate-600 min-w-[980px]">
+                <thead class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th class="py-2.5 px-2 text-center w-10">No</th>
+                    <th class="py-2.5 px-2.5 text-center">Kode Barang</th>
+                    <th class="py-2.5 px-3 text-center">Nama Barang</th>
+                    <th class="py-2.5 px-3 text-center">Tipe / Ukuran</th>
+                    <th class="py-2.5 px-2 text-center">Satuan</th>
+                    <th class="py-2.5 px-2 text-center">Qty</th>
+                    <th class="py-2.5 px-2 text-center">Tahun</th>
+                    <th class="py-2.5 px-2 text-center">Kondisi</th>
+                    <th class="py-2.5 px-2.5 text-center">Harga Perolehan</th>
+                    <th class="py-2.5 px-2.5 text-center">Lokasi</th>
+                    <th class="py-2.5 px-2.5 text-center">Keterangan</th>
+                    <th class="py-2.5 px-2 text-center">Foto</th>
+                    <th class="py-2.5 px-3 text-center">Aksi & Barcode</th>
+                  </tr>
+                </thead>
+                <tbody id="faTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 3: INVENTORY -->
+        <section id="section-inventory" class="hidden space-y-4">
+          <!-- Metrik Compact Inventory -->
+          <div class="grid grid-cols-3 gap-2.5 sm:gap-3.5">
+            <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
+              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate block">Total Nilai</span>
+              <h3 id="invTotalNilai" class="text-xs sm:text-lg font-black mt-1 text-emerald-700 leading-tight">Rp 0</h3>
+            </div>
+            <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
+              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate block">Total SKU</span>
+              <h3 id="invTotalItem" class="text-xs sm:text-lg font-black mt-1 text-slate-900 leading-tight">0 SKU</h3>
+            </div>
+            <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90">
+              <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate block">Kuantitas Fisik</span>
+              <h3 id="invTotalKuantitas" class="text-xs sm:text-lg font-black mt-1 text-sky-600 leading-tight">0</h3>
+            </div>
+          </div>
+
+          <!-- Action Bar Ringkas -->
+          <div class="bg-white p-3 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+            <div class="relative flex-1">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input type="text" id="invSearchInput" oninput="filterInventory()" placeholder="Cari kode, nama, letak..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <button onclick="openBatchPrintModal('inventory')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer shrink-0">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+              <span>Cetak Seluruh Barcode Inventory</span>
+            </button>
+          </div>
+
+          <!-- Tabel Inventory (Header Rata Tengah) -->
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-slate-600 min-w-[980px]">
+                <thead class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th class="py-2.5 px-2 text-center w-10">No</th>
+                    <th class="py-2.5 px-2.5 text-center">Kode Barang</th>
+                    <th class="py-2.5 px-3 text-center">Nama Barang</th>
+                    <th class="py-2.5 px-3 text-center">Tipe / Ukuran</th>
+                    <th class="py-2.5 px-2 text-center">Satuan</th>
+                    <th class="py-2.5 px-2 text-center">Qty</th>
+                    <th class="py-2.5 px-2 text-center">Tahun</th>
+                    <th class="py-2.5 px-2 text-center">Kondisi</th>
+                    <th class="py-2.5 px-2 text-center">Kategori</th>
+                    <th class="py-2.5 px-2.5 text-center">Harga Perolehan</th>
+                    <th class="py-2.5 px-2.5 text-center">Keterangan (Letak)</th>
+                    <th class="py-2.5 px-2 text-center">Foto</th>
+                    <th class="py-2.5 px-3 text-center">Aksi & Barcode</th>
+                  </tr>
+                </thead>
+                <tbody id="inventoryTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL CETAK BATCH BARCODE (PRESISI 5x5 CM) -->
+  <div id="batchPrintModal" style="display: none;" class="fixed inset-0 z-50 items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
+    <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden">
+      
+      <!-- Top Action Bar Modal Print -->
+      <div class="px-4 py-3 bg-slate-900 text-white flex items-center justify-between no-print shrink-0">
+        <div>
+          <h3 id="batchPrintTitle" class="text-xs sm:text-sm font-bold">Cetak Seluruh Barcode</h3>
+          <p id="batchPrintSubtitle" class="text-[10px] text-slate-400">Ukuran stiker baku 5 x 5 cm</p>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1 bg-slate-800 p-1 rounded-xl border border-slate-700">
+            <button type="button" onclick="setPaperSize('A4')" id="btnPaperA4" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-600 text-white transition cursor-pointer">
+              A4 (~20)
+            </button>
+            <button type="button" onclick="setPaperSize('A3')" id="btnPaperA3" class="px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-400 hover:text-white transition cursor-pointer">
+              A3 (~30+)
+            </button>
+          </div>
+
+          <button type="button" onclick="triggerPrint()" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1 transition cursor-pointer shadow-sm">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+            <span>Cetak</span>
+          </button>
+          
+          <button type="button" onclick="closeBatchPrintModal()" class="text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Area Preview Kertas -->
+      <div class="p-3 sm:p-5 overflow-y-auto flex-1 bg-slate-100 flex justify-center">
+        <div id="printableArea" class="paper-sheet paper-a4">
+          <div id="barcodeGridContainer" class="grid-a4"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal Login -->
+  <div id="loginModal" style="display: flex;" class="fixed inset-0 z-50 items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-100">
+      <div class="text-center mb-5">
+        <div class="w-14 h-14 bg-blue-50 border border-blue-200 rounded-2xl mx-auto flex items-center justify-center mb-2.5">
+          <img src="logo dpsa.png" alt="PT DPSA" class="w-9 h-9 object-contain" onerror="this.onerror=null;this.src='no image.png';">
+        </div>
+        <h2 class="text-lg font-bold text-slate-800">PT DPSA</h2>
+        <p class="text-xs text-slate-500 font-medium">Asset &amp; Inventory System</p>
+      </div>
+
+      <div id="loginErrorMsg" style="display: none;" class="mb-3 p-2.5 bg-red-50 border border-red-200 text-red-600 text-xs rounded-xl text-center font-medium"></div>
+
+      <!-- Pilihan Cepat 1-Klik -->
+      <div class="mb-3.5 p-2.5 bg-blue-50/70 border border-blue-100 rounded-xl">
+        <p class="text-[10px] font-semibold text-blue-900 mb-1.5 text-center">Pilih Akun Masuk Langsung:</p>
+        <div class="grid grid-cols-3 gap-1.5">
+          <button type="button" onclick="pickAccount('staff.it@dharmaputrainterior.co.id', 'staff.itDPSA88')" class="py-1 px-1.5 bg-white hover:bg-blue-600 hover:text-white border border-blue-200 text-blue-700 text-xs font-semibold rounded-lg shadow-xs transition-colors text-center cursor-pointer">
+            Staff IT
+          </button>
+          <button type="button" onclick="pickAccount('hrga@dharmaputrainterior.co.id', 'hrgaDPSA88')" class="py-1 px-1.5 bg-white hover:bg-blue-600 hover:text-white border border-blue-200 text-blue-700 text-xs font-semibold rounded-lg shadow-xs transition-colors text-center cursor-pointer">
+            HR &amp; GA
+          </button>
+          <button type="button" onclick="pickAccount('keuangan@dharmaputrainterior.co.id', 'keuanganDPSA88')" class="py-1 px-1.5 bg-white hover:bg-blue-600 hover:text-white border border-blue-200 text-blue-700 text-xs font-semibold rounded-lg shadow-xs transition-colors text-center cursor-pointer">
+            Keuangan
+          </button>
+        </div>
+      </div>
+
+      <!-- Form Login Manual -->
+      <form onsubmit="event.preventDefault(); doLogin(); return false;" class="space-y-3">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Username / Email</label>
+          <input type="text" id="loginEmail" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white" value="staff.it@dharmaputrainterior.co.id" placeholder="staff.it@dharmaputrainterior.co.id" required />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Password</label>
+          <input type="password" id="loginPassword" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white" value="staff.itDPSA88" placeholder="••••••••" required />
+        </div>
+        <button type="button" onclick="doLogin()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-xs font-semibold rounded-xl transition-all shadow-sm shadow-blue-500/20 cursor-pointer">
+          Masuk ke Sistem
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
