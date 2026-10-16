@@ -23,6 +23,35 @@ html, body {
   background: #94a3b8;
 }
 
+/* Aturan Header Tabel Tetap Diam (Sticky Th) */
+.sticky-th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  background-color: #f8fafc; /* slate-50 */
+  border-bottom: 2px solid #e2e8f0 !important; /* slate-200 */
+}
+
+/* Mempertahankan warna kolom spesial pada header saat sticky */
+th.bg-amber-50 {
+  background-color: #fffbeb !important;
+}
+th.bg-sky-50 {
+  background-color: #f0f9ff !important;
+}
+th.bg-slate-100 {
+  background-color: #f1f5f9 !important;
+}
+th.bg-emerald-50 {
+  background-color: #ecfdf5 !important;
+}
+
+/* Haluskan pergerakan scroll tabel */
+.overflow-y-auto {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ========================================================
    STIKER LABEL RESMI PT DPSA - PRESISI UKURAN 5 x 5 CM
    ======================================================== */
