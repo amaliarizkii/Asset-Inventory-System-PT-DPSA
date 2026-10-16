@@ -9,7 +9,11 @@ const CONFIG = {
     INVENTORY: "Inventory"
   },
 
-  // Ekstrak ID file Google Drive
+  MONTH_NAMES: [
+    "JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI",
+    "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"
+  ],
+
   extractDriveId: function(url) {
     if (!url || typeof url !== 'string') return null;
     const matchD = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
@@ -19,7 +23,6 @@ const CONFIG = {
     return null;
   },
 
-  // Endpoint gambar Google Drive bebas blokir
   formatDriveImageUrl: function(rawUrl) {
     if (!rawUrl || typeof rawUrl !== 'string') return 'no image.png';
     const trimmed = rawUrl.trim();
@@ -31,18 +34,15 @@ const CONFIG = {
 
     const fileId = this.extractDriveId(trimmed);
     if (fileId) {
-      // Thumbnail Google Drive resolusi tinggi
-      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
     }
     return trimmed;
   },
 
-  // Fallback melalui image proxy jika jaringan memblokir domain drive
   getBackupDriveImageUrl: function(rawUrl) {
     const fileId = this.extractDriveId(rawUrl);
     if (fileId) {
-      const driveThumb = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
-      return `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=2592000&url=${encodeURIComponent(driveThumb)}`;
+      return `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=2592000&url=${encodeURIComponent('https://drive.google.com/thumbnail?id=' + fileId + '&sz=w800')}`;
     }
     return 'no image.png';
   }
