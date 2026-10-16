@@ -1,5 +1,5 @@
 /**
- * script.js - Core Logic & Data Loader PT DPSA Asset & Inventory
+ * script.js - Core Logic, Depreciation Calculator & Data Loader PT DPSA
  */
 
 const VALID_USERS = [
@@ -9,138 +9,230 @@ const VALID_USERS = [
 ];
 
 let currentUser = null;
-let fixAssets = [];
+let rawFixAssets = [];
+let calculatedFixAssets = [];
 let inventoryItems = [];
 let currentBatchType = 'fixasset';
 let currentPaperSize = 'A4';
-let isSidebarOpen = false;
+let isSidebarOpenDesktop = true;
+let isSidebarOpenMobile = false;
 
-// Helper Format Gambar Drive
-function formatImageUrl(driveId, rawUrl) {
-  if (typeof CONFIG !== 'undefined' && CONFIG.formatDriveImageUrl) {
-    if (driveId) return CONFIG.formatDriveImageUrl(`https://drive.google.com/file/d/${driveId}/view`);
-    if (rawUrl) return CONFIG.formatDriveImageUrl(rawUrl);
-  }
-  if (driveId) {
-    return `https://drive.google.com/thumbnail?id=${driveId}&sz=w800`;
-  }
-  return 'no image.png';
+// Format Angka Rupiah
+function formatRupiah(num) {
+  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(num || 0);
+}
+
+// Format Angka Desimal Bersih
+function parsePrice(val) {
+  if (!val) return 0;
+  if (typeof val === 'number') return val;
+  const cleanStr = String(val).replace(/[^0-9.-]+/g, '');
+  return cleanStr ? parseFloat(cleanStr) : 0;
+}
+
+// Format Teks Multiline (Enter) agar Persis Spreadsheet
+function formatMultilineText(text) {
+  if (!text) return "-";
+  return String(text).replace(/\n/g, "<br>");
 }
 
 // Generator URL QR Code
 function getQrCodeUrl(code) {
   const baseUrl = window.location.href.split('index.html')[0].split('?')[0];
-  const scanTargetUrl = `${baseUrl}barcode.html?code=${encodeURIComponent(code.trim())}`;
+  const scanTargetUrl = `${baseUrl}barcode.html?code=${encodeURIComponent(String(code).trim())}`;
   return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(scanTargetUrl)}&margin=1`;
 }
 
-// Data Bawaan Lengkap Spreadsheet
-const SEED_FIX_ASSETS = [
-  { no: 1, kode: "FA/PO3/12/XII/DPSA/2016/KEU", nama: "Set Komputer", tipe: "Monitor: LG CPU: Delux (Intel Core I7-Gen 2)", satuan: "Set", jumlah: 1, tahun: "2016", kondisi: "Baik", harga: 8612500, lokasi: "Ruang Keuangan", keterangan: "Bu Tari", driveId: "1FszIQtfv5nsyOztb2560tEd4kjnn6YCG" },
-  { no: 2, kode: "FA/PO2/2/VI/DPSA/2018/PM", nama: "Phanel Saw/Mesin Felder", tipe: "Hammer/K4 Perfomm SN: 8697", satuan: "Unit", jumlah: 1, tahun: "2018", kondisi: "Baik", harga: 54474624, lokasi: "Produksi Mesin", keterangan: "-", driveId: "1ZVf8fpD147c0enJuPNhS0GJDAPFof1Oq" },
-  { no: 3, kode: "FA/PO3/14/VII/DPSA/2018/M", nama: "AC Window", tipe: "-", satuan: "Unit", jumlah: 1, tahun: "2018", kondisi: "Baik", harga: 0, lokasi: "Maintenance - Gudang", keterangan: "-", driveId: "1EYKR6v6vr41p_KPDTix3TXm3ufW9qzLi" },
-  { no: 4, kode: "FA/PO3/12/X/DPSA/2018/M", nama: "Komputer", tipe: "Monitor: HP", satuan: "Unit", jumlah: 1, tahun: "2019", kondisi: "Baik", harga: 0, lokasi: "Maintenance - Gudang", keterangan: "Nisa", driveId: "1zB5OQJx4P4eSZYbVWtvWQzu13Y_6pfTD" },
-  { no: 5, kode: "FA/PO2/3/I/DPSA/2019/PM", nama: "CNC (Mesin Bor)", tipe: "Biesse Rover Gold 1232 SN: 1000027499", satuan: "Unit", jumlah: 1, tahun: "2019", kondisi: "Baik", harga: 2159788072, lokasi: "Produksi Mesin", keterangan: "-", driveId: "1_AdB-pM_qBDgexVgcT841NtnrUjiuxV4" },
-  { no: 6, kode: "FA/PO3/13/X/DPSA/2020/M", nama: "OHP", tipe: "ACER ANX1903-3.2A/100-240V-50-60Hz", satuan: "Unit", jumlah: 1, tahun: "2020", kondisi: "Baik", harga: 4820000, lokasi: "Maintenance - Gudang", keterangan: "-", driveId: "1VwMKmcJ2TY1nyGce8-nGC4HWjcpP17un" },
-  { no: 7, kode: "FA/PO2/5/I/DPSA/2021/PM", nama: "Cool Press", tipe: "WEILI MH3248 K50 SN: 120516016", satuan: "Unit", jumlah: 1, tahun: "2021", kondisi: "Baik", harga: 71000000, lokasi: "Produksi Mesin", keterangan: "-", driveId: "1YpOf1hZzF11ikmSMaw6-qa_cpdhasuJg" },
-  { no: 8, kode: "FA/PO3/12/VIII/DPSA/2021/STU", nama: "Komputer", tipe: "Monitor: HP CPU: Infinity (Intel Core I7)", satuan: "Set", jumlah: 1, tahun: "2021", kondisi: "Baik", harga: 8681700, lokasi: "Studio & Marketing", keterangan: "Mas Maryanta", driveId: "1dcuhvUswFQLv85_VJ4OtyMyasa1Fluqm" },
-  { no: 9, kode: "FA/PO4/19/V/DPSA/2021/AP", nama: "Mobil Station", tipe: "Daihatsu Gran Max D Model: S401RV-2MGEJJ", satuan: "Unit", jumlah: 1, tahun: "2021", kondisi: "Baik", harga: 94000000, lokasi: "Kendaraan DPSA", keterangan: "AB 1126 UF", driveId: "11Uk8FS-RaHmTgiXk61pzwxWc-294tgjZ" },
-  { no: 10, kode: "FA/PO3/12/IX/DPSA/2021/KP", nama: "Komputer", tipe: "Monitor: NEC CPU: Dazumba (Intel Core I3-6100)", satuan: "Set", jumlah: 1, tahun: "2021", kondisi: "Baik", harga: 8000000, lokasi: "Produksi", keterangan: "Mas Rovel", driveId: "1Wt3avTnZ1M043sc5iEMN4_1tMCtVmAq9" }
+// ==========================================
+// FORMULA ENGINE SPREADSHEET (M, O, P, Q, R, S, U, V, W, X, Y)
+// ==========================================
+function calculateDepreciation(item, periodeBulan, periodeTahun) {
+  const monthList = CONFIG.MONTH_NAMES;
+  const cType = String(item.typeAktiva || "").toUpperCase();
+  const kQty = item.qty || 1;
+  const lHarga = item.hargaPerolehan || 0;
+
+  // Rumus M : =IF(C8="","",K8*L8)
+  const mTotalPerolehan = (cType === "") ? 0 : (kQty * lHarga);
+
+  // Rumus O : =IFS(ISNUMBER(SEARCH("BANGUNAN", C8)), 20, ISNUMBER(SEARCH("MESIN", C8)), 8, ISNUMBER(SEARCH("KENDARAAN", C8)), 8, TRUE, 4)
+  let oUmurTahun = 4;
+  if (cType.includes("BANGUNAN")) {
+    oUmurTahun = 20;
+  } else if (cType.includes("MESIN")) {
+    oUmurTahun = 8;
+  } else if (cType.includes("KENDARAAN")) {
+    oUmurTahun = 8;
+  }
+
+  // Rumus P : =IFERROR(O8*12,"")
+  const pUmurBulan = oUmurTahun * 12;
+
+  // Rumus Q : M8/P8
+  const qDepresiasi = pUmurBulan > 0 ? (mTotalPerolehan / pUmurBulan) : 0;
+
+  const nNilaiSisa = item.nilaiSisa || 0;
+  const iBulanStr = String(item.bulanPenyusutan || "").trim().toUpperCase();
+  const jTahun = parseInt(item.tahunPenyusutan) || 0;
+
+  // Rumus W : =IF(OR(TRIM(I8)="",N(J8)=0),0,MAX(0,(INT($R$4)-J8)*12+MATCH($R$3,{"JANUARI",...},0)-MATCH(TRIM(I8),{"JANUARI",...},0)+1))
+  let wHasilBulan = 0;
+  const matchR3 = monthList.indexOf(periodeBulan) + 1;
+  const matchI8 = monthList.indexOf(iBulanStr) + 1;
+
+  if (iBulanStr !== "" && jTahun > 0 && matchR3 > 0 && matchI8 > 0) {
+    const calcMonths = ((parseInt(periodeTahun) - jTahun) * 12) + matchR3 - matchI8 + 1;
+    wHasilBulan = Math.max(0, calcMonths);
+  }
+
+  // Rumus U : =INT(MAX(W8-1,0)/12)
+  const uTahunKe = Math.floor(Math.max(wHasilBulan - 1, 0) / 12);
+
+  // Rumus V : =MOD(MAX(W8-1,0),12)
+  const vBulanKe = Math.max(wHasilBulan - 1, 0) % 12;
+
+  // Rumus X : =IFERROR((M8-N8)/P8,"")
+  const xPenyusutanPerBulan = pUmurBulan > 0 ? ((mTotalPerolehan - nNilaiSisa) / pUmurBulan) : 0;
+
+  // Rumus Y : =IF(OR(ISNUMBER(SEARCH("TANAH",C8)),N(X8)<=0,N(W8)<=0),0,MIN(N(W8)*N(X8),N(M8)-N(N8)))
+  let yFixAkumulasi = 0;
+  if (!cType.includes("TANAH") && xPenyusutanPerBulan > 0 && wHasilBulan > 0) {
+    yFixAkumulasi = Math.min(wHasilBulan * xPenyusutanPerBulan, mTotalPerolehan - nNilaiSisa);
+  }
+
+  // Rumus R : =N(Y8)
+  const rAkumulasiDepresiasi = yFixAkumulasi;
+
+  // Rumus S : =MAX(0,M8-R8)
+  const sNilaiBuku = Math.max(0, mTotalPerolehan - rAkumulasiDepresiasi);
+
+  return {
+    ...item,
+    totalPerolehan: mTotalPerolehan,
+    umurTahun: oUmurTahun,
+    umurBulan: pUmurBulan,
+    depresiasiRp: qDepresiasi,
+    tahunKe: uTahunKe,
+    bulanKe: vBulanKe,
+    hasilBulan: wHasilBulan,
+    penyusutanPerBulan: xPenyusutanPerBulan,
+    akumulasiDepresiasi: rAkumulasiDepresiasi,
+    nilaiBuku: sNilaiBuku
+  };
+}
+
+// Inisialisasi Data Awal (Seed Fallback)
+const SEED_FIX_ASSETS_NEW = [
+  {
+    no: 1,
+    kodeAktiva: "FA/PO1/1/VII/DPSA/2021/P",
+    typeAktiva: "BANGUNAN_1",
+    namaAktiva: "Ruko Purwokerto",
+    merk: "-",
+    spesifikasi: "-",
+    satuan: "Unit",
+    tglPerolehan: "01/07/21",
+    bulanPenyusutan: "JULI",
+    tahunPenyusutan: "2021",
+    qty: 1,
+    hargaPerolehan: 392886900,
+    nilaiSisa: 0,
+    lokasi: "Produksi Mesin",
+    keterangan: "Dekat Ruang Maintenance",
+    linkGambar: "https://drive.google.com/file/d/1ZVf8fpD147c0enJuPNhS0GJDAPFof1Oq/view?usp=sharing"
+  }
 ];
 
-const SEED_INVENTORY = [
-  { no: 1, kode: "FA/PO3/12/VIII/DPSA/2021/STU", nama: "Komputer", tipe: "Monitor: HP CPU: Infinity (Intel Core I7)", satuan: "Set", jumlah: 1, tahun: "2021", kondisi: "Baik", kategori: "Aktiva Tetap", harga: 8681700, keterangan: "Mas Maryanta", driveId: "1dcuhvUswFQLv85_VJ4OtyMyasa1Fluqm" },
-  { no: 2, kode: "FA/PO3/12/IX/DPSA/2021/STU", nama: "Komputer", tipe: "Monitor: Dell CPU: CUBE (AMD A6)", satuan: "Set", jumlah: 1, tahun: "2021", kondisi: "Baik", kategori: "Aktiva Tetap", harga: 4000000, keterangan: "Rendy", driveId: "1f1QrBof7aMw8yZu0mmngn5aMfNX1hZgE" },
-  { no: 18, kode: "INV/DPSA/R.S&M.5/2020/1", nama: "TV", tipe: "Cocoa 42 inch", satuan: "Unit", jumlah: 1, tahun: "2019", kondisi: "Baik", kategori: "Bukan Aktiva Tetap", harga: 2700000, keterangan: "-", driveId: "" },
-  { no: 23, kode: "INV/DPSA/R.S&M.7/2020/1", nama: "Meteran", tipe: "Krisbow 10138998", satuan: "Unit", jumlah: 1, tahun: "-", kondisi: "Baik", kategori: "Bukan Aktiva Tetap", harga: 600, keterangan: "-", driveId: "" },
-  { no: 24, kode: "INV/DPSA/R.S&M.7/2020/2", nama: "Meteran", tipe: "Krisbow 10106768", satuan: "Unit", jumlah: 1, tahun: "-", kondisi: "Baik", kategori: "Bukan Aktiva Tetap", harga: 1800000, keterangan: "-", driveId: "" }
+const SEED_INVENTORY_NEW = [
+  {
+    no: 1,
+    kodeBarang: "INV/DPSA/R.S&M.1/2020/1",
+    namaBarang: "Komputer",
+    tipe: "Monitor: Samsung\nCPU: DST\nUPS: Prolink",
+    satuan: "Unit",
+    jumlah: 1,
+    tahun: "2019-2024",
+    kondisi: "Baik",
+    kategori: "Aktiva Tetap",
+    totalHargaPerolehan: 7210000,
+    gambar: "no image.png",
+    keteranganLetak: "Sebelah Mba Jovita"
+  }
 ];
 
-// ==========================================
-// SISTEM LOGIN
-// ==========================================
+// Login Handlers
 function doLogin() {
-  const emailInput = document.getElementById("loginEmail");
-  const passInput = document.getElementById("loginPassword");
+  const e = document.getElementById("loginEmail");
+  const p = document.getElementById("loginPassword");
   const errBox = document.getElementById("loginErrorMsg");
 
-  const inputEmail = emailInput ? emailInput.value.trim().toLowerCase() : "";
-  const inputPass = passInput ? passInput.value.trim() : "";
+  const inputEmail = e ? e.value.trim().toLowerCase() : "";
+  const inputPass = p ? p.value.trim() : "";
 
   const user = VALID_USERS.find(usr => {
-    const fullEmail = usr.u.toLowerCase();
-    const prefix = fullEmail.split("@")[0];
-    return (inputEmail === fullEmail || inputEmail === prefix) && inputPass === usr.p;
+    const full = usr.u.toLowerCase();
+    const prefix = full.split("@")[0];
+    return (inputEmail === full || inputEmail === prefix) && inputPass === usr.p;
   });
 
   if (user) {
     currentUser = user;
-    try { sessionStorage.setItem("dpsa_logged_in", JSON.stringify(user)); } catch (e) {}
+    try { sessionStorage.setItem("dpsa_logged_in", JSON.stringify(user)); } catch (err) {}
     
-    const modal = document.getElementById("loginModal");
-    if (modal) modal.style.display = "none";
+    document.getElementById("loginModal").style.display = "none";
+    document.getElementById("appContainer").style.display = "flex";
 
-    const app = document.getElementById("appContainer");
-    if (app) app.style.display = "flex";
-
-    const nameEl = document.getElementById("userProfileName");
-    const roleEl = document.getElementById("userProfileRole");
-    const initEl = document.getElementById("userAvatarInitials");
-    if (nameEl) nameEl.textContent = user.name;
-    if (roleEl) roleEl.textContent = user.role;
-    if (initEl) initEl.textContent = user.initials;
+    document.getElementById("userProfileName").textContent = user.name;
+    document.getElementById("userProfileRole").textContent = user.role;
+    document.getElementById("userAvatarInitials").textContent = user.initials;
 
     if (errBox) errBox.style.display = "none";
-
     initData();
   } else {
     if (errBox) {
       errBox.textContent = "Username atau password salah!";
       errBox.style.display = "block";
-    } else {
-      alert("Username atau password salah!");
     }
   }
 }
 
 function pickAccount(email, pass) {
-  const emailInput = document.getElementById("loginEmail");
-  const passInput = document.getElementById("loginPassword");
-  if (emailInput) emailInput.value = email;
-  if (passInput) passInput.value = pass;
+  const e = document.getElementById("loginEmail");
+  const p = document.getElementById("loginPassword");
+  if (e) e.value = email;
+  if (p) p.value = pass;
   doLogin();
 }
 
 window.onload = function() {
-  // Inisialisasi status default sidebar
-  if (window.innerWidth >= 768) {
-    isSidebarOpen = true; // Terbuka di PC
-  } else {
-    isSidebarOpen = false; // Tersembunyi rapi di HP
+  const isDesktop = window.innerWidth >= 768;
+  const sidebar = document.getElementById("mainSidebar");
+  if (sidebar) {
+    if (isDesktop) {
+      sidebar.classList.remove("md:hidden");
+      sidebar.classList.add("md:flex");
+      isSidebarOpenDesktop = true;
+    } else {
+      sidebar.classList.add("-translate-x-full");
+      isSidebarOpenMobile = false;
+    }
   }
 
   try {
     const saved = sessionStorage.getItem("dpsa_logged_in");
     if (saved) {
       currentUser = JSON.parse(saved);
-      const modal = document.getElementById("loginModal");
-      const app = document.getElementById("appContainer");
-      if (modal) modal.style.display = "none";
-      if (app) app.style.display = "flex";
-
-      const nameEl = document.getElementById("userProfileName");
-      const roleEl = document.getElementById("userProfileRole");
-      const initEl = document.getElementById("userAvatarInitials");
-      if (nameEl) nameEl.textContent = currentUser.name;
-      if (roleEl) roleEl.textContent = currentUser.role;
-      if (initEl) initEl.textContent = currentUser.initials;
+      document.getElementById("loginModal").style.display = "none";
+      document.getElementById("appContainer").style.display = "flex";
+      document.getElementById("userProfileName").textContent = currentUser.name;
+      document.getElementById("userProfileRole").textContent = currentUser.role;
+      document.getElementById("userAvatarInitials").textContent = currentUser.initials;
       initData();
       return;
     }
   } catch (e) {}
 
-  const modal = document.getElementById("loginModal");
-  if (modal) modal.style.display = "flex";
+  document.getElementById("loginModal").style.display = "flex";
 };
 
 function logout() {
@@ -148,28 +240,13 @@ function logout() {
   location.reload();
 }
 
-// ==========================================
-// TOGGLE SIDEBAR (GAYA GEMINI - BISA HIDDEN PENUH)
-// ==========================================
-// ==========================================
-// TOGGLE SIDEBAR RESPONSIVE (DESKTOP & MOBILE)
-// ==========================================
-let isSidebarOpenDesktop = true;
-let isSidebarOpenMobile = false;
-
 function toggleSidebar(forceState) {
   const sidebar = document.getElementById("mainSidebar");
   const backdrop = document.getElementById("sidebarBackdrop");
   const isDesktop = window.innerWidth >= 768;
 
   if (isDesktop) {
-    if (typeof forceState === "boolean") {
-      isSidebarOpenDesktop = forceState;
-    } else {
-      isSidebarOpenDesktop = !isSidebarOpenDesktop;
-    }
-
-    // Desktop: Sembunyikan sidebar ke w-0 tanpa merusak flex layout
+    isSidebarOpenDesktop = (typeof forceState === "boolean") ? forceState : !isSidebarOpenDesktop;
     if (isSidebarOpenDesktop) {
       sidebar.classList.remove("md:hidden");
       sidebar.classList.add("md:flex");
@@ -178,13 +255,7 @@ function toggleSidebar(forceState) {
       sidebar.classList.add("md:hidden");
     }
   } else {
-    if (typeof forceState === "boolean") {
-      isSidebarOpenMobile = forceState;
-    } else {
-      isSidebarOpenMobile = !isSidebarOpenMobile;
-    }
-
-    // HP: Drawer bergeser mulus
+    isSidebarOpenMobile = (typeof forceState === "boolean") ? forceState : !isSidebarOpenMobile;
     if (isSidebarOpenMobile) {
       sidebar.classList.remove("-translate-x-full");
       sidebar.classList.add("translate-x-0");
@@ -201,7 +272,6 @@ function toggleSidebar(forceState) {
       }
     }
   }
-
   if (window.lucide) lucide.createIcons();
 }
 
@@ -211,250 +281,144 @@ function onMobileNavClick() {
   }
 }
 
-// Inisialisasi awal saat halaman dibuka
-window.onload = function() {
-  const isDesktop = window.innerWidth >= 768;
-  const sidebar = document.getElementById("mainSidebar");
-  
-  if (sidebar) {
-    if (isDesktop) {
-      sidebar.classList.remove("md:hidden");
-      sidebar.classList.add("md:flex");
-      isSidebarOpenDesktop = true;
-    } else {
-      sidebar.classList.add("-translate-x-full");
-      isSidebarOpenMobile = false;
-    }
-  }
-
-  try {
-    const saved = sessionStorage.getItem("dpsa_logged_in");
-    if (saved) {
-      currentUser = JSON.parse(saved);
-      const modal = document.getElementById("loginModal");
-      const app = document.getElementById("appContainer");
-      if (modal) modal.style.display = "none";
-      if (app) app.style.display = "flex";
-
-      const nameEl = document.getElementById("userProfileName");
-      const roleEl = document.getElementById("userProfileRole");
-      const initEl = document.getElementById("userAvatarInitials");
-      if (nameEl) nameEl.textContent = currentUser.name;
-      if (roleEl) roleEl.textContent = currentUser.role;
-      if (initEl) initEl.textContent = currentUser.initials;
-      initData();
-      return;
-    }
-  } catch (e) {}
-
-  const modal = document.getElementById("loginModal");
-  if (modal) modal.style.display = "flex";
-};
-function onMobileNavClick() {
-  // Jika di HP, tutup sidebar setelah menu diklik
-  if (window.innerWidth < 768) {
-    toggleSidebar(false);
-  }
-}
-
 // Inisialisasi Data
 function initData() {
-  fixAssets = SEED_FIX_ASSETS.map(item => ({
-    ...item,
-    gambar: formatImageUrl(item.driveId, null)
-  }));
-
-  inventoryItems = SEED_INVENTORY.map(item => ({
-    ...item,
-    gambar: formatImageUrl(item.driveId, null)
-  }));
-
-  try {
-    localStorage.setItem("dpsa_cache_fa", JSON.stringify(fixAssets));
-    localStorage.setItem("dpsa_cache_inv", JSON.stringify(inventoryItems));
-  } catch (e) {}
-
-  renderAll();
+  rawFixAssets = SEED_FIX_ASSETS_NEW;
+  inventoryItems = SEED_INVENTORY_NEW;
+  
+  applyFixAssetFilters();
+  renderInventoryTable();
   syncDataViaJSONP();
 }
 
-// JSONP Sinkronisasi Bebas CORS
-function syncDataViaJSONP() {
-  if (typeof CONFIG === 'undefined') return;
+// ==========================================
+// PROSES DEPRESIASI & SINKRONISASI FILTER
+// ==========================================
+function applyFixAssetFilters() {
+  const periodeBulan = document.getElementById("faPeriodeBulan").value;
+  const periodeTahun = document.getElementById("faPeriodeTahun").value;
+  const query = document.getElementById("faSearchInput").value.toLowerCase();
 
-  window.handleFixAssetData = function(json) {
-    if (!json || !json.table || !json.table.rows) return;
-    const parsed = [];
-    json.table.rows.forEach((r, idx) => {
-      const c = r.c || [];
-      const kode = String(c[1]?.v || "").trim();
-      const nama = String(c[2]?.v || "").trim();
-      if (!kode || kode.toLowerCase().includes("kode") || !nama) return;
-      parsed.push({
-        no: c[0]?.v || (parsed.length + 1),
-        kode: kode,
-        nama: nama,
-        tipe: String(c[3]?.v || "-"),
-        satuan: String(c[4]?.v || "Unit"),
-        jumlah: parseInt(c[5]?.v) || 1,
-        tahun: String(c[6]?.v || "-"),
-        kondisi: String(c[7]?.v || "Baik"),
-        harga: parsePrice(c[8]?.v),
-        lokasi: String(c[9]?.v || "PT DPSA"),
-        keterangan: String(c[10]?.v || "-"),
-        gambar: formatImageUrl(null, String(c[11]?.v || ""))
-      });
-    });
-    if (parsed.length > 0) {
-      fixAssets = parsed;
-      try { localStorage.setItem("dpsa_cache_fa", JSON.stringify(fixAssets)); } catch(e){}
-      renderAll();
-    }
-  };
+  // Olah rumus depresiasi untuk setiap baris aktiva
+  calculatedFixAssets = rawFixAssets.map(item => calculateDepreciation(item, periodeBulan, periodeTahun));
 
-  window.handleInventoryData = function(json) {
-    if (!json || !json.table || !json.table.rows) return;
-    const parsed = [];
-    json.table.rows.forEach((r, idx) => {
-      const c = r.c || [];
-      const kode = String(c[1]?.v || "").trim();
-      const nama = String(c[2]?.v || "").trim();
-      if (!kode || kode.toLowerCase().includes("kode") || !nama) return;
-      const valI = String(c[8]?.v || "").trim().toLowerCase();
-      let kat = (valI === "v" || valI === "ya" || valI === "true") ? "Aktiva Tetap" : "Bukan Aktiva Tetap";
-      parsed.push({
-        no: c[0]?.v || (parsed.length + 1),
-        kode: kode,
-        nama: nama,
-        tipe: String(c[3]?.v || "-"),
-        satuan: String(c[4]?.v || "Unit"),
-        jumlah: parseInt(c[5]?.v) || 1,
-        tahun: String(c[6]?.v || "-"),
-        kondisi: String(c[7]?.v || "Baik"),
-        kategori: kat,
-        harga: parsePrice(c[10]?.v),
-        keterangan: String(c[12]?.v || "-"),
-        gambar: formatImageUrl(null, String(c[11]?.v || ""))
-      });
-    });
-    if (parsed.length > 0) {
-      inventoryItems = parsed;
-      try { localStorage.setItem("dpsa_cache_inv", JSON.stringify(inventoryItems)); } catch(e){}
-      renderAll();
-    }
-  };
+  // Simpan cache agar barcode.html bisa membacanya instan
+  try {
+    localStorage.setItem("dpsa_cache_fa", JSON.stringify(calculatedFixAssets));
+    localStorage.setItem("dpsa_cache_inv", JSON.stringify(inventoryItems));
+  } catch (e) {}
 
-  const scriptFA = document.createElement("script");
-  scriptFA.src = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=responseHandler:handleFixAssetData&sheet=${encodeURIComponent(CONFIG.SHEETS.FIX_ASSET)}&headers=0`;
-  document.body.appendChild(scriptFA);
+  // Filter Search
+  const filtered = calculatedFixAssets.filter(i => 
+    String(i.kodeAktiva).toLowerCase().includes(query) ||
+    String(i.namaAktiva).toLowerCase().includes(query) ||
+    String(i.merk).toLowerCase().includes(query) ||
+    String(i.lokasi).toLowerCase().includes(query)
+  );
 
-  const scriptInv = document.createElement("script");
-  scriptInv.src = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=responseHandler:handleInventoryData&sheet=${encodeURIComponent(CONFIG.SHEETS.INVENTORY)}&headers=0`;
-  document.body.appendChild(scriptInv);
-}
-
-function parsePrice(val) {
-  if (!val) return 0;
-  if (typeof val === 'number') return val;
-  const cleanStr = String(val).replace(/[^0-9]/g, '');
-  return cleanStr ? parseInt(cleanStr, 10) : 0;
-}
-
-function formatRupiah(num) {
-  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(num || 0);
-}
-
-function renderAll() {
   renderOverview();
-  renderFixAssetTable();
-  renderInventoryTable();
+  renderFixAssetTable(filtered);
 }
 
+function filterInventory() {
+  const query = document.getElementById("invSearchInput").value.toLowerCase();
+  const filtered = inventoryItems.filter(i => 
+    String(i.kodeBarang).toLowerCase().includes(query) ||
+    String(i.namaBarang).toLowerCase().includes(query) ||
+    String(i.keteranganLetak).toLowerCase().includes(query)
+  );
+  renderInventoryTable(filtered);
+}
+
+// ==========================================
+// RENDERING OVERVIEW & TABEL
+// ==========================================
 function renderOverview() {
-  const totalFA = fixAssets.reduce((s, i) => s + (i.jumlah || 1), 0);
-  const totalInv = inventoryItems.reduce((s, i) => s + (i.jumlah || 1), 0);
-  const nilaiFA = fixAssets.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0);
-  const nilaiInv = inventoryItems.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0);
+  // Total Nilai Fix Aset Diambil dari Kolom M (totalPerolehan)
+  const nilaiFA = calculatedFixAssets.reduce((s, i) => s + (i.totalPerolehan || 0), 0);
+  
+  // Total Nilai Inventory Diambil dari Kolom J (totalHargaPerolehan)
+  const nilaiInv = inventoryItems.reduce((s, i) => s + (i.totalHargaPerolehan || 0), 0);
 
-  const elItemAll = document.getElementById("ovTotalItemAll");
-  const elNilaiAll = document.getElementById("ovTotalNilaiAll");
-  const elNilaiFA = document.getElementById("ovNilaiFixAsset");
-  const elNilaiInv = document.getElementById("ovNilaiInventory");
-  const badgeFA = document.getElementById("badgeCountFixAsset");
-  const badgeInv = document.getElementById("badgeCountInventory");
+  document.getElementById("ovTotalNilaiAll").textContent = formatRupiah(nilaiFA + nilaiInv);
+  document.getElementById("ovTotalItemAll").textContent = `${calculatedFixAssets.length + inventoryItems.length} Item`;
+  document.getElementById("ovNilaiFixAsset").textContent = formatRupiah(nilaiFA);
+  document.getElementById("ovNilaiInventory").textContent = formatRupiah(nilaiInv);
 
-  if (elItemAll) elItemAll.textContent = `${(totalFA + totalInv).toLocaleString("id-ID")} Item`;
-  if (elNilaiAll) elNilaiAll.textContent = formatRupiah(nilaiFA + nilaiInv);
-  if (elNilaiFA) elNilaiFA.textContent = formatRupiah(nilaiFA);
-  if (elNilaiInv) elNilaiInv.textContent = formatRupiah(nilaiInv);
-  if (badgeFA) badgeFA.textContent = fixAssets.length;
-  if (badgeInv) badgeInv.textContent = inventoryItems.length;
+  document.getElementById("badgeCountFixAsset").textContent = calculatedFixAssets.length;
+  document.getElementById("badgeCountInventory").textContent = inventoryItems.length;
 
-  const topTable = document.getElementById("overviewTopTableBody");
-  if (topTable) {
-    topTable.innerHTML = "";
-    [...fixAssets].sort((a, b) => b.harga - a.harga).slice(0, 5).forEach(item => {
-      const qrUrl = getQrCodeUrl(item.kode);
+  // 5 Aset Nilai Tertinggi
+  const topBody = document.getElementById("overviewTopTableBody");
+  if (topBody) {
+    topBody.innerHTML = "";
+    [...calculatedFixAssets].sort((a, b) => b.totalPerolehan - a.totalPerolehan).slice(0, 5).forEach(item => {
+      const qrUrl = getQrCodeUrl(item.kodeAktiva);
       const tr = document.createElement("tr");
       tr.className = "hover:bg-slate-50 border-b border-slate-100";
       tr.innerHTML = `
-        <td class="py-2.5 px-3 font-mono font-bold text-blue-700 text-center">${item.kode}</td>
-        <td class="py-2.5 px-3 font-semibold text-slate-800 text-center">${item.nama}</td>
-        <td class="py-2.5 px-3 text-slate-600 text-center">${item.lokasi}</td>
-        <td class="py-2.5 px-3 font-bold text-slate-900 text-center">${formatRupiah(item.harga)}</td>
+        <td class="py-2.5 px-3 font-mono font-bold text-blue-700 text-center">${item.kodeAktiva}</td>
+        <td class="py-2.5 px-3 font-semibold text-slate-800 text-center">${formatMultilineText(item.namaAktiva)}</td>
+        <td class="py-2.5 px-3 text-slate-600 text-center">${item.lokasi || "-"}</td>
+        <td class="py-2.5 px-3 font-bold text-slate-900 text-center">${formatRupiah(item.totalPerolehan)}</td>
         <td class="py-2.5 px-3 text-center">
           <div class="flex items-center justify-center gap-1.5">
-            <img src="${qrUrl}" alt="QR" class="w-6 h-6 rounded border border-slate-200 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
-            <button onclick="openDetailData('${item.kode}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-[10px] font-bold transition flex items-center gap-1 cursor-pointer">
-              <i data-lucide="eye" class="w-3 h-3"></i>
-              <span>Detail</span>
-            </button>
+            <img src="${qrUrl}" alt="QR" class="w-6 h-6 rounded border border-slate-200 cursor-pointer" onclick="openDetailData('${item.kodeAktiva}')">
+            <button onclick="openDetailData('${item.kodeAktiva}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-[10px] font-bold transition">Detail</button>
           </div>
         </td>
       `;
-      topTable.appendChild(tr);
+      topBody.appendChild(tr);
     });
   }
 }
 
-// Render Tabel Fix Asset (Header & Isi Rata Tengah)
-function renderFixAssetTable(filtered = null) {
+// Render Tabel Fix Asset (Kolom A:S & U:AB)
+function renderFixAssetTable(data) {
   const tbody = document.getElementById("faTableBody");
   if (!tbody) return;
   tbody.innerHTML = "";
-  const data = filtered || fixAssets;
-
-  const totalEl = document.getElementById("faTotalItem");
-  const nilaiEl = document.getElementById("faTotalNilai");
-  if (totalEl) totalEl.textContent = `${data.length} Unit`;
-  if (nilaiEl) nilaiEl.textContent = formatRupiah(data.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0));
 
   data.forEach((item, idx) => {
-    const qrUrl = getQrCodeUrl(item.kode);
+    const qrUrl = getQrCodeUrl(item.kodeAktiva);
+    const imgUrl = CONFIG.formatDriveImageUrl(item.linkGambar);
+
     const tr = document.createElement("tr");
-    tr.className = "hover:bg-blue-50/40 border-b border-slate-100";
+    tr.className = "hover:bg-blue-50/40 border-b border-slate-100 text-center";
     tr.innerHTML = `
-      <td class="py-2.5 px-2 text-center text-slate-500">${idx + 1}</td>
-      <td class="py-2.5 px-2.5 font-mono font-bold text-blue-900 whitespace-nowrap text-center">${item.kode}</td>
-      <td class="py-2.5 px-3 font-semibold text-slate-800 text-center">${item.nama}</td>
-      <td class="py-2.5 px-3 text-slate-600 text-[11px] max-w-xs text-center">${item.tipe}</td>
-      <td class="py-2.5 px-2 text-center text-slate-600">${item.satuan}</td>
-      <td class="py-2.5 px-2 text-center font-bold text-slate-800">${item.jumlah}</td>
-      <td class="py-2.5 px-2 text-center text-slate-600">${item.tahun}</td>
-      <td class="py-2.5 px-2 text-center"><span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">${item.kondisi}</span></td>
-      <td class="py-2.5 px-2.5 font-bold text-slate-900 whitespace-nowrap text-center">${formatRupiah(item.harga)}</td>
-      <td class="py-2.5 px-2.5 text-slate-700 whitespace-nowrap text-center">${item.lokasi}</td>
-      <td class="py-2.5 px-2.5 text-slate-500 text-[11px] text-center">${item.keterangan}</td>
-      <td class="py-2.5 px-2 text-center">
-        <img src="${item.gambar}" alt="${item.nama}" class="w-8 h-8 object-cover rounded-lg border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
+      <td class="py-2.5 px-2 text-slate-500">${idx + 1}</td>
+      <td class="py-2.5 px-3 font-mono font-bold text-blue-900 whitespace-nowrap">${item.kodeAktiva}</td>
+      <td class="py-2.5 px-3 font-medium text-slate-700">${item.typeAktiva}</td>
+      <td class="py-2.5 px-4 font-semibold text-slate-800 text-left">${formatMultilineText(item.namaAktiva)}</td>
+      <td class="py-2.5 px-3 text-slate-600">${formatMultilineText(item.merk)}</td>
+      <td class="py-2.5 px-4 text-slate-600 text-[11px] max-w-xs text-left">${formatMultilineText(item.spesifikasi)}</td>
+      <td class="py-2.5 px-2 text-slate-600">${item.satuan}</td>
+      <td class="py-2.5 px-3 text-slate-600 whitespace-nowrap">${item.tglPerolehan}</td>
+      <td class="py-2.5 px-2 text-slate-600">${item.bulanPenyusutan}</td>
+      <td class="py-2.5 px-2 text-slate-600">${item.tahunPenyusutan}</td>
+      <td class="py-2.5 px-2 font-bold text-slate-800">${item.qty}</td>
+      <td class="py-2.5 px-3 font-medium text-slate-900">${formatRupiah(item.hargaPerolehan)}</td>
+      <td class="py-2.5 px-3 font-bold text-blue-900 bg-amber-50/50">${formatRupiah(item.totalPerolehan)}</td>
+      <td class="py-2.5 px-2 text-slate-500">${formatRupiah(item.nilaiSisa)}</td>
+      <td class="py-2.5 px-2 text-slate-700 font-bold">${item.umurTahun}</td>
+      <td class="py-2.5 px-2 text-slate-700">${item.umurBulan}</td>
+      <td class="py-2.5 px-3 text-slate-700">${formatRupiah(item.depresiasiRp)}</td>
+      <td class="py-2.5 px-3 text-slate-700 font-medium">${formatRupiah(item.akumulasiDepresiasi)}</td>
+      <td class="py-2.5 px-3 font-bold text-emerald-700 bg-sky-50/50">${formatRupiah(item.nilaiBuku)}</td>
+      <td class="py-2.5 px-2 bg-slate-50 font-semibold">${item.tahunKe}</td>
+      <td class="py-2.5 px-2 bg-slate-50 font-semibold">${item.bulanKe}</td>
+      <td class="py-2.5 px-2 bg-slate-50">${item.hasilBulan}</td>
+      <td class="py-2.5 px-3 bg-slate-50">${formatRupiah(item.penyusutanPerBulan)}</td>
+      <td class="py-2.5 px-3 bg-slate-50">${formatRupiah(item.akumulasiDepresiasi)}</td>
+      <td class="py-2.5 px-3 text-slate-700 whitespace-nowrap">${item.lokasi || "-"}</td>
+      <td class="py-2.5 px-3 text-slate-500 text-[11px]">${formatMultilineText(item.keterangan)}</td>
+      <td class="py-2.5 px-2">
+        <img src="${imgUrl}" alt="${item.namaAktiva}" class="w-8 h-8 object-cover rounded-lg border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
       </td>
-      <td class="py-2.5 px-3 text-center whitespace-nowrap">
+      <td class="py-2.5 px-3 whitespace-nowrap">
         <div class="flex items-center justify-center gap-1.5">
-          <img src="${qrUrl}" alt="QR" class="w-7 h-7 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
-          <button onclick="openDetailData('${item.kode}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-[10px] font-bold transition flex items-center gap-1 cursor-pointer">
-            <i data-lucide="eye" class="w-3 h-3"></i>
-            <span>Detail</span>
-          </button>
+          <img src="${qrUrl}" alt="QR" class="w-7 h-7 rounded border border-slate-300 bg-white p-0.5 cursor-pointer" onclick="openDetailData('${item.kodeAktiva}')">
+          <button onclick="openDetailData('${item.kodeAktiva}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-[10px] font-bold transition">Detail</button>
         </div>
       </td>
     `;
@@ -463,54 +427,38 @@ function renderFixAssetTable(filtered = null) {
   if (window.lucide) lucide.createIcons();
 }
 
-// Render Tabel Inventory (Header & Isi Rata Tengah)
+// Render Tabel Inventory (Kolom A:L)
 function renderInventoryTable(filtered = null) {
   const tbody = document.getElementById("inventoryTableBody");
   if (!tbody) return;
   tbody.innerHTML = "";
   const data = filtered || inventoryItems;
 
-  const totalEl = document.getElementById("invTotalItem");
-  const nilaiEl = document.getElementById("invTotalNilai");
-  const qtyEl = document.getElementById("invTotalKuantitas");
-
-  if (totalEl) totalEl.textContent = `${data.length} SKU`;
-  if (nilaiEl) nilaiEl.textContent = formatRupiah(data.reduce((s, i) => s + (i.harga * (i.jumlah || 1)), 0));
-  if (qtyEl) qtyEl.textContent = data.reduce((s, i) => s + (i.jumlah || 1), 0).toLocaleString("id-ID");
-
   data.forEach((item, idx) => {
-    const qrUrl = getQrCodeUrl(item.kode);
-    const isAktiva = item.kategori === "Aktiva Tetap";
-    const badgeClass = isAktiva ? "bg-amber-100 text-amber-800" : "bg-teal-100 text-teal-800";
+    const qrUrl = getQrCodeUrl(item.kodeBarang);
+    const imgUrl = CONFIG.formatDriveImageUrl(item.gambar);
 
     const tr = document.createElement("tr");
-    tr.className = "hover:bg-blue-50/40 border-b border-slate-100";
+    tr.className = "hover:bg-blue-50/40 border-b border-slate-100 text-center";
     tr.innerHTML = `
-      <td class="py-2.5 px-2 text-center text-slate-500">${idx + 1}</td>
-      <td class="py-2.5 px-2.5 font-mono font-bold text-blue-900 whitespace-nowrap text-center">${item.kode}</td>
-      <td class="py-2.5 px-3 font-semibold text-slate-800 text-center">${item.nama}</td>
-      <td class="py-2.5 px-3 text-slate-600 text-[11px] max-w-xs text-center">${item.tipe}</td>
-      <td class="py-2.5 px-2 text-center text-slate-600">${item.satuan}</td>
-      <td class="py-2.5 px-2 text-center font-bold text-slate-800">${item.jumlah}</td>
-      <td class="py-2.5 px-2 text-center text-slate-600">${item.tahun}</td>
-      <td class="py-2.5 px-2 text-center"><span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">${item.kondisi}</span></td>
-      <td class="py-2.5 px-2 text-center whitespace-nowrap">
-        <span class="inline-block px-2 py-0.5 text-[9px] font-bold rounded-full ${badgeClass}">
-          ${item.kategori}
-        </span>
+      <td class="py-2.5 px-3 text-slate-500">${idx + 1}</td>
+      <td class="py-2.5 px-3 font-mono font-bold text-blue-900 whitespace-nowrap">${item.kodeBarang}</td>
+      <td class="py-2.5 px-4 font-semibold text-slate-800 text-left">${formatMultilineText(item.namaBarang)}</td>
+      <td class="py-2.5 px-4 text-slate-600 text-[11px] text-left">${formatMultilineText(item.tipe)}</td>
+      <td class="py-2.5 px-2 text-slate-600">${item.satuan}</td>
+      <td class="py-2.5 px-2 font-bold text-slate-800">${item.jumlah}</td>
+      <td class="py-2.5 px-2 text-slate-600">${item.tahun}</td>
+      <td class="py-2.5 px-2"><span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">${item.kondisi}</span></td>
+      <td class="py-2.5 px-2"><span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-teal-100 text-teal-800">${item.kategori}</span></td>
+      <td class="py-2.5 px-3 font-bold text-emerald-900 bg-emerald-50/50">${formatRupiah(item.totalHargaPerolehan)}</td>
+      <td class="py-2.5 px-3">
+        <img src="${imgUrl}" alt="${item.namaBarang}" class="w-8 h-8 object-cover rounded-lg border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
       </td>
-      <td class="py-2.5 px-2.5 font-bold text-slate-900 whitespace-nowrap text-center">${formatRupiah(item.harga)}</td>
-      <td class="py-2.5 px-2.5 text-slate-500 text-[11px] text-center">${item.keterangan}</td>
-      <td class="py-2.5 px-2 text-center">
-        <img src="${item.gambar}" alt="${item.nama}" class="w-8 h-8 object-cover rounded-lg border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
-      </td>
-      <td class="py-2.5 px-3 text-center whitespace-nowrap">
+      <td class="py-2.5 px-3 text-slate-500 text-[11px] text-left">${formatMultilineText(item.keteranganLetak)}</td>
+      <td class="py-2.5 px-3 whitespace-nowrap">
         <div class="flex items-center justify-center gap-1.5">
-          <img src="${qrUrl}" alt="QR" class="w-7 h-7 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kode}')" title="Klik untuk lihat detail">
-          <button onclick="openDetailData('${item.kode}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-[10px] font-bold transition flex items-center gap-1 cursor-pointer">
-            <i data-lucide="eye" class="w-3 h-3"></i>
-            <span>Detail</span>
-          </button>
+          <img src="${qrUrl}" alt="QR" class="w-7 h-7 rounded border border-slate-300 bg-white p-0.5 cursor-pointer" onclick="openDetailData('${item.kodeBarang}')">
+          <button onclick="openDetailData('${item.kodeBarang}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-[10px] font-bold transition">Detail</button>
         </div>
       </td>
     `;
@@ -523,42 +471,119 @@ function openDetailData(kode) {
   window.open(`barcode.html?code=${encodeURIComponent(kode)}`, '_blank');
 }
 
+// JSONP Live Data
+function syncDataViaJSONP() {
+  if (typeof CONFIG === 'undefined') return;
+
+  // Handler Fix Aset Baru (0-based Index Kolom A s/d AB)
+  window.handleFixAssetData = function(json) {
+    if (!json || !json.table || !json.table.rows) return;
+    const parsed = [];
+    json.table.rows.forEach((r, idx) => {
+      const c = r.c || [];
+      const kode = String(c[1]?.v || "").trim();
+      const nama = String(c[3]?.v || "").trim();
+      if (!kode || kode.toUpperCase().includes("KODE") || !nama) return;
+
+      parsed.push({
+        no: c[0]?.v || (parsed.length + 1),
+        kodeAktiva: kode,
+        typeAktiva: String(c[2]?.v || ""),
+        namaAktiva: nama,
+        merk: String(c[4]?.v || "-"),
+        spesifikasi: String(c[5]?.v || "-"),
+        satuan: String(c[6]?.v || "Unit"),
+        tglPerolehan: String(c[7]?.f || c[7]?.v || "-"),
+        bulanPenyusutan: String(c[8]?.v || "").toUpperCase(),
+        tahunPenyusutan: c[9]?.v || 0,
+        qty: parseInt(c[10]?.v) || 1,
+        hargaPerolehan: parsePrice(c[11]?.v),
+        nilaiSisa: parsePrice(c[13]?.v),
+        lokasi: String(c[25]?.v || ""),
+        keterangan: String(c[26]?.v || ""),
+        linkGambar: String(c[27]?.v || "")
+      });
+    });
+
+    if (parsed.length > 0) {
+      rawFixAssets = parsed;
+      applyFixAssetFilters();
+    }
+  };
+
+  // Handler Inventory (Kolom A s/d L)
+  window.handleInventoryData = function(json) {
+    if (!json || !json.table || !json.table.rows) return;
+    const parsed = [];
+    json.table.rows.forEach((r, idx) => {
+      const c = r.c || [];
+      const kode = String(c[1]?.v || "").trim();
+      const nama = String(c[2]?.v || "").trim();
+      if (!kode || kode.toUpperCase().includes("KODE") || !nama) return;
+
+      parsed.push({
+        no: c[0]?.v || (parsed.length + 1),
+        kodeBarang: kode,
+        namaBarang: nama,
+        tipe: String(c[3]?.v || "-"),
+        satuan: String(c[4]?.v || "Unit"),
+        jumlah: parseInt(c[5]?.v) || 1,
+        tahun: String(c[6]?.v || "-"),
+        kondisi: String(c[7]?.v || "Baik"),
+        kategori: String(c[8]?.v || "Bukan Aktiva Tetap"),
+        totalHargaPerolehan: parsePrice(c[9]?.v), // Kolom J (Total Harga Perolehan)
+        gambar: String(c[10]?.v || ""),           // Kolom K (Dokumen Gambar)
+        keteranganLetak: String(c[11]?.v || "-")  // Kolom L (Keterangan Letak)
+      });
+    });
+
+    if (parsed.length > 0) {
+      inventoryItems = parsed;
+      renderInventoryTable();
+      renderOverview();
+    }
+  };
+
+  const scriptFA = document.createElement("script");
+  scriptFA.src = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=responseHandler:handleFixAssetData&sheet=${encodeURIComponent(CONFIG.SHEETS.FIX_ASSET)}&headers=0`;
+  document.body.appendChild(scriptFA);
+
+  const scriptInv = document.createElement("script");
+  scriptInv.src = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=responseHandler:handleInventoryData&sheet=${encodeURIComponent(CONFIG.SHEETS.INVENTORY)}&headers=0`;
+  document.body.appendChild(scriptInv);
+}
+
 // Navigasi Tab
 function switchTab(tabId) {
-  const tabs = ['overview', 'fixasset', 'inventory'];
-  
-  tabs.forEach(s => {
+  ['overview', 'fixasset', 'inventory'].forEach(s => {
     const secEl = document.getElementById(`section-${s}`);
     const navEl = document.getElementById(`nav-${s}`);
-    
     if (secEl) secEl.classList.add('hidden');
     if (navEl) {
       navEl.className = "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer text-left";
     }
   });
-  
+
   const targetSec = document.getElementById(`section-${tabId}`);
   const targetNav = document.getElementById(`nav-${tabId}`);
-  
   if (targetSec) targetSec.classList.remove('hidden');
   if (targetNav) {
     targetNav.className = "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition text-white bg-blue-600 shadow-sm shadow-blue-900/40 cursor-pointer text-left";
   }
-  
+
   const titles = { 
     overview: "Overview", 
     fixasset: "Dashboard Fix Asset", 
     inventory: "Dashboard Inventory" 
   };
-  const topTitle = document.getElementById("topBarTitle");
-  if (topTitle) topTitle.textContent = titles[tabId];
+  document.getElementById("topBarTitle").textContent = titles[tabId];
 }
 
-// Batch Print Barcode 5x5 cm
+// Batch Print Barcode (Stiker 5x5 cm)
 function openBatchPrintModal(type) {
   currentBatchType = type;
   const isFA = (type === 'fixasset');
-  const list = isFA ? fixAssets : inventoryItems;
+  const list = isFA ? calculatedFixAssets : inventoryItems;
   
   const modal = document.getElementById("batchPrintModal");
   const title = document.getElementById("batchPrintTitle");
@@ -568,11 +593,12 @@ function openBatchPrintModal(type) {
   if (!modal || !container) return;
 
   title.textContent = isFA ? "Cetak Barcode Fix Asset" : "Cetak Barcode Inventory";
-  sub.textContent = `Total ${list.length} label stiker (5 x 5 cm)`;
+  sub.textContent = `Total ${list.length} label stiker baku 5 x 5 cm`;
 
   container.innerHTML = "";
   list.forEach((item) => {
-    const qrUrl = getQrCodeUrl(item.kode);
+    const kode = isFA ? item.kodeAktiva : item.kodeBarang;
+    const qrUrl = getQrCodeUrl(kode);
     const card = document.createElement("div");
     card.className = "sticker-5x5cm print-card";
     
@@ -585,10 +611,10 @@ function openBatchPrintModal(type) {
         </div>
       </div>
       <div class="sticker-qr-wrapper">
-        <img src="${qrUrl}" alt="${item.kode}" class="sticker-qr-img">
+        <img src="${qrUrl}" alt="${kode}" class="sticker-qr-img">
       </div>
       <div class="sticker-footer">
-        <div class="sticker-code">${item.kode}</div>
+        <div class="sticker-code">${kode}</div>
       </div>
     `;
     container.appendChild(card);
@@ -632,15 +658,4 @@ function setPaperSize(size) {
 
 function triggerPrint() {
   window.print();
-}
-
-// Filter Pencarian
-function filterFixAsset() {
-  const q = document.getElementById("faSearchInput").value.toLowerCase();
-  renderFixAssetTable(fixAssets.filter(i => i.kode.toLowerCase().includes(q) || i.nama.toLowerCase().includes(q) || i.lokasi.toLowerCase().includes(q)));
-}
-
-function filterInventory() {
-  const q = document.getElementById("invSearchInput").value.toLowerCase();
-  renderInventoryTable(inventoryItems.filter(i => i.kode.toLowerCase().includes(q) || i.nama.toLowerCase().includes(q) || i.keterangan.toLowerCase().includes(q)));
 }
