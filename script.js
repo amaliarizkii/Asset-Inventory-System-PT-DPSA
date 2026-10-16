@@ -146,17 +146,17 @@ const SEED_FIX_ASSETS_NEW = [
 const SEED_INVENTORY_NEW = [
   {
     no: 1,
-    kodeBarang: "INV/DPSA/R.S&M.1/2020/1",
+    kodeBarang: "INVNT/DPSA/R.S&M.1/2020/1",
     namaBarang: "Komputer",
-    tipe: "Monitor: Samsung\nCPU: DST\nUPS: Prolink",
-    satuan: "Unit",
+    tipe: "Monitor: Samsung (I7)\nCPU: DST\nUPS: Prolink",
+    satuan: "Set",
     jumlah: 1,
-    tahun: "2019-2024",
-    kondisi: "Baik",
-    kategori: "Aktiva Tetap",
+    tahun: "2024\n2019\n2019",
+    kondisi: "Baik\nBaik\nBaik",
+    hargaPerolehan: "1.265.000\n5.350.000\n595.000",
     totalHargaPerolehan: 7210000,
     gambar: "no image.png",
-    keteranganLetak: "Sebelah Mba Jovita"
+    keteranganLetak: "sebelah mba Jovita"
   }
 ];
 
@@ -427,7 +427,7 @@ function renderFixAssetTable(data) {
   if (window.lucide) lucide.createIcons();
 }
 
-// Render Tabel Inventory (Kolom A:L)
+// Render Tabel Inventory Sesuai Urutan Kolom A:L
 function renderInventoryTable(filtered = null) {
   const tbody = document.getElementById("inventoryTableBody");
   if (!tbody) return;
@@ -441,24 +441,27 @@ function renderInventoryTable(filtered = null) {
     const tr = document.createElement("tr");
     tr.className = "hover:bg-blue-50/40 border-b border-slate-100 text-center";
     tr.innerHTML = `
-      <td class="py-2.5 px-3 text-slate-500">${idx + 1}</td>
+      <td class="py-2.5 px-2 text-slate-500">${idx + 1}</td>
       <td class="py-2.5 px-3 font-mono font-bold text-blue-900 whitespace-nowrap">${item.kodeBarang}</td>
       <td class="py-2.5 px-4 font-semibold text-slate-800 text-left">${formatMultilineText(item.namaBarang)}</td>
-      <td class="py-2.5 px-4 text-slate-600 text-[11px] text-left">${formatMultilineText(item.tipe)}</td>
-      <td class="py-2.5 px-2 text-slate-600">${item.satuan}</td>
+      <td class="py-2.5 px-4 text-slate-600 text-[11px] text-left leading-relaxed">${formatMultilineText(item.tipe)}</td>
+      <td class="py-2.5 px-3 text-slate-600">${item.satuan}</td>
       <td class="py-2.5 px-2 font-bold text-slate-800">${item.jumlah}</td>
-      <td class="py-2.5 px-2 text-slate-600">${item.tahun}</td>
-      <td class="py-2.5 px-2"><span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">${item.kondisi}</span></td>
-      <td class="py-2.5 px-2"><span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-teal-100 text-teal-800">${item.kategori}</span></td>
-      <td class="py-2.5 px-3 font-bold text-emerald-900 bg-emerald-50/50">${formatRupiah(item.totalHargaPerolehan)}</td>
-      <td class="py-2.5 px-3">
+      <td class="py-2.5 px-2 text-slate-600 leading-relaxed">${formatMultilineText(item.tahun)}</td>
+      <td class="py-2.5 px-2 text-slate-600 leading-relaxed">${formatMultilineText(item.kondisi)}</td>
+      <td class="py-2.5 px-3 font-medium text-slate-700 text-right leading-relaxed">${formatMultilineText(item.hargaPerolehan)}</td>
+      <td class="py-2.5 px-3 font-bold text-emerald-900 bg-emerald-50/50 text-right">${formatRupiah(item.totalHargaPerolehan)}</td>
+      <td class="py-2.5 px-2">
         <img src="${imgUrl}" alt="${item.namaBarang}" class="w-8 h-8 object-cover rounded-lg border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
       </td>
-      <td class="py-2.5 px-3 text-slate-500 text-[11px] text-left">${formatMultilineText(item.keteranganLetak)}</td>
+      <td class="py-2.5 px-3 text-slate-500 text-[11px] text-left leading-relaxed">${formatMultilineText(item.keteranganLetak)}</td>
       <td class="py-2.5 px-3 whitespace-nowrap">
         <div class="flex items-center justify-center gap-1.5">
-          <img src="${qrUrl}" alt="QR" class="w-7 h-7 rounded border border-slate-300 bg-white p-0.5 cursor-pointer" onclick="openDetailData('${item.kodeBarang}')">
-          <button onclick="openDetailData('${item.kodeBarang}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-[10px] font-bold transition">Detail</button>
+          <img src="${qrUrl}" alt="QR" class="w-7 h-7 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kodeBarang}')" title="Klik untuk lihat detail">
+          <button onclick="openDetailData('${item.kodeBarang}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-[10px] font-bold transition flex items-center gap-1 cursor-pointer">
+            <i data-lucide="eye" class="w-3 h-3"></i>
+            <span>Detail</span>
+          </button>
         </div>
       </td>
     `;
@@ -512,37 +515,45 @@ function syncDataViaJSONP() {
   };
 
   // Handler Inventory (Kolom A s/d L)
-  window.handleInventoryData = function(json) {
-    if (!json || !json.table || !json.table.rows) return;
-    const parsed = [];
-    json.table.rows.forEach((r, idx) => {
-      const c = r.c || [];
-      const kode = String(c[1]?.v || "").trim();
-      const nama = String(c[2]?.v || "").trim();
-      if (!kode || kode.toUpperCase().includes("KODE") || !nama) return;
+window.handleInventoryData = function(json) {
+  if (!json || !json.table || !json.table.rows) return;
+  const parsed = [];
+  json.table.rows.forEach((r, idx) => {
+    const c = r.c || [];
+    const kode = String(c[1]?.v || "").trim();
+    const nama = String(c[2]?.v || "").trim();
+    
+    // Abaikan baris header atau baris kosong
+    if (!kode || kode.toUpperCase().includes("KODE") || !nama || nama.toUpperCase().includes("NAMA")) return;
 
-      parsed.push({
-        no: c[0]?.v || (parsed.length + 1),
-        kodeBarang: kode,
-        namaBarang: nama,
-        tipe: String(c[3]?.v || "-"),
-        satuan: String(c[4]?.v || "Unit"),
-        jumlah: parseInt(c[5]?.v) || 1,
-        tahun: String(c[6]?.v || "-"),
-        kondisi: String(c[7]?.v || "Baik"),
-        kategori: String(c[8]?.v || "Bukan Aktiva Tetap"),
-        totalHargaPerolehan: parsePrice(c[9]?.v), // Kolom J (Total Harga Perolehan)
-        gambar: String(c[10]?.v || ""),           // Kolom K (Dokumen Gambar)
-        keteranganLetak: String(c[11]?.v || "-")  // Kolom L (Keterangan Letak)
-      });
+    // Helper untuk mengambil nilai format teks (mempertahankan enter)
+    const getText = (cell) => {
+      if (!cell) return "-";
+      return cell.f !== undefined && cell.f !== null ? String(cell.f) : (cell.v !== undefined && cell.v !== null ? String(cell.v) : "-");
+    };
+
+    parsed.push({
+      no: c[0]?.v || (parsed.length + 1),
+      kodeBarang: kode,                         // Kolom B
+      namaBarang: nama,                         // Kolom C
+      tipe: getText(c[3]),                      // Kolom D (Tipe/Ukuran multiline)
+      satuan: String(c[4]?.v || "Unit"),        // Kolom E (Satuan/ kemasan terkecil)
+      jumlah: parseInt(c[5]?.v) || 1,           // Kolom F (Jumlah)
+      tahun: getText(c[6]),                     // Kolom G (Tahun Perolehan multiline)
+      kondisi: getText(c[7]),                   // Kolom H (Kondisi Aset multiline)
+      hargaPerolehan: getText(c[8]),            // Kolom I (Harga Perolehan multiline)
+      totalHargaPerolehan: parsePrice(c[9]?.v), // Kolom J (Total Harga Perolehan)
+      gambar: String(c[10]?.v || ""),           // Kolom K (Dokumen Gambar)
+      keteranganLetak: getText(c[11])           // Kolom L (Keterangan Letak)
     });
+  });
 
-    if (parsed.length > 0) {
-      inventoryItems = parsed;
-      renderInventoryTable();
-      renderOverview();
-    }
-  };
+  if (parsed.length > 0) {
+    inventoryItems = parsed;
+    renderInventoryTable();
+    renderOverview();
+  }
+};
 
   const scriptFA = document.createElement("script");
   scriptFA.src = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=responseHandler:handleFixAssetData&sheet=${encodeURIComponent(CONFIG.SHEETS.FIX_ASSET)}&headers=0`;
