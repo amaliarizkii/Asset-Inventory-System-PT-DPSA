@@ -174,134 +174,138 @@
           </section>
 
           <!-- SECTION 2: FIX ASSET -->
-          <section id="section-fixasset" class="hidden space-y-4">
-            
-            <!-- Filter Bar: Search + PERIODE BULAN & TAHUN -->
-            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-              <div class="flex flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                <!-- Fitur Search -->
-                <div class="relative flex-1 max-w-sm">
-                  <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-                  <input type="text" id="faSearchInput" oninput="applyFixAssetFilters()" placeholder="Cari kode, nama, merk, lokasi..." class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500">
-                </div>
-
-                <!-- Fitur Periode (Bulan & Tahun Depresiasi) -->
-                <div class="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-200">
-                  <span class="text-[10px] font-bold text-slate-500 pl-2">Periode:</span>
-                  <select id="faPeriodeBulan" onchange="applyFixAssetFilters()" class="text-xs bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 font-semibold text-slate-700">
-                    <option value="JANUARI">JANUARI</option>
-                    <option value="FEBRUARI">FEBRUARI</option>
-                    <option value="MARET">MARET</option>
-                    <option value="APRIL">APRIL</option>
-                    <option value="MEI" selected>MEI</option>
-                    <option value="JUNI">JUNI</option>
-                    <option value="JULI">JULI</option>
-                    <option value="AGUSTUS">AGUSTUS</option>
-                    <option value="SEPTEMBER">SEPTEMBER</option>
-                    <option value="OKTOBER">OKTOBER</option>
-                    <option value="NOVEMBER">NOVEMBER</option>
-                    <option value="DESEMBER">DESEMBER</option>
-                  </select>
-                  <select id="faPeriodeTahun" onchange="applyFixAssetFilters()" class="text-xs bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 font-semibold text-slate-700">
-                    <option value="2024">2024</option>
-                    <option value="2025">2025</option>
-                    <option value="2026" selected>2026</option>
-                    <option value="2027">2027</option>
-                    <option value="2028">2028</option>
-                  </select>
-                </div>
-              </div>
+            <section id="section-fixasset" class="space-y-4">
               
-              <button onclick="openBatchPrintModal('fixasset')" class="inline-flex items-center justify-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer shrink-0">
-                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-                <span>Cetak Barcode Fix Asset</span>
-              </button>
-            </div>
-
-            <!-- Tabel Fix Asset Lengkap (Kolom A:S & U:AB) -->
-            <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
-              <div class="overflow-x-auto">
-                <table class="w-full text-slate-600 min-w-[2200px]">
-                  <thead class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
-                    <tr>
-                      <th class="py-3 px-2 text-center w-10">No</th>
-                      <th class="py-3 px-3 text-center">Kode Aktiva</th>
-                      <th class="py-3 px-3 text-center">Type Aktiva</th>
-                      <th class="py-3 px-4 text-center">Nama Aktiva Tetap</th>
-                      <th class="py-3 px-3 text-center">Merk</th>
-                      <th class="py-3 px-4 text-center">Spesifikasi</th>
-                      <th class="py-3 px-2 text-center">Satuan</th>
-                      <th class="py-3 px-3 text-center">Tgl Perolehan / Tgl Penyusutan</th>
-                      <th class="py-3 px-2 text-center">Bulan Penyusutan</th>
-                      <th class="py-3 px-2 text-center">Tahun Penyusutan</th>
-                      <th class="py-3 px-2 text-center">Qty</th>
-                      <th class="py-3 px-3 text-center">Harga Perolehan (Rp)</th>
-                      <th class="py-3 px-3 text-center bg-amber-50">Total Perolehan (Rp)</th>
-                      <th class="py-3 px-2 text-center">Nilai Sisa Pengakuan (Rp)</th>
-                      <th class="py-3 px-2 text-center">Umur (Thn)</th>
-                      <th class="py-3 px-2 text-center">Umur (Bln)</th>
-                      <th class="py-3 px-3 text-center">Depresiasi (Rp)</th>
-                      <th class="py-3 px-3 text-center">Akumulasi Depresiasi (Rp)</th>
-                      <th class="py-3 px-3 text-center bg-sky-50">Nilai Buku (Rp)</th>
-                      <th class="py-3 px-2 text-center bg-slate-100">Tahun Ke</th>
-                      <th class="py-3 px-2 text-center bg-slate-100">Bulan Ke</th>
-                      <th class="py-3 px-2 text-center bg-slate-100">Hasil (Bln)</th>
-                      <th class="py-3 px-3 text-center bg-slate-100">Penyusutan / Bln</th>
-                      <th class="py-3 px-3 text-center bg-slate-100">Hasil Fix Akumulasi Depresiasi</th>
-                      <th class="py-3 px-3 text-center">Lokasi</th>
-                      <th class="py-3 px-3 text-center">Keterangan</th>
-                      <th class="py-3 px-2 text-center">Foto</th>
-                      <th class="py-3 px-3 text-center">Aksi & Barcode</th>
-                    </tr>
-                  </thead>
-                  <tbody id="faTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
-                </table>
-              </div>
-            </div>
-          </section>
-
-          <!-- SECTION 3: INVENTORY -->
-          <section id="section-inventory" class="hidden space-y-4">
+              <!-- KONTROL ATAS STICKY (Search, Periode, Cetak - Tetap Mengambang saat Scroll) -->
+              <div class="sticky top-0 z-20 bg-slate-100 pt-1 pb-2">
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                  <div class="flex flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                    <!-- Fitur Search -->
+                    <div class="relative flex-1 max-w-sm">
+                      <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                      <input type="text" id="faSearchInput" oninput="applyFixAssetFilters()" placeholder="Cari kode, nama, merk, lokasi..." class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500">
+                    </div>
             
-            <!-- Filter Bar: Search Inventory -->
-            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <div class="relative flex-1 max-w-md">
-                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-                <input type="text" id="invSearchInput" oninput="filterInventory()" placeholder="Cari kode, nama, letak..." class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
+                    <!-- Fitur Periode -->
+                    <div class="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-200">
+                      <span class="text-[10px] font-bold text-slate-500 pl-2">Periode:</span>
+                      <select id="faPeriodeBulan" onchange="applyFixAssetFilters()" class="text-xs bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 font-semibold text-slate-700 cursor-pointer">
+                        <option value="JANUARI" selected>JANUARI</option>
+                        <option value="FEBRUARI">FEBRUARI</option>
+                        <option value="MARET">MARET</option>
+                        <option value="APRIL">APRIL</option>
+                        <option value="MEI">MEI</option>
+                        <option value="JUNI">JUNI</option>
+                        <option value="JULI">JULI</option>
+                        <option value="AGUSTUS">AGUSTUS</option>
+                        <option value="SEPTEMBER">SEPTEMBER</option>
+                        <option value="OKTOBER">OKTOBER</option>
+                        <option value="NOVEMBER">NOVEMBER</option>
+                        <option value="DESEMBER">DESEMBER</option>
+                      </select>
+                      <select id="faPeriodeTahun" onchange="applyFixAssetFilters()" class="text-xs bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 font-semibold text-slate-700 cursor-pointer">
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                        <option value="2026" selected>2026</option>
+                        <option value="2027">2027</option>
+                        <option value="2028">2028</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <button onclick="openBatchPrintModal('fixasset')" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer shrink-0">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    <span>Cetak Barcode Fix Asset</span>
+                  </button>
+                </div>
               </div>
-
-              <button onclick="openBatchPrintModal('inventory')" class="inline-flex items-center justify-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer shrink-0">
-                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-                <span>Cetak Barcode Inventory</span>
-              </button>
-            </div>
-
-            <!-- Table Inventory Sesuai Spreadsheet Terbaru (Kolom A s/d L) -->
-            <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
-              <div class="overflow-x-auto">
-                <table class="w-full text-slate-600 min-w-[1250px]">
-                  <thead class="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-700 uppercase tracking-wider">
-                    <tr>
-                      <th class="py-3 px-2 text-center w-10">No</th>
-                      <th class="py-3 px-3 text-center">Kode Barang</th>
-                      <th class="py-3 px-4 text-center">Nama Barang</th>
-                      <th class="py-3 px-4 text-center">Tipe/Ukuran</th>
-                      <th class="py-3 px-3 text-center">Satuan/ kemasan terkecil</th>
-                      <th class="py-3 px-2 text-center">Jumlah</th>
-                      <th class="py-3 px-2 text-center">Tahun Perolehan</th>
-                      <th class="py-3 px-2 text-center">Kondisi Aset</th>
-                      <th class="py-3 px-3 text-center">Harga Perolehan</th>
-                      <th class="py-3 px-3 text-center bg-emerald-50">Total Harga Perolehan</th>
-                      <th class="py-3 px-2 text-center">Dokumen Gambar</th>
-                      <th class="py-3 px-3 text-center">Keterangan (Letak)</th>
-                      <th class="py-3 px-3 text-center">Aksi & Barcode</th>
-                    </tr>
-                  </thead>
-                  <tbody id="inventoryTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
-                </table>
+            
+              <!-- CONTAINER TABEL DENGAN HEADER STICKY (Tinggi Fleksibel & Scroll Mandiri) -->
+              <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
+                <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-270px)] relative">
+                  <table class="w-full text-slate-600 min-w-[2200px] border-separate border-spacing-0">
+                    <thead class="sticky top-0 z-10 shadow-xs">
+                      <tr class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                        <th class="py-3.5 px-2 text-center w-10 sticky-th">No</th>
+                        <th class="py-3.5 px-3 text-center sticky-th">Kode Aktiva</th>
+                        <th class="py-3.5 px-3 text-center sticky-th">Type Aktiva</th>
+                        <th class="py-3.5 px-4 text-center sticky-th">Nama Aktiva Tetap</th>
+                        <th class="py-3.5 px-3 text-center sticky-th">Merk</th>
+                        <th class="py-3.5 px-4 text-center sticky-th">Spesifikasi</th>
+                        <th class="py-3.5 px-2 text-center sticky-th">Satuan</th>
+                        <th class="py-3.5 px-3 text-center sticky-th">Tgl Perolehan / Tgl</th>
+                        <th class="py-3.5 px-2 text-center sticky-th">Bulan</th>
+                        <th class="py-3.5 px-2 text-center sticky-th">Tahun</th>
+                        <th class="py-3.5 px-2 text-center sticky-th">Qty</th>
+                        <th class="py-3.5 px-3 text-center sticky-th">Harga Perolehan (Rp)</th>
+                        <th class="py-3.5 px-3 text-center bg-amber-50 sticky-th">Total Perolehan (Rp)</th>
+                        <th class="py-3.5 px-2 text-center sticky-th">Nilai Sisa</th>
+                        <th class="py-3.5 px-2 text-center sticky-th">Umur (Thn)</th>
+                        <th class="py-3.5 px-2 text-center sticky-th">Umur (Bln)</th>
+                        <th class="py-3.5 px-3 text-center sticky-th">Depresiasi (Rp)</th>
+                        <th class="py-3.5 px-3 text-center sticky-th">Akumulasi Depresiasi (Rp)</th>
+                        <th class="py-3.5 px-3 text-center bg-sky-50 sticky-th">Nilai Buku (Rp)</th>
+                        <th class="py-3.5 px-2 text-center bg-slate-100 sticky-th">Tahun Ke</th>
+                        <th class="py-3.5 px-2 text-center bg-slate-100 sticky-th">Bulan Ke</th>
+                        <th class="py-3.5 px-2 text-center bg-slate-100 sticky-th">Hasil (Bln)</th>
+                        <th class="py-3.5 px-3 text-center bg-slate-100 sticky-th">Penyusutan / Bln</th>
+                        <th class="py-3.5 px-3 text-center bg-slate-100 sticky-th">Fix Akumulasi</th>
+                        <th class="py-3.5 px-3 text-center sticky-th">Lokasi</th>
+                        <th class="py-3.5 px-3 text-center sticky-th">Keterangan</th>
+                        <th class="py-3.5 px-2 text-center sticky-th">Foto</th>
+                        <th class="py-3.5 px-3 text-center sticky-th">Aksi & Barcode</th>
+                      </tr>
+                    </thead>
+                    <tbody id="faTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+            
+            <!-- SECTION 3: INVENTORY -->
+            <section id="section-inventory" class="hidden space-y-4">
+              
+              <!-- KONTROL ATAS STICKY INVENTORY -->
+              <div class="sticky top-0 z-20 bg-slate-100 pt-1 pb-2">
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                  <div class="relative flex-1 max-w-md">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                    <input type="text" id="invSearchInput" oninput="filterInventory()" placeholder="Cari kode, nama, letak..." class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
+                  </div>
+            
+                  <button onclick="openBatchPrintModal('inventory')" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer shrink-0">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    <span>Cetak Barcode Inventory</span>
+                  </button>
+                </div>
+              </div>
+            
+              <!-- CONTAINER TABEL INVENTORY DENGAN HEADER STICKY -->
+              <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
+                <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-270px)] relative">
+                  <table class="w-full text-slate-600 min-w-[1250px] border-separate border-spacing-0">
+                    <thead class="sticky top-0 z-10 shadow-xs">
+                      <tr class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                        <th class="py-3.5 px-2 text-center w-10 sticky-th">No</th>
+                        <th class="py-3.5 px-3 text-center sticky-th">Kode Barang</th>
+                        <th class="py-3.5 px-4 text-center sticky-th">Nama Barang</th>
+                        <th class="py-3.5 px-4 text-center sticky-th">Tipe/Ukuran</th>
+                        <th class="py-3.5 px-3 text-center sticky-th">Satuan/ kemasan terkecil</th>
+                        <th class="py-3.5 px-2 text-center sticky-th">Jumlah</th>
+                        <th class="py-3.5 px-2 text-center sticky-th">Tahun Perolehan</th>
+                        <th class="py-3.5 px-2 text-center sticky-th">Kondisi Aset</th>
+                        <th class="py-3.5 px-3 text-center sticky-th">Harga Perolehan</th>
+                        <th class="py-3.5 px-3 text-center bg-emerald-50 sticky-th">Total Harga Perolehan</th>
+                        <th class="py-3.5 px-2 text-center sticky-th">Dokumen Gambar</th>
+                        <th class="py-3.5 px-3 text-center sticky-th">Keterangan (Letak)</th>
+                        <th class="py-3.5 px-3 text-center sticky-th">Aksi & Barcode</th>
+                      </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
 
         </div>
       </div>
