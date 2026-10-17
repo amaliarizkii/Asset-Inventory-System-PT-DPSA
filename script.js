@@ -59,9 +59,7 @@ function calculateDepreciation(item, periodeBulan, periodeTahun) {
   let oUmurTahun = 4;
   if (cType.includes("BANGUNAN")) {
     oUmurTahun = 20;
-  } else if (cType.includes("MESIN")) {
-    oUmurTahun = 8;
-  } else if (cType.includes("KENDARAAN")) {
+  } else if (cType.includes("MESIN") || cType.includes("KENDARAAN")) {
     oUmurTahun = 8;
   }
 
@@ -75,21 +73,30 @@ function calculateDepreciation(item, periodeBulan, periodeTahun) {
   const iBulanStr = String(item.bulanPenyusutan || "").trim().toUpperCase();
   const jTahun = parseInt(item.tahunPenyusutan) || 0;
 
-  // Rumus W : =IF(OR(TRIM(I8)="",N(J8)=0),0,MAX(0,(INT($R$4)-J8)*12+MATCH($R$3,{"JANUARI",...},0)-MATCH(TRIM(I8),{"JANUARI",...},0)+1))
+  let uTahunKe = 0;
+  let vBulanKe = 0;
   let wHasilBulan = 0;
+
   const matchR3 = monthList.indexOf(periodeBulan) + 1;
   const matchI8 = monthList.indexOf(iBulanStr) + 1;
 
-  if (iBulanStr !== "" && jTahun > 0 && matchR3 > 0 && matchI8 > 0) {
-    const calcMonths = ((parseInt(periodeTahun) - jTahun) * 12) + matchR3 - matchI8 + 1;
-    wHasilBulan = Math.max(0, calcMonths);
+  // Cek Kondisi: OR(TRIM(I8)="", N(J8)=0, N(O8)=0)
+  if (iBulanStr !== "" && jTahun > 0 && oUmurTahun > 0 && matchR3 > 0 && matchI8 > 0) {
+    // Perhitungan rentang bulan: (INT($R$4)-J8)*12 + MATCH($R$3,b,0) - MATCH(TRIM(I8),b,0) + 1
+    const totalBulanBerjalan = ((parseInt(periodeTahun) - jTahun) * 12) + matchR3 - matchI8 + 1;
+    
+    // MIN(O8*12, totalBulanBerjalan)
+    const effectiveMonths = Math.max(0, Math.min(oUmurTahun * 12, totalBulanBerjalan));
+
+    // Rumus U : INT(MAX(0, MIN(...)) / 12)
+    uTahunKe = Math.floor(effectiveMonths / 12);
+
+    // Rumus V : MOD(MAX(0, MIN(...)), 12)
+    vBulanKe = effectiveMonths % 12;
+
+    // Rumus W : =U8*12+V8
+    wHasilBulan = (uTahunKe * 12) + vBulanKe;
   }
-
-  // Rumus U : =INT(MAX(W8-1,0)/12)
-  const uTahunKe = Math.floor(Math.max(wHasilBulan - 1, 0) / 12);
-
-  // Rumus V : =MOD(MAX(W8-1,0),12)
-  const vBulanKe = Math.max(wHasilBulan - 1, 0) % 12;
 
   // Rumus X : =IFERROR((M8-N8)/P8,"")
   const xPenyusutanPerBulan = pUmurBulan > 0 ? ((mTotalPerolehan - nNilaiSisa) / pUmurBulan) : 0;
@@ -635,14 +642,6 @@ function openBatchPrintModal(type) {
   modal.style.display = "flex";
   setPaperSize('A4');
   if (window.lucide) lucide.createIcons();
-}
-
-function closeBatchPrintModal() {
-  const modal = document.getElementById("batchPrintModal");
-  if (modal) {
-    modal.classList.add("hidden");
-    modal.style.display = "none";
-  }
 }
 
 function setPaperSize(size) {
