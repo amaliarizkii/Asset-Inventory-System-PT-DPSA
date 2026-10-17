@@ -62,43 +62,64 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function renderCard(item, isInv) {
   if (isInv) {
-    // Inventory: Kode, Nama, Dokumen Gambar, Keterangan (Letak)
+    // 5 Atribut Paspor Inventory:
+    // 1. Kode Barang
     document.getElementById("lblKode").textContent = "Kode Barang";
     document.getElementById("qrKode").textContent = item.kodeBarang || "-";
 
+    // 2. Nama Barang
     document.getElementById("lblNama").textContent = "Nama Barang";
     document.getElementById("qrNama").innerHTML = formatMultiline(item.namaBarang);
 
-    // Sembunyikan field yang tidak ada di barcode inventory
+    // 3. Tipe/Ukuran
+    document.getElementById("rowTipe").style.display = "flex";
+    document.getElementById("lblTipe").textContent = "Tipe / Ukuran";
+    document.getElementById("qrTipe").innerHTML = formatMultiline(item.tipe);
+
+    // Sembunyikan field yang khusus Fix Asset
     document.getElementById("rowMerk").style.display = "none";
-    document.getElementById("rowSpek").style.display = "none";
     document.getElementById("rowTgl").style.display = "none";
     document.getElementById("rowHarga").style.display = "none";
     document.getElementById("rowLokasi").style.display = "none";
 
+    // 4. Keterangan (Letak)
     document.getElementById("lblKeterangan").textContent = "Keterangan (Letak)";
     document.getElementById("qrKeterangan").innerHTML = formatMultiline(item.keteranganLetak);
 
+    // 5. Dokumen Gambar
+    document.getElementById("lblDokumenGambar").textContent = "Dokumen Gambar";
     const photoEl = document.getElementById("qrFoto");
     if (photoEl) {
       photoEl.src = CONFIG.formatDriveImageUrl(item.gambar);
     }
   } else {
-    // Fix Asset: 9 Atribut (Kode, Nama, Merk, Spek, Tgl, Harga, Lokasi, Keterangan, Gambar)
+    // 9 Atribut Paspor Fix Asset
     document.getElementById("lblKode").textContent = "Kode Aktiva";
     document.getElementById("qrKode").textContent = item.kodeAktiva || "-";
 
     document.getElementById("lblNama").textContent = "Nama Aktiva Tetap";
     document.getElementById("qrNama").innerHTML = formatMultiline(item.namaAktiva);
 
+    document.getElementById("rowMerk").style.display = "flex";
     document.getElementById("qrMerk").innerHTML = formatMultiline(item.merk);
-    document.getElementById("qrSpek").innerHTML = formatMultiline(item.spesifikasi);
+
+    document.getElementById("rowTipe").style.display = "flex";
+    document.getElementById("lblTipe").textContent = "Spesifikasi";
+    document.getElementById("qrTipe").innerHTML = formatMultiline(item.spesifikasi);
+
+    document.getElementById("rowTgl").style.display = "flex";
     document.getElementById("qrTgl").textContent = item.tglPerolehan || "-";
-    
+
+    document.getElementById("rowHarga").style.display = "flex";
     document.getElementById("qrHarga").textContent = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(item.hargaPerolehan || 0);
+
+    document.getElementById("rowLokasi").style.display = "flex";
     document.getElementById("qrLokasi").textContent = (item.lokasi || "-").toUpperCase();
+
+    document.getElementById("lblKeterangan").textContent = "Keterangan";
     document.getElementById("qrKeterangan").innerHTML = formatMultiline(item.keterangan);
 
+    document.getElementById("lblDokumenGambar").textContent = "Asset Foto";
     const photoEl = document.getElementById("qrFoto");
     if (photoEl) {
       photoEl.src = CONFIG.formatDriveImageUrl(item.linkGambar);
