@@ -27,32 +27,43 @@
 
     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 md:gap-10 items-stretch">
       
-      <!-- Kolom Kiri: Atribut Sesuai Format Baru -->
+      <!-- Kolom Kiri: Atribut Paspor -->
       <div class="md:col-span-7 space-y-3 sm:space-y-3.5" id="qrAttributesContainer">
         
-        <!-- Kode Aktiva / Kode Barang -->
+        <!-- 1. Kode Barang / Kode Aktiva -->
         <div class="pb-2 sm:pb-2.5 border-b-2 border-dashed border-[#00b0ff] flex items-center gap-3 sm:gap-4">
           <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
             <svg viewBox="0 0 24 24" class="w-5 h-5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/><circle cx="7" cy="7" r="1.5" fill="#ffffff"/></svg>
           </div>
           <div class="min-w-0">
-            <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none" id="lblKode">Kode Aktiva</p>
+            <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none" id="lblKode">Kode Barang</p>
             <p id="qrKode" class="text-xs sm:text-sm font-extrabold tracking-wider break-all mt-1 font-mono text-blue-950">-</p>
           </div>
         </div>
 
-        <!-- Nama Aktiva Tetap / Nama Barang -->
+        <!-- 2. Nama Barang / Nama Aktiva -->
         <div class="pb-2 sm:pb-2.5 border-b-2 border-dashed border-[#00b0ff] flex items-center gap-3 sm:gap-4">
           <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
             <svg viewBox="0 0 24 24" class="w-5 h-5 text-amber-700 fill-current"><path d="M12 2.25L3 7.5v9l9 5.25 9-5.25v-9l-9-5.25z" fill="#b45309"/></svg>
           </div>
           <div class="min-w-0">
-            <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none" id="lblNama">Nama Aktiva Tetap</p>
+            <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none" id="lblNama">Nama Barang</p>
             <p id="qrNama" class="text-sm sm:text-base font-extrabold uppercase mt-1 leading-snug text-blue-950">-</p>
           </div>
         </div>
 
-        <!-- Merk -->
+        <!-- 3. Tipe / Ukuran (Inventory & Fix Asset Spesifikasi) -->
+        <div id="rowTipe" class="pb-2 sm:pb-2.5 border-b-2 border-dashed border-[#00b0ff] flex items-center gap-3 sm:gap-4">
+          <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
+            <svg viewBox="0 0 24 24" class="w-5 h-5"><rect x="2" y="3" width="20" height="14" rx="2" fill="#38bdf8" stroke="#0284c7" stroke-width="1.5"/></svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none" id="lblTipe">Tipe / Ukuran</p>
+            <div id="qrTipe" class="text-xs sm:text-sm font-extrabold uppercase mt-1 leading-snug text-blue-950">-</div>
+          </div>
+        </div>
+
+        <!-- Khusus Fix Asset: Merk -->
         <div id="rowMerk" class="pb-2 sm:pb-2.5 border-b-2 border-dashed border-[#00b0ff] flex items-center gap-3 sm:gap-4">
           <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
             <svg viewBox="0 0 24 24" class="w-5 h-5"><rect x="3" y="5" width="18" height="14" rx="2" fill="#38bdf8"/></svg>
@@ -63,18 +74,7 @@
           </div>
         </div>
 
-        <!-- Spesifikasi -->
-        <div id="rowSpek" class="pb-2 sm:pb-2.5 border-b-2 border-dashed border-[#00b0ff] flex items-center gap-3 sm:gap-4">
-          <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
-            <svg viewBox="0 0 24 24" class="w-5 h-5"><rect x="2" y="3" width="20" height="14" rx="2" fill="#38bdf8" stroke="#0284c7" stroke-width="1.5"/></svg>
-          </div>
-          <div class="min-w-0">
-            <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none">Spesifikasi</p>
-            <div id="qrSpek" class="text-xs sm:text-sm font-extrabold uppercase mt-1 leading-snug text-blue-950">-</div>
-          </div>
-        </div>
-
-        <!-- Tgl Perolehan / Tgl Penyusutan -->
+        <!-- Khusus Fix Asset: Tgl Perolehan -->
         <div id="rowTgl" class="pb-2 sm:pb-2.5 border-b-2 border-dashed border-[#00b0ff] flex items-center gap-3 sm:gap-4">
           <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
             <svg viewBox="0 0 24 24" class="w-5 h-5"><rect x="3" y="4" width="18" height="18" rx="2" fill="#ffffff" stroke="#ef4444" stroke-width="1.5"/><line x1="3" y1="10" x2="21" y2="10" stroke="#ef4444" stroke-width="1.5"/></svg>
@@ -85,7 +85,7 @@
           </div>
         </div>
 
-        <!-- Harga Perolehan -->
+        <!-- Khusus Fix Asset: Harga Perolehan -->
         <div id="rowHarga" class="pb-2 sm:pb-2.5 border-b-2 border-dashed border-[#00b0ff] flex items-center gap-3 sm:gap-4">
           <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
             <svg viewBox="0 0 24 24" class="w-5 h-5"><circle cx="12" cy="12" r="9" fill="#10b981"/></svg>
@@ -96,7 +96,7 @@
           </div>
         </div>
 
-        <!-- Lokasi -->
+        <!-- Khusus Fix Asset: Lokasi -->
         <div id="rowLokasi" class="pb-2 sm:pb-2.5 border-b-2 border-dashed border-[#00b0ff] flex items-center gap-3 sm:gap-4">
           <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
             <svg viewBox="0 0 24 24" class="w-5 h-5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#ef4444"/><circle cx="12" cy="9" r="2.5" fill="#ffffff"/></svg>
@@ -107,31 +107,31 @@
           </div>
         </div>
 
-        <!-- Keterangan (Letak) -->
+        <!-- 4. Keterangan / Keterangan (Letak) -->
         <div class="pb-1 flex items-center gap-3 sm:gap-4">
           <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
             <svg viewBox="0 0 24 24" class="w-5 h-5"><circle cx="12" cy="7" r="4" fill="#0284c7"/><path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2" fill="#0284c7"/></svg>
           </div>
           <div>
-            <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none" id="lblKeterangan">Keterangan</p>
-            <p id="qrKeterangan" class="text-sm sm:text-base font-extrabold uppercase mt-1 text-blue-950">-</p>
+            <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none" id="lblKeterangan">Keterangan (Letak)</p>
+            <p id="qrKeterangan" class="text-sm sm:text-base font-extrabold uppercase mt-1 text-blue-950 leading-relaxed">-</p>
           </div>
         </div>
 
       </div>
 
-      <!-- Kolom Kanan: Foto Aset & Gedung -->
+      <!-- Kolom Kanan: 5. Dokumen Gambar & Fasad Gedung -->
       <div class="md:col-span-5 flex flex-col justify-between items-center space-y-4">
         <div class="w-full flex flex-col items-center">
-          <h3 class="text-base sm:text-lg font-black tracking-wide mb-2 text-center" style="color: #1a2f64;">Asset Foto</h3>
+          <h3 class="text-base sm:text-lg font-black tracking-wide mb-2 text-center" style="color: #1a2f64;" id="lblDokumenGambar">Dokumen Gambar</h3>
           <div class="w-full max-w-[280px] sm:max-w-[300px] p-1.5 rounded-[28px] border-[3.5px] border-[#00b0ff] bg-white shadow-md">
             <div class="w-full rounded-[22px] overflow-hidden bg-white min-h-[200px] sm:min-h-[220px] max-h-[260px] flex items-center justify-center">
-              <img id="qrFoto" src="no image.png" alt="Asset Foto" class="w-full h-full object-contain max-h-[260px]" onerror="this.onerror=null;this.src='no image.png';">
+              <img id="qrFoto" src="no image.png" alt="Dokumen Gambar" class="w-full h-full object-contain max-h-[260px]" onerror="this.onerror=null;this.src='no image.png';">
             </div>
           </div>
         </div>
 
-        <!-- Fasad Gedung DPSA (Menyatu warna putih card) -->
+        <!-- Fasad Gedung DPSA -->
         <div class="w-full max-w-[320px] pt-2">
           <div class="w-full rounded-2xl overflow-hidden relative bg-white flex items-end justify-center min-h-[100px]">
             <img src="building-lineart.png" alt="DPSA Building" class="w-full h-auto object-cover" onerror="this.style.display='none';">
