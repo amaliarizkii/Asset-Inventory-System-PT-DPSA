@@ -427,6 +427,13 @@ function renderFixAssetTable(data) {
 
 // Render Tabel Inventory Sesuai Format Kolom Screenshot Baru (DPSA, DPM, Pak Boyke)
 // Render Tabel Inventory dengan Warna Kolom Menyesuaikan Header
+// Helper khusus untuk menampilkan nilai rupiah hanya jika nilainya > 0 / ada di spreadsheet
+function formatNilaiInventory(num) {
+  if (!num || num === 0) return "-";
+  return formatRupiah(num);
+}
+
+// Render Tabel Inventory Sesuai Format Kolom & Nilai Kosong Tidak Tampil Rp 0
 function renderInventoryTable(filtered = null) {
   const tbody = document.getElementById("inventoryTableBody");
   if (!tbody) return;
@@ -450,14 +457,20 @@ function renderInventoryTable(filtered = null) {
       <td class="py-2.5 px-2 text-slate-600 leading-relaxed">${formatMultilineText(item.kondisi)}</td>
       <td class="py-2.5 px-3 font-medium text-slate-700 text-right leading-relaxed">${formatMultilineText(item.hargaSatuan)}</td>
       
-      <!-- Kolom DPSA: Selaras dengan Header DPSA (#9fc5e8 / tint #e8f1fa) -->
-      <td class="py-2.5 px-3 font-medium text-slate-900 text-right bg-[#e8f1fa]">${formatRupiah(item.totalDPSA)}</td>
+      <!-- Kolom DPSA: Hanya tampil jika nilainya ada di spreadsheet (tidak Rp 0) -->
+      <td class="py-2.5 px-3 font-medium text-slate-900 text-right bg-[#e8f1fa]">
+        ${formatNilaiInventory(item.totalDPSA)}
+      </td>
       
-      <!-- Kolom DPM: Selaras dengan Header DPM (#ead1dc / tint #f7edf2) -->
-      <td class="py-2.5 px-3 font-medium text-slate-900 text-right bg-[#f7edf2]">${formatRupiah(item.totalDPM)}</td>
+      <!-- Kolom DPM: Hanya tampil jika nilainya ada di spreadsheet (tidak Rp 0) -->
+      <td class="py-2.5 px-3 font-medium text-slate-900 text-right bg-[#f7edf2]">
+        ${formatNilaiInventory(item.totalDPM)}
+      </td>
       
-      <!-- Kolom Pak Boyke: Selaras dengan Header Pak Boyke (#fce5cd / tint #fef6ee) -->
-      <td class="py-2.5 px-3 font-medium text-slate-900 text-right bg-[#fef6ee]">${formatRupiah(item.totalBoyke)}</td>
+      <!-- Kolom Pak Boyke: Hanya tampil jika nilainya ada di spreadsheet (tidak Rp 0) -->
+      <td class="py-2.5 px-3 font-medium text-slate-900 text-right bg-[#fef6ee]">
+        ${formatNilaiInventory(item.totalBoyke)}
+      </td>
       
       <td class="py-2.5 px-2">
         <img src="${imgUrl}" alt="${item.namaBarang}" class="w-8 h-8 object-cover rounded-lg border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
