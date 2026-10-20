@@ -1,6 +1,7 @@
 /**
- * barcode.js - Parser Data QR Mandiri PT DPSA (Format Baru)
+ * barcode.js - Parser Data QR Mandiri PT DPSA (Sinkronisasi Penuh)
  */
+
 function normalizeCode(str) {
   if (!str) return "";
   try { str = decodeURIComponent(str); } catch (e) {}
@@ -8,7 +9,7 @@ function normalizeCode(str) {
 }
 
 function formatMultiline(str) {
-  if (!str) return "-";
+  if (!str || str === "-") return "-";
   return String(str).replace(/\n/g, "<br>");
 }
 
@@ -18,7 +19,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (!rawTarget) {
     const loader = document.getElementById("barcodeLoader");
-    if (loader) loader.textContent = "Kode barang tidak ditemukan!";
+    if (loader) loader.textContent = "Kode barang tidak ditemukan pada URL!";
     return;
   }
 
@@ -26,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let foundItem = null;
   let isInventory = false;
 
-  // 1. Ambil dari LocalStorage Cache
+  // 1. Cek dari LocalStorage Cache
   try {
     const cachedFA = JSON.parse(localStorage.getItem("dpsa_cache_fa") || "[]");
     const cachedInv = JSON.parse(localStorage.getItem("dpsa_cache_inv") || "[]");
@@ -38,6 +39,69 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   } catch (e) {}
 
+  // 2. Jika tidak ada di cache lokal, ambil langsung dari Spreadsheet secara online
+  if (!foundItem && typeof CONFIG !== 'undefined') {
+    try {
+      // Cek sheet Inventory terlebih dahulu jika kode memiliki awalan INV
+      if (cleanTarget.includes("INV")) {
+        const invUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEETS.INVENTORY)}&headers=0`;
+        const respInv = await fetch(invUrl);
+        const textInv = await respInv.text();
+        const jsonStrInv = textInv.substring(textInv.indexOf("(") + 1, textInv.lastIndexOf(")"));
+        const dataInv = JSON.parse(jsonStrInv);
+
+        if (dataInv && dataInv.table && dataInv.table.rows) {
+          dataInv.table.rows.forEach(r => {
+            const c = r.c || [];
+            const kode = String(c[1]?.v || "").trim();
+            if (normalizeCode(kode) === cleanTarget) {
+              foundItem = {
+                kodeBarang: kode,
+                namaBarang: c[2]?.v || "-",
+                tipe: c[3]?.v || "-",
+                gambar: c[12]?.v || "", // Kolom M (Dokumen Gambar)
+                keteranganLetak: c[13]?.v || "-" // Kolom N (Keterangan Letak)
+              };
+              isInventory = true;
+            }
+          });
+        }
+      }
+
+      // Cek sheet Fix Asset jika belum ditemukan
+      if (!foundItem) {
+        const faUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEETS.FIX_ASSET)}&headers=0`;
+        const respFA = await fetch(faUrl);
+        const textFA = await respFA.text();
+        const jsonStrFA = textFA.substring(textFA.indexOf("(") + 1, textFA.lastIndexOf(")"));
+        const dataFA = JSON.parse(jsonStrFA);
+
+        if (dataFA && dataFA.table && dataFA.table.rows) {
+          dataFA.table.rows.forEach(r => {
+            const c = r.c || [];
+            const kode = String(c[1]?.v || "").trim();
+            if (normalizeCode(kode) === cleanTarget) {
+              foundItem = {
+                kodeAktiva: kode,
+                namaAktiva: c[3]?.v || "-",
+                merk: c[4]?.v || "-",
+                spesifikasi: c[5]?.v || "-",
+                tglPerolehan: c[7]?.f || c[7]?.v || "-",
+                hargaPerolehan: c[11]?.v || 0,
+                lokasi: c[25]?.v || "PT DPSA",
+                keterangan: c[26]?.v || "-",
+                linkGambar: c[27]?.v || ""
+              };
+              isInventory = false;
+            }
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("Gagal mengambil data live spreadsheet:", err);
+    }
+  }
+
   // Sembunyikan loader
   const loader = document.getElementById("barcodeLoader");
   if (loader) loader.style.display = "none";
@@ -45,18 +109,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (foundItem) {
     renderCard(foundItem, isInventory);
   } else {
-    // Fallback tampilan aman
     renderCard({
-      kodeAktiva: decodeURIComponent(rawTarget),
-      namaAktiva: "BARANG TERDAFTAR",
-      merk: "-",
-      spesifikasi: "-",
-      tglPerolehan: "-",
-      hargaPerolehan: 0,
-      lokasi: "PT DPSA",
-      keterangan: "-",
-      linkGambar: "no image.png"
-    }, false);
+      kodeBarang: decodeURIComponent(rawTarget),
+      namaBarang: "BARANG TIDAK DITEMUKAN",
+      tipe: "-",
+      keteranganLetak: "-",
+      gambar: "no image.png"
+    }, true);
   }
 });
 
@@ -76,7 +135,7 @@ function renderCard(item, isInv) {
     document.getElementById("lblTipe").textContent = "Tipe / Ukuran";
     document.getElementById("qrTipe").innerHTML = formatMultiline(item.tipe);
 
-    // Sembunyikan field yang khusus Fix Asset
+    // Sembunyikan atribut khusus Fix Asset
     document.getElementById("rowMerk").style.display = "none";
     document.getElementById("rowTgl").style.display = "none";
     document.getElementById("rowHarga").style.display = "none";
