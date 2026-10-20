@@ -7,6 +7,18 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="style.css">
+
+  <script>
+  // Router instan untuk QR Code Scanner
+  (function() {
+    const params = new URLSearchParams(window.location.search);
+    const targetKode = params.get('kode') || params.get('code');
+    if (targetKode) {
+      // Langsung buka halaman paspor aset
+      window.location.replace('barcode.html?kode=' + encodeURIComponent(targetKode));
+    }
+  })();
+</script>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased h-screen w-screen overflow-hidden font-sans select-none">
 
