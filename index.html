@@ -14,7 +14,7 @@
     const params = new URLSearchParams(window.location.search);
     const targetKode = params.get('kode') || params.get('code');
     if (targetKode) {
-      // Langsung buka halaman paspor aset
+      // Alihkan langsung ke tampilan paspor kartu
       window.location.replace('barcode.html?kode=' + encodeURIComponent(targetKode));
     }
   })();
