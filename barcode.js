@@ -14,8 +14,8 @@ function formatMultiline(str) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const rawTarget = urlParams.get("code") || urlParams.get("kode");
+const urlParams = new URLSearchParams(window.location.search);
+const rawTarget = urlParams.get("kode") || urlParams.get("code");
 
   if (!rawTarget) {
     const loader = document.getElementById("barcodeLoader");
