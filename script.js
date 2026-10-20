@@ -245,6 +245,30 @@ window.onload = function() {
   } catch (e) {}
 
   document.getElementById("loginModal").style.display = "flex";
+
+  // Cek apakah URL membawa parameter ?kode=
+  const params = new URLSearchParams(window.location.search);
+  const targetKode = params.get('kode') || params.get('code');
+
+  if (targetKode) {
+    // Sembunyikan form login & dashboard utama
+    const loginModal = document.getElementById("loginModal");
+    const appContainer = document.getElementById("appContainer");
+    const passportView = document.getElementById("directPassportView");
+
+    if (loginModal) loginModal.style.display = "none";
+    if (appContainer) appContainer.style.display = "none";
+    if (passportView) passportView.style.display = "flex";
+
+    // Muat data aset untuk kartu paspor
+    checkDirectPassportParameter();
+    return; // Hentikan alur agar tidak membuka form login
+  }
+
+  // Jika URL biasa (tanpa ?kode=), jalankan alur login normal
+  loadDynamicUsersFromSheets();
+  // ... sisa kode window.onload Anda ...
+};
 };
 
 function logout() {
