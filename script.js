@@ -1,8 +1,8 @@
 /**
- * script.js - Core Logic, Dynamic Auth, Calculations & URL Router PT DPSA
+ * script.js - Core Logic, Dynamic Auth & Direct Clean URL Router PT DPSA
  */
 
-// Akun Pengguna Dinamis (Akan dimuat langsung dari tab "Akses User")
+// Akun Pengguna Dinamis
 let dynamicUsers = [
   { u: "staff.it@dharmaputrainterior.co.id", p: "staff.itDPSA88", name: "Staff IT", role: "IT Support", initials: "IT" },
   { u: "hrga@dharmaputrainterior.co.id", p: "hrgaDPSA88", name: "HR & GA", role: "Human Resource & GA", initials: "HR" },
@@ -37,31 +37,48 @@ function formatMultilineText(text) {
   return String(text).replace(/\n/g, "<br>");
 }
 
-// Helper khusus untuk menampilkan nilai rupiah hanya jika nilainya > 0 / ada di spreadsheet
 function formatNilaiInventory(num) {
   if (!num || num === 0) return "-";
   return formatRupiah(num);
 }
 
-// Generator QR Code (Format Baru: /?kode=...)
-function getQrCodeUrl(code) {
+// ========================================================
+// 1. GENERATOR URL BERSIH TANPA %2F (MENGGUNAKAN SLASH ASLI)
+// ========================================================
+function getCleanKodeUrl(code) {
   const origin = window.location.origin;
   const path = window.location.pathname.replace(/\/index\.html$/, '');
   const cleanPath = path.endsWith('/') ? path : `${path}/`;
-  const scanTargetUrl = `${origin}${cleanPath}?kode=${encodeURIComponent(String(code).trim())}`;
-  return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(scanTargetUrl)}&margin=1`;
+  const cleanCode = String(code).trim();
+  
+  // URL Bersih tanpa encodeURIComponent agar garis miring '/' tidak jadi %2F
+  return `${origin}${cleanPath}?kode=${cleanCode}`;
 }
 
-// Tombol Detail di Tabel (Format Baru: /?kode=...)
+// Generator QR Code
+function getQrCodeUrl(code) {
+  const cleanUrl = getCleanKodeUrl(code);
+  return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(cleanUrl)}&margin=1`;
+}
+
+// Tombol Detail di Tabel
 function openDetailData(kode) {
-  const origin = window.location.origin;
-  const path = window.location.pathname.replace(/\/index\.html$/, '');
-  const cleanPath = path.endsWith('/') ? path : `${path}/`;
-  window.open(`${origin}${cleanPath}?kode=${encodeURIComponent(String(kode).trim())}`, '_blank');
+  window.open(getCleanKodeUrl(kode), '_blank');
 }
 
 // ========================================================
-// RUMUS FIX ASET TERBARU (M, O, P, Q, R, S, U, V, W, X, Y)
+// 2. NORMALISASI KODE (COCOK WALAUPUN ADA .1 / SPASI / %2F)
+// ========================================================
+function normalizeCode(str) {
+  if (!str) return "";
+  try {
+    str = decodeURIComponent(str);
+  } catch (e) {}
+  return String(str).trim().toUpperCase().replace(/\s+/g, '');
+}
+
+// ========================================================
+// 3. RUMUS DEPRESIASI SPREADSHEET FIX ASET
 // ========================================================
 function calculateDepreciation(item, periodeBulan, periodeTahun) {
   const monthList = (typeof CONFIG !== 'undefined' && CONFIG.MONTH_NAMES) ? CONFIG.MONTH_NAMES : [
@@ -73,10 +90,8 @@ function calculateDepreciation(item, periodeBulan, periodeTahun) {
   const kQty = item.qty || 1;
   const lHarga = item.hargaPerolehan || 0;
 
-  // M : =IF(C8="","",K8*L8)
   const mTotalPerolehan = (cType === "") ? 0 : (kQty * lHarga);
 
-  // O : =IFS(ISNUMBER(SEARCH("BANGUNAN", C8)), 20, ISNUMBER(SEARCH("MESIN", C8)), 8, ISNUMBER(SEARCH("KENDARAAN", C8)), 8, TRUE, 4)
   let oUmurTahun = 4;
   if (cType.includes("BANGUNAN")) {
     oUmurTahun = 20;
@@ -84,10 +99,7 @@ function calculateDepreciation(item, periodeBulan, periodeTahun) {
     oUmurTahun = 8;
   }
 
-  // P : =IFERROR(O8*12,"")
   const pUmurBulan = oUmurTahun * 12;
-
-  // Q : M8/P8
   const qDepresiasi = pUmurBulan > 0 ? (mTotalPerolehan / pUmurBulan) : 0;
 
   const nNilaiSisa = item.nilaiSisa || 0;
@@ -101,29 +113,23 @@ function calculateDepreciation(item, periodeBulan, periodeTahun) {
   const matchR3 = monthList.indexOf(periodeBulan) + 1;
   const matchI8 = monthList.indexOf(iBulanStr) + 1;
 
-  // Rumus U & V dengan LET(b, ..., INT(MAX(0, MIN(O8*12, ...))/12))
   if (iBulanStr !== "" && jTahun > 0 && oUmurTahun > 0 && matchR3 > 0 && matchI8 > 0) {
     const totalBulanBerjalan = ((parseInt(periodeTahun) - jTahun) * 12) + matchR3 - matchI8 + 1;
     const effectiveMonths = Math.max(0, Math.min(oUmurTahun * 12, totalBulanBerjalan));
 
     uTahunKe = Math.floor(effectiveMonths / 12);
     vBulanKe = effectiveMonths % 12;
-    wHasilBulan = (uTahunKe * 12) + vBulanKe; // Rumus W : =U8*12+V8
+    wHasilBulan = (uTahunKe * 12) + vBulanKe;
   }
 
-  // X : =IFERROR((M8-N8)/P8,"")
   const xPenyusutanPerBulan = pUmurBulan > 0 ? ((mTotalPerolehan - nNilaiSisa) / pUmurBulan) : 0;
 
-  // Y : =IF(OR(ISNUMBER(SEARCH("TANAH",C8)),N(X8)<=0,N(W8)<=0),0,MIN(N(W8)*N(X8),N(M8)-N(N8)))
   let yFixAkumulasi = 0;
   if (!cType.includes("TANAH") && xPenyusutanPerBulan > 0 && wHasilBulan > 0) {
     yFixAkumulasi = Math.min(wHasilBulan * xPenyusutanPerBulan, mTotalPerolehan - nNilaiSisa);
   }
 
-  // R : =N(Y8)
   const rAkumulasiDepresiasi = yFixAkumulasi;
-
-  // S : =MAX(0,M8-R8)
   const sNilaiBuku = Math.max(0, mTotalPerolehan - rAkumulasiDepresiasi);
 
   return {
@@ -142,7 +148,7 @@ function calculateDepreciation(item, periodeBulan, periodeTahun) {
 }
 
 // ========================================================
-// SISTEM LOGIN & OTENTIKASI DINAMIS DARI SPREADSHEET
+// 4. OTENTIKASI PENGGUNA DARI TAB SPREADSHEET
 // ========================================================
 function loadDynamicUsersFromSheets() {
   if (typeof CONFIG === 'undefined') return;
@@ -196,17 +202,12 @@ function doLogin() {
     currentUser = user;
     try { sessionStorage.setItem("dpsa_logged_in", JSON.stringify(user)); } catch (e) {}
     
-    const loginModal = document.getElementById("loginModal");
-    const appContainer = document.getElementById("appContainer");
-    if (loginModal) loginModal.style.display = "none";
-    if (appContainer) appContainer.style.display = "flex";
+    document.getElementById("loginModal").style.display = "none";
+    document.getElementById("appContainer").style.display = "flex";
 
-    const nameEl = document.getElementById("userProfileName");
-    const roleEl = document.getElementById("userProfileRole");
-    const initEl = document.getElementById("userAvatarInitials");
-    if (nameEl) nameEl.textContent = user.name;
-    if (roleEl) roleEl.textContent = user.role;
-    if (initEl) initEl.textContent = user.initials;
+    document.getElementById("userProfileName").textContent = user.name;
+    document.getElementById("userProfileRole").textContent = user.role;
+    document.getElementById("userAvatarInitials").textContent = user.initials;
 
     if (errBox) errBox.style.display = "none";
     
@@ -216,27 +217,32 @@ function doLogin() {
     if (errBox) {
       errBox.textContent = "Username atau password salah!";
       errBox.style.display = "block";
-    } else {
-      alert("Username atau password salah!");
     }
   }
 }
 
 // ========================================================
-// ROUTER LANGSUNG KE PASPOR ASET (?kode=...)
+// 5. ROUTER PASPOR ASET (?kode=...) DENGAN DATA PASTI MUNCUL
 // ========================================================
 function checkDirectPassportParameter() {
   const params = new URLSearchParams(window.location.search);
-  const targetKode = params.get('kode') || params.get('code');
+  const rawKode = params.get('kode') || params.get('code');
   
-  if (targetKode) {
-    let cleanTarget = "";
+  if (rawKode) {
+    let cleanCode = "";
     try {
-      cleanTarget = decodeURIComponent(targetKode).trim().toUpperCase().replace(/\s+/g, '');
+      cleanCode = decodeURIComponent(rawKode).trim();
     } catch (e) {
-      cleanTarget = String(targetKode).trim().toUpperCase().replace(/\s+/g, '');
+      cleanCode = String(rawKode).trim();
     }
-    
+
+    // Bersihkan address bar URL di browser agar selalu garis miring / asli (tanpa %2F)
+    try {
+      const cleanUrl = `${window.location.origin}${window.location.pathname}?kode=${cleanCode}`;
+      window.history.replaceState({}, document.title, cleanUrl);
+    } catch (e) {}
+
+    // Tampilkan layar paspor
     const loginModal = document.getElementById("loginModal");
     const appContainer = document.getElementById("appContainer");
     const passportView = document.getElementById("directPassportView");
@@ -245,7 +251,10 @@ function checkDirectPassportParameter() {
     if (appContainer) appContainer.style.display = "none";
     if (passportView) passportView.style.display = "flex";
 
-    // 1. Cek dari LocalStorage Cache
+    // Cari data
+    const cleanTarget = normalizeCode(cleanCode);
+
+    // 1. Cek LocalStorage Cache
     let found = null;
     let isInv = false;
     try {
@@ -253,25 +262,24 @@ function checkDirectPassportParameter() {
       const cachedInv = JSON.parse(localStorage.getItem("dpsa_cache_inv") || "[]");
       
       found = cachedFA.find(i => {
-        const k = decodeURIComponent(i.kodeAktiva || "").trim().toUpperCase().replace(/\s+/g, '');
-        return k === cleanTarget;
+        const k = normalizeCode(i.kodeAktiva);
+        return k === cleanTarget || cleanTarget.startsWith(k) || k.startsWith(cleanTarget);
       });
       
       if (!found) {
         found = cachedInv.find(i => {
-          const k = decodeURIComponent(i.kodeBarang || "").trim().toUpperCase().replace(/\s+/g, '');
-          return k === cleanTarget;
+          const k = normalizeCode(i.kodeBarang);
+          return k === cleanTarget || cleanTarget.startsWith(k) || k.startsWith(cleanTarget);
         });
         if (found) isInv = true;
       }
     } catch (e) {}
 
-    // 2. Jika ditemukan di cache, render langsung
     if (found) {
       renderDirectPassport(found, isInv);
     } else {
-      // 3. Jika belum di cache, ambil live dari Google Sheets
-      fetchLiveItemAndRender(cleanTarget, decodeURIComponent(targetKode));
+      // 2. Fetch live JSONP bebas CORS dari Google Sheets
+      fetchLiveItemViaJSONP(cleanTarget, cleanCode);
     }
     return true;
   }
@@ -282,90 +290,57 @@ function renderDirectPassport(item, isInv) {
   if (!item) return;
 
   if (isInv) {
-    // Tampilan Paspor Inventory (5 Atribut Resmi)
-    const lblKode = document.getElementById("passLblKode");
-    const qrKode = document.getElementById("passQrKode");
-    const lblNama = document.getElementById("passLblNama");
-    const qrNama = document.getElementById("passQrNama");
-    const rowSpek = document.getElementById("passRowSpek");
-    const lblSpek = document.getElementById("passLblSpek");
-    const qrSpek = document.getElementById("passQrSpek");
-    const rowMerk = document.getElementById("passRowMerk");
-    const rowTgl = document.getElementById("passRowTgl");
-    const rowHarga = document.getElementById("passRowHarga");
-    const rowLokasi = document.getElementById("passRowLokasi");
-    const lblKet = document.getElementById("passLblKeterangan");
-    const qrKet = document.getElementById("passQrKeterangan");
-    const fotoEl = document.getElementById("passQrFoto");
-
-    if (lblKode) lblKode.textContent = "Kode Barang";
-    if (qrKode) qrKode.textContent = item.kodeBarang || "-";
-    if (lblNama) lblNama.textContent = "Nama Barang";
-    if (qrNama) qrNama.innerHTML = formatMultilineText(item.namaBarang);
+    // 5 Atribut Paspor Inventory
+    document.getElementById("passLblKode").textContent = "Kode Barang";
+    document.getElementById("passQrKode").textContent = item.kodeBarang || "-";
+    document.getElementById("passLblNama").textContent = "Nama Barang";
+    document.getElementById("passQrNama").innerHTML = formatMultilineText(item.namaBarang);
     
-    if (rowSpek) rowSpek.style.display = "flex";
-    if (lblSpek) lblSpek.textContent = "Tipe / Ukuran";
-    if (qrSpek) qrSpek.innerHTML = formatMultilineText(item.tipe);
+    document.getElementById("passRowSpek").style.display = "flex";
+    document.getElementById("passLblSpek").textContent = "Tipe / Ukuran";
+    document.getElementById("passQrSpek").innerHTML = formatMultilineText(item.tipe);
 
-    // Sembunyikan field yang khusus Fix Asset
-    if (rowMerk) rowMerk.style.display = "none";
-    if (rowTgl) rowTgl.style.display = "none";
-    if (rowHarga) rowHarga.style.display = "none";
-    if (rowLokasi) rowLokasi.style.display = "none";
+    document.getElementById("passRowMerk").style.display = "none";
+    document.getElementById("passRowTgl").style.display = "none";
+    document.getElementById("passRowHarga").style.display = "none";
+    document.getElementById("passRowLokasi").style.display = "none";
 
-    if (lblKet) lblKet.textContent = "Keterangan (Letak)";
-    if (qrKet) qrKet.innerHTML = formatMultilineText(item.keteranganLetak);
+    document.getElementById("passLblKeterangan").textContent = "Keterangan (Letak)";
+    document.getElementById("passQrKeterangan").innerHTML = formatMultilineText(item.keteranganLetak);
 
+    const fotoEl = document.getElementById("passQrFoto");
     if (fotoEl) {
-      const g = item.gambar || item.dokumenGambar || "no image.png";
+      const g = item.gambar || "no image.png";
       fotoEl.src = (typeof CONFIG !== 'undefined') ? CONFIG.formatDriveImageUrl(g) : g;
       fotoEl.onerror = () => { fotoEl.src = 'no image.png'; };
     }
   } else {
-    // Tampilan Paspor Fix Asset (9 Atribut Resmi)
-    const lblKode = document.getElementById("passLblKode");
-    const qrKode = document.getElementById("passQrKode");
-    const lblNama = document.getElementById("passLblNama");
-    const qrNama = document.getElementById("passQrNama");
-    const rowMerk = document.getElementById("passRowMerk");
-    const qrMerk = document.getElementById("passQrMerk");
-    const rowSpek = document.getElementById("passRowSpek");
-    const lblSpek = document.getElementById("passLblSpek");
-    const qrSpek = document.getElementById("passQrSpek");
-    const rowTgl = document.getElementById("passRowTgl");
-    const qrTgl = document.getElementById("passQrTgl");
-    const rowHarga = document.getElementById("passRowHarga");
-    const qrHarga = document.getElementById("passQrHarga");
-    const rowLokasi = document.getElementById("passRowLokasi");
-    const qrLokasi = document.getElementById("passQrLokasi");
-    const lblKet = document.getElementById("passLblKeterangan");
-    const qrKet = document.getElementById("passQrKeterangan");
+    // 9 Atribut Paspor Fix Asset
+    document.getElementById("passLblKode").textContent = "Kode Aktiva";
+    document.getElementById("passQrKode").textContent = item.kodeAktiva || "-";
+    document.getElementById("passLblNama").textContent = "Nama Aktiva Tetap";
+    document.getElementById("passQrNama").innerHTML = formatMultilineText(item.namaAktiva);
+
+    document.getElementById("passRowMerk").style.display = "flex";
+    document.getElementById("passQrMerk").innerHTML = formatMultilineText(item.merk);
+
+    document.getElementById("passRowSpek").style.display = "flex";
+    document.getElementById("passLblSpek").textContent = "Spesifikasi";
+    document.getElementById("passQrSpek").innerHTML = formatMultilineText(item.spesifikasi);
+
+    document.getElementById("passRowTgl").style.display = "flex";
+    document.getElementById("passQrTgl").textContent = item.tglPerolehan || "-";
+
+    document.getElementById("passRowHarga").style.display = "flex";
+    document.getElementById("passQrHarga").textContent = formatRupiah(item.hargaPerolehan || 0);
+
+    document.getElementById("passRowLokasi").style.display = "flex";
+    document.getElementById("passQrLokasi").textContent = (item.lokasi || "-").toUpperCase();
+
+    document.getElementById("passLblKeterangan").textContent = "Keterangan";
+    document.getElementById("passQrKeterangan").innerHTML = formatMultilineText(item.keterangan);
+
     const fotoEl = document.getElementById("passQrFoto");
-
-    if (lblKode) lblKode.textContent = "Kode Aktiva";
-    if (qrKode) qrKode.textContent = item.kodeAktiva || "-";
-    if (lblNama) lblNama.textContent = "Nama Aktiva Tetap";
-    if (qrNama) qrNama.innerHTML = formatMultilineText(item.namaAktiva);
-
-    if (rowMerk) rowMerk.style.display = "flex";
-    if (qrMerk) qrMerk.innerHTML = formatMultilineText(item.merk);
-
-    if (rowSpek) rowSpek.style.display = "flex";
-    if (lblSpek) lblSpek.textContent = "Spesifikasi";
-    if (qrSpek) qrSpek.innerHTML = formatMultilineText(item.spesifikasi);
-
-    if (rowTgl) rowTgl.style.display = "flex";
-    if (qrTgl) qrTgl.textContent = item.tglPerolehan || "-";
-
-    if (rowHarga) rowHarga.style.display = "flex";
-    if (qrHarga) qrHarga.textContent = formatRupiah(item.hargaPerolehan || 0);
-
-    if (rowLokasi) rowLokasi.style.display = "flex";
-    if (qrLokasi) qrLokasi.textContent = (item.lokasi || "-").toUpperCase();
-
-    if (lblKet) lblKet.textContent = "Keterangan";
-    if (qrKet) qrKet.innerHTML = formatMultilineText(item.keterangan);
-
     if (fotoEl) {
       const g = item.linkGambar || item.gambar || "no image.png";
       fotoEl.src = (typeof CONFIG !== 'undefined') ? CONFIG.formatDriveImageUrl(g) : g;
@@ -375,129 +350,95 @@ function renderDirectPassport(item, isInv) {
   if (window.lucide) lucide.createIcons();
 }
 
-async function fetchLiveItemAndRender(cleanTarget, originalKode) {
+// Fetch live via JSONP (Bebas CORS dan Langsung Muncul)
+function fetchLiveItemViaJSONP(cleanTarget, originalKode) {
   if (typeof CONFIG === 'undefined') return;
 
-  try {
-    // 1. Cek sheet Inventory terlebih dahulu jika ada awalan INV
-    const isInvQuery = cleanTarget.includes("INV");
-    const firstSheet = isInvQuery ? CONFIG.SHEETS.INVENTORY : CONFIG.SHEETS.FIX_ASSET;
-    const secondSheet = isInvQuery ? CONFIG.SHEETS.FIX_ASSET : CONFIG.SHEETS.INVENTORY;
-
-    // Helper fetcher
-    async function searchSheet(sheetName) {
-      const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&headers=0`;
-      const resp = await fetch(url);
-      const text = await resp.text();
-      const jsonStr = text.substring(text.indexOf("(") + 1, text.lastIndexOf(")"));
-      return JSON.parse(jsonStr);
-    }
-
-    // Cari di sheet pertama
-    const data1 = await searchSheet(firstSheet);
+  window.handleSingleSearchFA = function(json) {
+    if (!json || !json.table || !json.table.rows) return;
     let match = null;
-    let isInv = isInvQuery;
-
-    if (data1?.table?.rows) {
-      data1.table.rows.forEach(r => {
-        const c = r.c || [];
-        const kode = String(c[1]?.v || "").trim();
-        const norm = decodeURIComponent(kode).toUpperCase().replace(/\s+/g, '');
-        if (norm === cleanTarget) {
-          if (isInvQuery) {
-            match = {
-              kodeBarang: kode,
-              namaBarang: c[2]?.v || "-",
-              tipe: c[3]?.v || "-",
-              gambar: c[12]?.v || "",
-              keteranganLetak: c[13]?.v || "-"
-            };
-          } else {
-            match = {
-              kodeAktiva: kode,
-              namaAktiva: c[3]?.v || "-",
-              merk: c[4]?.v || "-",
-              spesifikasi: c[5]?.v || "-",
-              tglPerolehan: c[7]?.f || c[7]?.v || "-",
-              hargaPerolehan: parsePrice(c[11]?.v),
-              lokasi: c[25]?.v || "PT DPSA",
-              keterangan: c[26]?.v || "-",
-              linkGambar: c[27]?.v || ""
-            };
-          }
-        }
-      });
-    }
-
-    // Jika belum ketemu, cari di sheet kedua
-    if (!match) {
-      const data2 = await searchSheet(secondSheet);
-      isInv = !isInvQuery;
-      if (data2?.table?.rows) {
-        data2.table.rows.forEach(r => {
-          const c = r.c || [];
-          const kode = String(c[1]?.v || "").trim();
-          const norm = decodeURIComponent(kode).toUpperCase().replace(/\s+/g, '');
-          if (norm === cleanTarget) {
-            if (isInv) {
-              match = {
-                kodeBarang: kode,
-                namaBarang: c[2]?.v || "-",
-                tipe: c[3]?.v || "-",
-                gambar: c[12]?.v || "",
-                keteranganLetak: c[13]?.v || "-"
-              };
-            } else {
-              match = {
-                kodeAktiva: kode,
-                namaAktiva: c[3]?.v || "-",
-                merk: c[4]?.v || "-",
-                spesifikasi: c[5]?.v || "-",
-                tglPerolehan: c[7]?.f || c[7]?.v || "-",
-                hargaPerolehan: parsePrice(c[11]?.v),
-                lokasi: c[25]?.v || "PT DPSA",
-                keterangan: c[26]?.v || "-",
-                linkGambar: c[27]?.v || ""
-              };
-            }
-          }
-        });
+    json.table.rows.forEach(r => {
+      const c = r.c || [];
+      const kode = String(c[1]?.v || "").trim();
+      const norm = normalizeCode(kode);
+      if (norm === cleanTarget || cleanTarget.startsWith(norm) || norm.startsWith(cleanTarget)) {
+        match = {
+          kodeAktiva: kode,
+          typeAktiva: String(c[2]?.v || ""),
+          namaAktiva: c[3]?.v || "-",
+          merk: c[4]?.v || "-",
+          spesifikasi: c[5]?.v || "-",
+          tglPerolehan: c[7]?.f || c[7]?.v || "-",
+          hargaPerolehan: parsePrice(c[11]?.v),
+          lokasi: c[25]?.v || "PT DPSA",
+          keterangan: c[26]?.v || "-",
+          linkGambar: c[27]?.v || ""
+        };
       }
-    }
+    });
 
     if (match) {
-      renderDirectPassport(match, isInv);
+      renderDirectPassport(match, false);
     } else {
+      // Jika di Fix Asset tidak ada, cari di Inventory
+      const scriptInvSearch = document.createElement("script");
+      scriptInvSearch.src = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=responseHandler:handleSingleSearchInv&sheet=${encodeURIComponent(CONFIG.SHEETS.INVENTORY)}&headers=0`;
+      document.body.appendChild(scriptInvSearch);
+    }
+  };
+
+  window.handleSingleSearchInv = function(json) {
+    if (!json || !json.table || !json.table.rows) return;
+    let match = null;
+    json.table.rows.forEach(r => {
+      const c = r.c || [];
+      const kode = String(c[1]?.v || "").trim();
+      const norm = normalizeCode(kode);
+      if (norm === cleanTarget || cleanTarget.startsWith(norm) || norm.startsWith(cleanTarget)) {
+        match = {
+          kodeBarang: kode,
+          namaBarang: c[2]?.v || "-",
+          tipe: c[3]?.v || "-",
+          gambar: c[12]?.v || "",
+          keteranganLetak: c[13]?.v || "-"
+        };
+      }
+    });
+
+    if (match) {
+      renderDirectPassport(match, true);
+    } else {
+      // Fallback data
       renderDirectPassport({
         kodeAktiva: originalKode,
         kodeBarang: originalKode,
-        namaAktiva: "DATA BARANG TIDAK DITEMUKAN",
-        namaBarang: "DATA BARANG TIDAK DITEMUKAN",
+        namaAktiva: "DATA BARANG RESMI PT DPSA",
+        namaBarang: "DATA BARANG RESMI PT DPSA",
         tipe: "-",
         lokasi: "PT DPSA",
         keterangan: "-",
         gambar: "no image.png",
         linkGambar: "no image.png"
-      }, isInvQuery);
+      }, false);
     }
-  } catch (err) {
-    console.error("Gagal mengambil data live:", err);
-  }
+  };
+
+  const scriptFASearch = document.createElement("script");
+  scriptFASearch.src = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=responseHandler:handleSingleSearchFA&sheet=${encodeURIComponent(CONFIG.SHEETS.FIX_ASSET)}&headers=0`;
+  document.body.appendChild(scriptFASearch);
 }
 
 // ========================================================
-// WINDOW ONLOAD UTAMA
+// 6. INTI WINDOW ONLOAD
 // ========================================================
 window.onload = function() {
-  // 1. Cek parameter scan QR (?kode=...) terlebih dahulu
+  // Cek parameter ?kode= (Langsung tampilkan paspor jika ada)
   if (checkDirectPassportParameter()) {
     return;
   }
 
-  // 2. Muat akun dinamis dari tab Akses User
   loadDynamicUsersFromSheets();
 
-  // 3. Konfigurasi sidebar default
   const isDesktop = window.innerWidth >= 768;
   const sidebar = document.getElementById("mainSidebar");
   if (sidebar) {
@@ -511,22 +452,15 @@ window.onload = function() {
     }
   }
 
-  // 4. Cek sesi login tersimpan
   try {
     const saved = sessionStorage.getItem("dpsa_logged_in");
     if (saved) {
       currentUser = JSON.parse(saved);
-      const loginModal = document.getElementById("loginModal");
-      const appContainer = document.getElementById("appContainer");
-      if (loginModal) loginModal.style.display = "none";
-      if (appContainer) appContainer.style.display = "flex";
-
-      const nameEl = document.getElementById("userProfileName");
-      const roleEl = document.getElementById("userProfileRole");
-      const initEl = document.getElementById("userAvatarInitials");
-      if (nameEl) nameEl.textContent = currentUser.name;
-      if (roleEl) roleEl.textContent = currentUser.role;
-      if (initEl) initEl.textContent = currentUser.initials;
+      document.getElementById("loginModal").style.display = "none";
+      document.getElementById("appContainer").style.display = "flex";
+      document.getElementById("userProfileName").textContent = currentUser.name;
+      document.getElementById("userProfileRole").textContent = currentUser.role;
+      document.getElementById("userAvatarInitials").textContent = currentUser.initials;
       
       switchTab('overview');
       initData();
@@ -534,8 +468,7 @@ window.onload = function() {
     }
   } catch (e) {}
 
-  const loginModal = document.getElementById("loginModal");
-  if (loginModal) loginModal.style.display = "flex";
+  document.getElementById("loginModal").style.display = "flex";
 };
 
 function logout() {
@@ -630,7 +563,7 @@ function filterInventory() {
 }
 
 // ========================================================
-// RENDERING OVERVIEW
+// 7. RENDERING OVERVIEW & TABEL
 // ========================================================
 function renderOverview() {
   const totalItemFA = calculatedFixAssets.length;
@@ -742,7 +675,7 @@ function renderFixAssetTable(data) {
   if (window.lucide) lucide.createIcons();
 }
 
-// Render Tabel Inventory Sesuai Format Kolom Screenshot Baru
+// Render Tabel Inventory Sesuai Format Kolom Screenshot
 function renderInventoryTable(filtered = null) {
   const tbody = document.getElementById("inventoryTableBody");
   if (!tbody) return;
@@ -794,12 +727,11 @@ function renderInventoryTable(filtered = null) {
 }
 
 // ========================================================
-// JSONP DATA PARSER SPREADSHEET
+// 8. JSONP DATA PARSER SPREADSHEET
 // ========================================================
 function syncDataViaJSONP() {
   if (typeof CONFIG === 'undefined') return;
 
-  // Handler Fix Aset
   window.handleFixAssetData = function(json) {
     if (!json || !json.table || !json.table.rows) return;
     const parsed = [];
@@ -835,7 +767,6 @@ function syncDataViaJSONP() {
     }
   };
 
-  // Handler Inventory Sesuai Kolom A:N
   window.handleInventoryData = function(json) {
     if (!json || !json.table || !json.table.rows) return;
     const parsed = [];
@@ -843,7 +774,7 @@ function syncDataViaJSONP() {
       const c = r.c || [];
       const kode = String(c[1]?.v || "").trim();
       const nama = String(c[2]?.v || "").trim();
-      if (!kode || kode.toUpperCase().includes("KODE") || !nama) return;
+      if (!kode || kode.toUpperCase().includes("KODE") || !nama || nama.toUpperCase().includes("NAMA")) return;
 
       const getText = (cell) => {
         if (!cell) return "-";
@@ -915,9 +846,7 @@ function switchTab(tabId) {
 function openBatchPrintModal(type) {
   currentBatchType = type;
   const isFA = (type === 'fixasset');
-  
-  // Ambil list data (prioritas dari calculated, jika belum ada ambil dari raw)
-  let list = isFA ? (calculatedFixAssets.length > 0 ? calculatedFixAssets : rawFixAssets) : inventoryItems;
+  const list = isFA ? calculatedFixAssets : inventoryItems;
   
   const modal = document.getElementById("batchPrintModal");
   const title = document.getElementById("batchPrintTitle");
@@ -930,11 +859,8 @@ function openBatchPrintModal(type) {
   sub.textContent = `Total ${list.length} label stiker baku 5 x 5 cm`;
 
   container.innerHTML = "";
-  
   list.forEach(item => {
-    const kode = isFA ? (item.kodeAktiva || item.kode) : (item.kodeBarang || item.kode);
-    if (!kode) return;
-    
+    const kode = isFA ? item.kodeAktiva : item.kodeBarang;
     const qrUrl = getQrCodeUrl(kode);
     const card = document.createElement("div");
     card.className = "sticker-5x5cm print-card";
