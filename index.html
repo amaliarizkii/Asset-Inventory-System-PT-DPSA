@@ -302,32 +302,39 @@
               </div>
             </div>
 
-            <!-- Table Inventory Sesuai Gambar Persis -->
+            <!-- Table Inventory -->
             <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 overflow-hidden">
               <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-270px)] relative">
-                <table class="w-full text-slate-600 min-w-[1400px] border-separate border-spacing-0">
+                <table class="w-full text-slate-700 min-w-[1450px] border-separate border-spacing-0 text-center">
                   <thead class="sticky top-0 z-10 shadow-xs">
-                    <!-- Baris 1 Header Bertingkat -->
-                    <tr class="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase tracking-wider">
-                      <th rowspan="2" class="py-3 px-2 text-center w-10 sticky-th">No</th>
-                      <th rowspan="2" class="py-3 px-3 text-center sticky-th bg-yellow-200/50">Kode Barang</th>
-                      <th rowspan="2" class="py-3 px-4 text-center sticky-th bg-yellow-200/50">Nama Barang</th>
-                      <th rowspan="2" class="py-3 px-4 text-center sticky-th bg-yellow-200/50">Tipe/Ukuran</th>
-                      <th rowspan="2" class="py-3 px-3 text-center sticky-th">Satuan/<br>kemasan terkecil</th>
-                      <th rowspan="2" class="py-3 px-2 text-center sticky-th">Jumlah</th>
-                      <th rowspan="2" class="py-3 px-2 text-center sticky-th">Tahun<br>Perolehan</th>
-                      <th rowspan="2" class="py-3 px-2 text-center sticky-th">Kondisi</th>
-                      <th rowspan="2" class="py-3 px-3 text-center sticky-th bg-purple-100/60">Harga Satuan</th>
-                      <th colspan="3" class="py-2 px-3 text-center sticky-th bg-blue-100/60 border-b border-slate-300">Total Harga Perolehan</th>
-                      <th rowspan="2" class="py-3 px-2 text-center sticky-th bg-yellow-200/50">Dokumen Gambar</th>
-                      <th rowspan="2" class="py-3 px-3 text-center sticky-th bg-yellow-200/50">Keterangan (Letak)</th>
-                      <th rowspan="2" class="py-3 px-3 text-center sticky-th">Aksi & Barcode</th>
+                    <!-- Baris 1: Header Utama -->
+                    <tr class="text-[11px] font-bold uppercase tracking-wider text-black">
+                      <th rowspan="2" class="py-3 px-3 sticky-th bg-white border-r border-b border-black w-12">No</th>
+                      <th rowspan="2" class="py-3 px-4 sticky-th bg-white border-r border-b border-black">Kode Barang</th>
+                      <th rowspan="2" class="py-3 px-5 sticky-th bg-white border-r border-b border-black">Nama Barang</th>
+                      <th rowspan="2" class="py-3 px-5 sticky-th bg-white border-r border-b border-black">Tipe/Ukuran</th>
+                      <th rowspan="2" class="py-3 px-3 sticky-th bg-white border-r border-b border-black">Satuan/<br>kemasan terkecil</th>
+                      <th rowspan="2" class="py-3 px-2 sticky-th bg-white border-r border-b border-black">Jumlah</th>
+                      <th rowspan="2" class="py-3 px-3 sticky-th bg-white border-r border-b border-black">Tahun<br>Perolehan</th>
+                      <th rowspan="2" class="py-3 px-3 sticky-th bg-white border-r border-b border-black">Kondisi</th>
+                      <th rowspan="2" class="py-3 px-4 sticky-th bg-white border-r border-b border-black">Harga Satuan</th>
+                      
+                      <!-- Header Induk Total Harga Perolehan (Biru Muda Lembut) -->
+                      <th colspan="3" class="py-2 px-3 sticky-th bg-[#d0e1f9] border-r border-b border-black text-black">Total Harga Perolehan</th>
+                      
+                      <th rowspan="2" class="py-3 px-3 sticky-th bg-white border-r border-b border-black">Dokumen Gambar</th>
+                      <th rowspan="2" class="py-3 px-4 sticky-th bg-white border-r border-b border-black">Keterangan<br>(Letak)</th>
+                      <th rowspan="2" class="py-3 px-3 sticky-th bg-white border-b border-black">Aksi & Barcode</th>
                     </tr>
-                    <!-- Baris 2 Sub-Header Total Harga Perolehan -->
-                    <tr class="text-[10px] font-bold text-slate-700 uppercase tracking-wider">
-                      <th class="py-1.5 px-3 text-center sticky-th-sub bg-white border-r border-slate-200">DPSA</th>
-                      <th class="py-1.5 px-3 text-center sticky-th-sub bg-[#a7d7a9] text-emerald-950 border-r border-slate-200">DPM</th>
-                      <th class="py-1.5 px-3 text-center sticky-th-sub bg-[#f48fb1] text-pink-950">Pak Boyke</th>
+                    
+                    <!-- Baris 2: Sub-Header Total Harga Perolehan -->
+                    <tr class="text-[10px] font-bold uppercase tracking-wider text-black">
+                      <!-- DPSA: Biru Langit Sedang -->
+                      <th class="py-1.5 px-3 sticky-th-sub bg-[#9fc5e8] border-r border-b border-black">DPSA</th>
+                      <!-- DPM: Ungu/Pink Pucat -->
+                      <th class="py-1.5 px-3 sticky-th-sub bg-[#ead1dc] border-r border-b border-black">DPM</th>
+                      <!-- Pak Boyke: Oranye/Kuning Pastel -->
+                      <th class="py-1.5 px-3 sticky-th-sub bg-[#fce5cd] border-r border-b border-black">Pak Boyke</th>
                     </tr>
                   </thead>
                   <tbody id="inventoryTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
