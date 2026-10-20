@@ -7,12 +7,18 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Sub-header bertingkat Inventory */
+/* Sticky tingkat 1 (Header Utama) */
+.sticky-th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 12 !important;
+}
+
+/* Sticky tingkat 2 (Sub-header DPSA, DPM, Pak Boyke) */
 .sticky-th-sub {
   position: sticky !important;
-  top: 38px !important;
-  z-index: 9 !important;
-  border-bottom: 2px solid #cbd5e1 !important;
+  top: 36px !important;
+  z-index: 11 !important;
 }
 
 /* Custom Scrollbar */
