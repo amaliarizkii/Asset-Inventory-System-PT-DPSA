@@ -426,6 +426,7 @@ function renderFixAssetTable(data) {
 }
 
 // Render Tabel Inventory Sesuai Format Kolom Screenshot Baru (DPSA, DPM, Pak Boyke)
+// Render Tabel Inventory dengan Warna Kolom Menyesuaikan Header
 function renderInventoryTable(filtered = null) {
   const tbody = document.getElementById("inventoryTableBody");
   if (!tbody) return;
@@ -437,24 +438,31 @@ function renderInventoryTable(filtered = null) {
     const imgUrl = CONFIG.formatDriveImageUrl(item.gambar);
 
     const tr = document.createElement("tr");
-    tr.className = "hover:bg-blue-50/40 border-b border-slate-100 text-center";
+    tr.className = "hover:bg-slate-50/60 border-b border-slate-100 text-center";
     tr.innerHTML = `
       <td class="py-2.5 px-2 text-slate-500">${idx + 1}</td>
-      <td class="py-2.5 px-3 font-mono font-bold text-blue-900 whitespace-nowrap bg-yellow-50/30">${item.kodeBarang}</td>
-      <td class="py-2.5 px-4 font-semibold text-slate-800 text-left bg-yellow-50/30">${formatMultilineText(item.namaBarang)}</td>
-      <td class="py-2.5 px-4 text-slate-600 text-[11px] text-left leading-relaxed bg-yellow-50/30">${formatMultilineText(item.tipe)}</td>
+      <td class="py-2.5 px-3 font-mono font-bold text-blue-900 whitespace-nowrap">${item.kodeBarang}</td>
+      <td class="py-2.5 px-4 font-semibold text-slate-800 text-left">${formatMultilineText(item.namaBarang)}</td>
+      <td class="py-2.5 px-4 text-slate-600 text-[11px] text-left leading-relaxed">${formatMultilineText(item.tipe)}</td>
       <td class="py-2.5 px-3 text-slate-600">${item.satuan}</td>
       <td class="py-2.5 px-2 font-bold text-slate-800">${item.jumlah}</td>
       <td class="py-2.5 px-2 text-slate-600 leading-relaxed">${formatMultilineText(item.tahun)}</td>
       <td class="py-2.5 px-2 text-slate-600 leading-relaxed">${formatMultilineText(item.kondisi)}</td>
-      <td class="py-2.5 px-3 font-medium text-slate-700 text-right leading-relaxed bg-purple-50/30">${formatMultilineText(item.hargaSatuan)}</td>
-      <td class="py-2.5 px-3 font-medium text-slate-900 text-right">${formatRupiah(item.totalDPSA)}</td>
-      <td class="py-2.5 px-3 font-medium text-emerald-950 bg-[#e8f5e9] text-right">${formatRupiah(item.totalDPM)}</td>
-      <td class="py-2.5 px-3 font-medium text-pink-950 bg-[#fce4ec] text-right">${formatRupiah(item.totalBoyke)}</td>
-      <td class="py-2.5 px-2 bg-yellow-50/30">
+      <td class="py-2.5 px-3 font-medium text-slate-700 text-right leading-relaxed">${formatMultilineText(item.hargaSatuan)}</td>
+      
+      <!-- Kolom DPSA: Selaras dengan Header DPSA (#9fc5e8 / tint #e8f1fa) -->
+      <td class="py-2.5 px-3 font-medium text-slate-900 text-right bg-[#e8f1fa]">${formatRupiah(item.totalDPSA)}</td>
+      
+      <!-- Kolom DPM: Selaras dengan Header DPM (#ead1dc / tint #f7edf2) -->
+      <td class="py-2.5 px-3 font-medium text-slate-900 text-right bg-[#f7edf2]">${formatRupiah(item.totalDPM)}</td>
+      
+      <!-- Kolom Pak Boyke: Selaras dengan Header Pak Boyke (#fce5cd / tint #fef6ee) -->
+      <td class="py-2.5 px-3 font-medium text-slate-900 text-right bg-[#fef6ee]">${formatRupiah(item.totalBoyke)}</td>
+      
+      <td class="py-2.5 px-2">
         <img src="${imgUrl}" alt="${item.namaBarang}" class="w-8 h-8 object-cover rounded-lg border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
       </td>
-      <td class="py-2.5 px-3 text-slate-500 text-[11px] text-left leading-relaxed bg-yellow-50/30">${formatMultilineText(item.keteranganLetak)}</td>
+      <td class="py-2.5 px-3 text-slate-500 text-[11px] text-left leading-relaxed">${formatMultilineText(item.keteranganLetak)}</td>
       <td class="py-2.5 px-3 whitespace-nowrap">
         <div class="flex items-center justify-center gap-1.5">
           <img src="${qrUrl}" alt="QR" class="w-7 h-7 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kodeBarang}')" title="Klik untuk lihat detail">
