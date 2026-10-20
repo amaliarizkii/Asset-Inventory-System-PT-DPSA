@@ -37,19 +37,26 @@ function formatMultilineText(text) {
   return String(text).replace(/\n/g, "<br>");
 }
 
-// Generator URL QR Code
-// Generator URL QR Code Ringkas (Menuju Domain Utama: /?kode=...)
+// Generator QR Code
 function getQrCodeUrl(code) {
-  // Ambil origin domain (misal: https://asset-inventory-system-pt-dpsa.vercel.app)
   const origin = window.location.origin;
   const path = window.location.pathname.replace(/\/index\.html$/, '');
   const cleanPath = path.endsWith('/') ? path : `${path}/`;
   
-  // Format URL baru: domain/?kode=KODE_BARANG
+  // Format target: https://asset-inventory-system-pt-dpsa.vercel.app/?kode=KODE_BARANG
   const scanTargetUrl = `${origin}${cleanPath}?kode=${encodeURIComponent(String(code).trim())}`;
   
-  // Masukkan ke API generator QR Code
   return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(scanTargetUrl)}&margin=1`;
+}
+
+// Tombol Detail di Tabel
+function openDetailData(kode) {
+  const origin = window.location.origin;
+  const path = window.location.pathname.replace(/\/index\.html$/, '');
+  const cleanPath = path.endsWith('/') ? path : `${path}/`;
+  
+  // Membuka tab langsung dengan format domain/?kode=
+  window.open(`${origin}${cleanPath}?kode=${encodeURIComponent(String(kode).trim())}`, '_blank');
 }
 
 // ========================================================
