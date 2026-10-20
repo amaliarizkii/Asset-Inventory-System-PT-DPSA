@@ -500,7 +500,12 @@ function renderInventoryTable(filtered = null) {
 }
 
 function openDetailData(kode) {
-  window.open(`barcode.html?code=${encodeURIComponent(kode)}`, '_blank');
+  const origin = window.location.origin;
+  const path = window.location.pathname.replace(/\/index\.html$/, '');
+  const cleanPath = path.endsWith('/') ? path : `${path}/`;
+  
+  // Membuka tab langsung dengan format baru: /?kode=...
+  window.open(`${origin}${cleanPath}?kode=${encodeURIComponent(String(kode).trim())}`, '_blank');
 }
 
 // ========================================================
