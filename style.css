@@ -7,6 +7,14 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Sub-header bertingkat Inventory */
+.sticky-th-sub {
+  position: sticky !important;
+  top: 38px !important;
+  z-index: 9 !important;
+  border-bottom: 2px solid #cbd5e1 !important;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
