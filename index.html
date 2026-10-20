@@ -412,5 +412,141 @@
 
   <script src="config.js"></script>
   <script src="script.js"></script>
+
+<!-- MODAL PASPOR ASET ROOT (?kode=...) -->
+  <div id="directPassportView" style="display: none;" class="fixed inset-0 z-50 bg-[#0b1a3d] min-h-screen w-full flex flex-col items-center justify-start sm:justify-center p-3 sm:p-6 md:p-8 font-sans antialiased overflow-y-auto">
+    
+    <div class="w-full max-w-4xl bg-white rounded-3xl sm:rounded-[36px] shadow-2xl p-5 sm:p-8 md:p-10 relative border border-slate-100/30 my-auto">
+      
+      <!-- Tombol Tutup / Kembali ke Dashboard -->
+      <a href="./" class="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition cursor-pointer" title="Kembali">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </a>
+
+      <!-- Header Pill -->
+      <div class="bg-[#dbeefd] rounded-full max-w-xl mx-auto py-2.5 px-4 sm:px-8 flex items-center justify-center gap-3 sm:gap-4 shadow-xs mb-6 sm:mb-8 border border-sky-200/70">
+        <img src="logo dpsa.png" alt="PT DPSA Logo" class="w-10 h-10 sm:w-12 sm:h-12 object-contain" onerror="this.onerror=null;this.src='no image.png';">
+        <div class="text-left">
+          <h2 class="text-xl sm:text-3xl font-black tracking-wider uppercase leading-none" style="color: #1a2f64;">PT DPSA</h2>
+          <p class="text-[11px] sm:text-sm font-semibold tracking-normal mt-0.5" style="color: #1e3a8a;">Asset &amp; Inventory System</p>
+        </div>
+      </div>
+
+      <!-- 2 Kolom Informasi Paspor -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 md:gap-10 items-stretch">
+        <div class="md:col-span-7 space-y-3 sm:space-y-3.5">
+          
+          <!-- 1. Kode Barang / Aktiva -->
+          <div class="pb-2 sm:pb-2.5 border-b-2 border-dashed border-[#00b0ff] flex items-center gap-3 sm:gap-4">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" class="w-5 h-5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/><circle cx="7" cy="7" r="1.5" fill="#ffffff"/></svg>
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none" id="passLblKode">Kode Aktiva</p>
+              <p id="passQrKode" class="text-xs sm:text-sm font-extrabold tracking-wider break-all mt-1 font-mono text-blue-950">Memuat kode...</p>
+            </div>
+          </div>
+
+          <!-- 2. Nama Barang / Aktiva -->
+          <div class="pb-2 sm:pb-2.5 border-b-2 border-dashed border-[#00b0ff] flex items-center gap-3 sm:gap-4">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" class="w-5 h-5 text-amber-700 fill-current"><path d="M12 2.25L3 7.5v9l9 5.25 9-5.25v-9l-9-5.25z" fill="#b45309"/></svg>
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none" id="passLblNama">Nama Aktiva Tetap</p>
+              <p id="passQrNama" class="text-sm sm:text-base font-extrabold uppercase mt-1 leading-snug text-blue-950">Sedang memuat data...</p>
+            </div>
+          </div>
+
+          <!-- 3. Merk -->
+          <div id="passRowMerk" class="pb-2 sm:pb-2.5 border-b-2 border-dashed border-[#00b0ff] flex items-center gap-3 sm:gap-4">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" class="w-5 h-5"><rect x="3" y="5" width="18" height="14" rx="2" fill="#38bdf8"/></svg>
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none">Merk</p>
+              <p id="passQrMerk" class="text-xs sm:text-sm font-extrabold uppercase mt-1 text-blue-950">-</p>
+            </div>
+          </div>
+
+          <!-- 4. Spesifikasi / Tipe -->
+          <div id="passRowSpek" class="pb-2 sm:pb-2.5 border-b-2 border-dashed border-[#00b0ff] flex items-center gap-3 sm:gap-4">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" class="w-5 h-5"><rect x="2" y="3" width="20" height="14" rx="2" fill="#38bdf8" stroke="#0284c7" stroke-width="1.5"/></svg>
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none" id="passLblSpek">Spesifikasi</p>
+              <div id="passQrSpek" class="text-xs sm:text-sm font-extrabold uppercase mt-1 leading-snug text-blue-950">-</div>
+            </div>
+          </div>
+
+          <!-- 5. Tgl Perolehan -->
+          <div id="passRowTgl" class="pb-2 sm:pb-2.5 border-b-2 border-dashed border-[#00b0ff] flex items-center gap-3 sm:gap-4">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" class="w-5 h-5"><rect x="3" y="4" width="18" height="18" rx="2" fill="#ffffff" stroke="#ef4444" stroke-width="1.5"/><line x1="3" y1="10" x2="21" y2="10" stroke="#ef4444" stroke-width="1.5"/></svg>
+            </div>
+            <div>
+              <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none">Tgl Perolehan / Tgl Penyusutan</p>
+              <p id="passQrTgl" class="text-sm sm:text-base font-extrabold uppercase mt-1 text-blue-950">-</p>
+            </div>
+          </div>
+
+          <!-- 6. Harga Perolehan -->
+          <div id="passRowHarga" class="pb-2 sm:pb-2.5 border-b-2 border-dashed border-[#00b0ff] flex items-center gap-3 sm:gap-4">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" class="w-5 h-5"><circle cx="12" cy="12" r="9" fill="#10b981"/></svg>
+            </div>
+            <div>
+              <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none">Harga Perolehan</p>
+              <p id="passQrHarga" class="text-sm sm:text-base font-extrabold uppercase mt-1 text-emerald-800">-</p>
+            </div>
+          </div>
+
+          <!-- 7. Lokasi -->
+          <div id="passRowLokasi" class="pb-2 sm:pb-2.5 border-b-2 border-dashed border-[#00b0ff] flex items-center gap-3 sm:gap-4">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" class="w-5 h-5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#ef4444"/><circle cx="12" cy="9" r="2.5" fill="#ffffff"/></svg>
+            </div>
+            <div>
+              <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none">Lokasi</p>
+              <p id="passQrLokasi" class="text-sm sm:text-base font-extrabold uppercase mt-1 text-blue-950">-</p>
+            </div>
+          </div>
+
+          <!-- 8. Keterangan -->
+          <div class="pb-1 flex items-center gap-3 sm:gap-4">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f6ff] border-[1.5px] border-[#29b6f6] flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" class="w-5 h-5"><circle cx="12" cy="7" r="4" fill="#0284c7"/><path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2" fill="#0284c7"/></svg>
+            </div>
+            <div>
+              <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-none" id="passLblKeterangan">Keterangan</p>
+              <p id="passQrKeterangan" class="text-sm sm:text-base font-extrabold uppercase mt-1 text-blue-950 leading-relaxed">-</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kolom Kanan: Foto Aset & Fasad Gedung -->
+        <div class="md:col-span-5 flex flex-col justify-between items-center space-y-4">
+          <div class="w-full flex flex-col items-center">
+            <h3 class="text-base sm:text-lg font-black tracking-wide mb-2 text-center" style="color: #1a2f64;">Asset Foto</h3>
+            <div class="w-full max-w-[280px] sm:max-w-[300px] p-1.5 rounded-[28px] border-[3.5px] border-[#00b0ff] bg-white shadow-md">
+              <div class="w-full rounded-[22px] overflow-hidden bg-white min-h-[200px] sm:min-h-[220px] max-h-[260px] flex items-center justify-center">
+                <img id="passQrFoto" src="no image.png" alt="Asset Foto" class="w-full h-full object-contain max-h-[260px]" onerror="this.onerror=null;this.src='no image.png';">
+              </div>
+            </div>
+          </div>
+
+          <div class="w-full max-w-[320px] pt-2">
+            <div class="w-full rounded-2xl overflow-hidden relative bg-white flex items-end justify-center min-h-[100px]">
+              <img src="building-lineart.png" alt="DPSA Building" class="w-full h-auto object-cover" onerror="this.style.display='none';">
+              <img src="plant-lineart.png" alt="Flowers" class="absolute bottom-0 left-0 w-full h-auto pointer-events-none" onerror="this.style.display='none';">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  
 </body>
 </html>
