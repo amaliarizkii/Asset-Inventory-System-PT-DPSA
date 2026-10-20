@@ -224,6 +224,9 @@ function doLogin() {
 // ========================================================
 // 5. ROUTER PASPOR ASET (?kode=...) DENGAN DATA PASTI MUNCUL
 // ========================================================
+// ========================================================
+// ROUTER LANGSUNG KE PASPOR ASET (?kode=...) ANTI-KOSONG
+// ========================================================
 function checkDirectPassportParameter() {
   const params = new URLSearchParams(window.location.search);
   const rawKode = params.get('kode') || params.get('code');
@@ -242,7 +245,7 @@ function checkDirectPassportParameter() {
       window.history.replaceState({}, document.title, cleanUrl);
     } catch (e) {}
 
-    // Tampilkan layar paspor
+    // Sembunyikan form login & dashboard, tampilkan modal paspor
     const loginModal = document.getElementById("loginModal");
     const appContainer = document.getElementById("appContainer");
     const passportView = document.getElementById("directPassportView");
@@ -251,26 +254,24 @@ function checkDirectPassportParameter() {
     if (appContainer) appContainer.style.display = "none";
     if (passportView) passportView.style.display = "flex";
 
-    // Cari data
-    const cleanTarget = normalizeCode(cleanCode);
+    // Set teks awal sementara
+    const elKode = document.getElementById("passQrKode");
+    const elNama = document.getElementById("passQrNama");
+    if (elKode) elKode.textContent = cleanCode;
+    if (elNama) elNama.textContent = "Mengambil data resmi...";
 
-    // 1. Cek LocalStorage Cache
+    // 1. Cek dari LocalStorage Cache
+    const cleanTarget = normalizeCode(cleanCode);
     let found = null;
     let isInv = false;
+
     try {
       const cachedFA = JSON.parse(localStorage.getItem("dpsa_cache_fa") || "[]");
       const cachedInv = JSON.parse(localStorage.getItem("dpsa_cache_inv") || "[]");
       
-      found = cachedFA.find(i => {
-        const k = normalizeCode(i.kodeAktiva);
-        return k === cleanTarget || cleanTarget.startsWith(k) || k.startsWith(cleanTarget);
-      });
-      
+      found = cachedFA.find(i => isCodeMatch(i.kodeAktiva, cleanTarget));
       if (!found) {
-        found = cachedInv.find(i => {
-          const k = normalizeCode(i.kodeBarang);
-          return k === cleanTarget || cleanTarget.startsWith(k) || k.startsWith(cleanTarget);
-        });
+        found = cachedInv.find(i => isCodeMatch(i.kodeBarang, cleanTarget));
         if (found) isInv = true;
       }
     } catch (e) {}
@@ -278,7 +279,7 @@ function checkDirectPassportParameter() {
     if (found) {
       renderDirectPassport(found, isInv);
     } else {
-      // 2. Fetch live JSONP bebas CORS dari Google Sheets
+      // 2. Fetch live via JSONP dari Google Sheets
       fetchLiveItemViaJSONP(cleanTarget, cleanCode);
     }
     return true;
@@ -286,82 +287,120 @@ function checkDirectPassportParameter() {
   return false;
 }
 
+// Logika Pencocokan Kode Fleksibel (Mengenali .1, garis miring, dan spasi)
+function isCodeMatch(sourceKode, targetClean) {
+  if (!sourceKode) return false;
+  const s = normalizeCode(sourceKode);
+  if (s === targetClean) return true;
+  if (targetClean.startsWith(s) || s.startsWith(targetClean)) return true;
+  // Hilangkan suffix nomor (.1, .2, dll)
+  const sStrip = s.replace(/\.[0-9]+$/, '');
+  const tStrip = targetClean.replace(/\.[0-9]+$/, '');
+  return sStrip === tStrip;
+}
+
 function renderDirectPassport(item, isInv) {
   if (!item) return;
 
+  const lblKode = document.getElementById("passLblKode");
+  const qrKode = document.getElementById("passQrKode");
+  const lblNama = document.getElementById("passLblNama");
+  const qrNama = document.getElementById("passQrNama");
+  const rowSpek = document.getElementById("passRowSpek");
+  const lblSpek = document.getElementById("passLblSpek");
+  const qrSpek = document.getElementById("passQrSpek");
+  const rowMerk = document.getElementById("passRowMerk");
+  const qrMerk = document.getElementById("passQrMerk");
+  const rowTgl = document.getElementById("passRowTgl");
+  const qrTgl = document.getElementById("passQrTgl");
+  const rowHarga = document.getElementById("passRowHarga");
+  const qrHarga = document.getElementById("passQrHarga");
+  const rowLokasi = document.getElementById("passRowLokasi");
+  const qrLokasi = document.getElementById("passQrLokasi");
+  const lblKet = document.getElementById("passLblKeterangan");
+  const qrKet = document.getElementById("passQrKeterangan");
+  const fotoEl = document.getElementById("passQrFoto");
+
   if (isInv) {
-    // 5 Atribut Paspor Inventory
-    document.getElementById("passLblKode").textContent = "Kode Barang";
-    document.getElementById("passQrKode").textContent = item.kodeBarang || "-";
-    document.getElementById("passLblNama").textContent = "Nama Barang";
-    document.getElementById("passQrNama").innerHTML = formatMultilineText(item.namaBarang);
+    if (lblKode) lblKode.textContent = "Kode Barang";
+    if (qrKode) qrKode.textContent = item.kodeBarang || "-";
+    if (lblNama) lblNama.textContent = "Nama Barang";
+    if (qrNama) qrNama.innerHTML = formatMultilineText(item.namaBarang);
     
-    document.getElementById("passRowSpek").style.display = "flex";
-    document.getElementById("passLblSpek").textContent = "Tipe / Ukuran";
-    document.getElementById("passQrSpek").innerHTML = formatMultilineText(item.tipe);
+    if (rowSpek) rowSpek.style.display = "flex";
+    if (lblSpek) lblSpek.textContent = "Tipe / Ukuran";
+    if (qrSpek) qrSpek.innerHTML = formatMultilineText(item.tipe);
 
-    document.getElementById("passRowMerk").style.display = "none";
-    document.getElementById("passRowTgl").style.display = "none";
-    document.getElementById("passRowHarga").style.display = "none";
-    document.getElementById("passRowLokasi").style.display = "none";
+    if (rowMerk) rowMerk.style.display = "none";
+    if (rowTgl) rowTgl.style.display = "none";
+    if (rowHarga) rowHarga.style.display = "none";
+    if (rowLokasi) rowLokasi.style.display = "none";
 
-    document.getElementById("passLblKeterangan").textContent = "Keterangan (Letak)";
-    document.getElementById("passQrKeterangan").innerHTML = formatMultilineText(item.keteranganLetak);
+    if (lblKet) lblKet.textContent = "Keterangan (Letak)";
+    if (qrKet) qrKet.innerHTML = formatMultilineText(item.keteranganLetak);
 
-    const fotoEl = document.getElementById("passQrFoto");
     if (fotoEl) {
       const g = item.gambar || "no image.png";
       fotoEl.src = (typeof CONFIG !== 'undefined') ? CONFIG.formatDriveImageUrl(g) : g;
       fotoEl.onerror = () => { fotoEl.src = 'no image.png'; };
     }
   } else {
-    // 9 Atribut Paspor Fix Asset
-    document.getElementById("passLblKode").textContent = "Kode Aktiva";
-    document.getElementById("passQrKode").textContent = item.kodeAktiva || "-";
-    document.getElementById("passLblNama").textContent = "Nama Aktiva Tetap";
-    document.getElementById("passQrNama").innerHTML = formatMultilineText(item.namaAktiva);
+    if (lblKode) lblKode.textContent = "Kode Aktiva";
+    if (qrKode) qrKode.textContent = item.kodeAktiva || "-";
+    if (lblNama) lblNama.textContent = "Nama Aktiva Tetap";
+    if (qrNama) qrNama.innerHTML = formatMultilineText(item.namaAktiva);
 
-    document.getElementById("passRowMerk").style.display = "flex";
-    document.getElementById("passQrMerk").innerHTML = formatMultilineText(item.merk);
+    if (rowMerk) {
+      rowMerk.style.display = "flex";
+      if (qrMerk) qrMerk.innerHTML = formatMultilineText(item.merk);
+    }
 
-    document.getElementById("passRowSpek").style.display = "flex";
-    document.getElementById("passLblSpek").textContent = "Spesifikasi";
-    document.getElementById("passQrSpek").innerHTML = formatMultilineText(item.spesifikasi);
+    if (rowSpek) {
+      rowSpek.style.display = "flex";
+      if (lblSpek) lblSpek.textContent = "Spesifikasi";
+      if (qrSpek) qrSpek.innerHTML = formatMultilineText(item.spesifikasi);
+    }
 
-    document.getElementById("passRowTgl").style.display = "flex";
-    document.getElementById("passQrTgl").textContent = item.tglPerolehan || "-";
+    if (rowTgl) {
+      rowTgl.style.display = "flex";
+      if (qrTgl) qrTgl.textContent = item.tglPerolehan || "-";
+    }
 
-    document.getElementById("passRowHarga").style.display = "flex";
-    document.getElementById("passQrHarga").textContent = formatRupiah(item.hargaPerolehan || 0);
+    if (rowHarga) {
+      rowHarga.style.display = "flex";
+      if (qrHarga) qrHarga.textContent = formatRupiah(item.hargaPerolehan || 0);
+    }
 
-    document.getElementById("passRowLokasi").style.display = "flex";
-    document.getElementById("passQrLokasi").textContent = (item.lokasi || "-").toUpperCase();
+    if (rowLokasi) {
+      rowLokasi.style.display = "flex";
+      if (qrLokasi) qrLokasi.textContent = (item.lokasi || "-").toUpperCase();
+    }
 
-    document.getElementById("passLblKeterangan").textContent = "Keterangan";
-    document.getElementById("passQrKeterangan").innerHTML = formatMultilineText(item.keterangan);
+    if (lblKet) lblKet.textContent = "Keterangan";
+    if (qrKet) qrKet.innerHTML = formatMultilineText(item.keterangan);
 
-    const fotoEl = document.getElementById("passQrFoto");
     if (fotoEl) {
       const g = item.linkGambar || item.gambar || "no image.png";
       fotoEl.src = (typeof CONFIG !== 'undefined') ? CONFIG.formatDriveImageUrl(g) : g;
       fotoEl.onerror = () => { fotoEl.src = 'no image.png'; };
     }
   }
+
   if (window.lucide) lucide.createIcons();
 }
 
-// Fetch live via JSONP (Bebas CORS dan Langsung Muncul)
+// Fetch live via JSONP dari Google Sheets (Menghindari CORS browser)
 function fetchLiveItemViaJSONP(cleanTarget, originalKode) {
   if (typeof CONFIG === 'undefined') return;
 
-  window.handleSingleSearchFA = function(json) {
+  // 1. Handler Fix Asset
+  window.handleSearchFA = function(json) {
     if (!json || !json.table || !json.table.rows) return;
     let match = null;
     json.table.rows.forEach(r => {
       const c = r.c || [];
       const kode = String(c[1]?.v || "").trim();
-      const norm = normalizeCode(kode);
-      if (norm === cleanTarget || cleanTarget.startsWith(norm) || norm.startsWith(cleanTarget)) {
+      if (isCodeMatch(kode, cleanTarget)) {
         match = {
           kodeAktiva: kode,
           typeAktiva: String(c[2]?.v || ""),
@@ -381,20 +420,20 @@ function fetchLiveItemViaJSONP(cleanTarget, originalKode) {
       renderDirectPassport(match, false);
     } else {
       // Jika di Fix Asset tidak ada, cari di Inventory
-      const scriptInvSearch = document.createElement("script");
-      scriptInvSearch.src = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=responseHandler:handleSingleSearchInv&sheet=${encodeURIComponent(CONFIG.SHEETS.INVENTORY)}&headers=0`;
-      document.body.appendChild(scriptInvSearch);
+      const scriptInv = document.createElement("script");
+      scriptInv.src = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=responseHandler:handleSearchInv&sheet=${encodeURIComponent(CONFIG.SHEETS.INVENTORY)}&headers=0`;
+      document.body.appendChild(scriptInv);
     }
   };
 
-  window.handleSingleSearchInv = function(json) {
+  // 2. Handler Inventory
+  window.handleSearchInv = function(json) {
     if (!json || !json.table || !json.table.rows) return;
     let match = null;
     json.table.rows.forEach(r => {
       const c = r.c || [];
       const kode = String(c[1]?.v || "").trim();
-      const norm = normalizeCode(kode);
-      if (norm === cleanTarget || cleanTarget.startsWith(norm) || norm.startsWith(cleanTarget)) {
+      if (isCodeMatch(kode, cleanTarget)) {
         match = {
           kodeBarang: kode,
           namaBarang: c[2]?.v || "-",
@@ -408,7 +447,7 @@ function fetchLiveItemViaJSONP(cleanTarget, originalKode) {
     if (match) {
       renderDirectPassport(match, true);
     } else {
-      // Fallback data
+      // Fallback jika memang tidak ada sama sekali di kedua sheet
       renderDirectPassport({
         kodeAktiva: originalKode,
         kodeBarang: originalKode,
@@ -423,9 +462,9 @@ function fetchLiveItemViaJSONP(cleanTarget, originalKode) {
     }
   };
 
-  const scriptFASearch = document.createElement("script");
-  scriptFASearch.src = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=responseHandler:handleSingleSearchFA&sheet=${encodeURIComponent(CONFIG.SHEETS.FIX_ASSET)}&headers=0`;
-  document.body.appendChild(scriptFASearch);
+  const scriptFA = document.createElement("script");
+  scriptFA.src = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=responseHandler:handleSearchFA&sheet=${encodeURIComponent(CONFIG.SHEETS.FIX_ASSET)}&headers=0`;
+  document.body.appendChild(scriptFA);
 }
 
 // ========================================================
