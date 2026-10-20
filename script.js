@@ -1,5 +1,5 @@
 /**
- * script.js - Core Logic, Dynamic Auth & Calculations PT DPSA
+ * script.js - Core Logic, Dynamic Auth, Calculations & URL Router PT DPSA
  */
 
 // Akun Pengguna Dinamis (Akan dimuat langsung dari tab "Akses User")
@@ -33,29 +33,30 @@ function parsePrice(val) {
 
 // Format Teks Multiline (Enter)
 function formatMultilineText(text) {
-  if (!text) return "-";
+  if (!text || text === "-") return "-";
   return String(text).replace(/\n/g, "<br>");
 }
 
-// Generator QR Code
+// Helper khusus untuk menampilkan nilai rupiah hanya jika nilainya > 0 / ada di spreadsheet
+function formatNilaiInventory(num) {
+  if (!num || num === 0) return "-";
+  return formatRupiah(num);
+}
+
+// Generator QR Code (Format Baru: /?kode=...)
 function getQrCodeUrl(code) {
   const origin = window.location.origin;
   const path = window.location.pathname.replace(/\/index\.html$/, '');
   const cleanPath = path.endsWith('/') ? path : `${path}/`;
-  
-  // Format target: https://asset-inventory-system-pt-dpsa.vercel.app/?kode=KODE_BARANG
   const scanTargetUrl = `${origin}${cleanPath}?kode=${encodeURIComponent(String(code).trim())}`;
-  
   return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(scanTargetUrl)}&margin=1`;
 }
 
-// Tombol Detail di Tabel
+// Tombol Detail di Tabel (Format Baru: /?kode=...)
 function openDetailData(kode) {
   const origin = window.location.origin;
   const path = window.location.pathname.replace(/\/index\.html$/, '');
   const cleanPath = path.endsWith('/') ? path : `${path}/`;
-  
-  // Membuka tab langsung dengan format domain/?kode=
   window.open(`${origin}${cleanPath}?kode=${encodeURIComponent(String(kode).trim())}`, '_blank');
 }
 
@@ -63,7 +64,11 @@ function openDetailData(kode) {
 // RUMUS FIX ASET TERBARU (M, O, P, Q, R, S, U, V, W, X, Y)
 // ========================================================
 function calculateDepreciation(item, periodeBulan, periodeTahun) {
-  const monthList = CONFIG.MONTH_NAMES;
+  const monthList = (typeof CONFIG !== 'undefined' && CONFIG.MONTH_NAMES) ? CONFIG.MONTH_NAMES : [
+    "JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI",
+    "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"
+  ];
+  
   const cType = String(item.typeAktiva || "").toUpperCase();
   const kQty = item.qty || 1;
   const lHarga = item.hargaPerolehan || 0;
@@ -140,6 +145,8 @@ function calculateDepreciation(item, periodeBulan, periodeTahun) {
 // SISTEM LOGIN & OTENTIKASI DINAMIS DARI SPREADSHEET
 // ========================================================
 function loadDynamicUsersFromSheets() {
+  if (typeof CONFIG === 'undefined') return;
+
   window.handleUsersData = function(json) {
     if (!json || !json.table || !json.table.rows) return;
     const users = [];
@@ -189,16 +196,20 @@ function doLogin() {
     currentUser = user;
     try { sessionStorage.setItem("dpsa_logged_in", JSON.stringify(user)); } catch (e) {}
     
-    document.getElementById("loginModal").style.display = "none";
-    document.getElementById("appContainer").style.display = "flex";
+    const loginModal = document.getElementById("loginModal");
+    const appContainer = document.getElementById("appContainer");
+    if (loginModal) loginModal.style.display = "none";
+    if (appContainer) appContainer.style.display = "flex";
 
-    document.getElementById("userProfileName").textContent = user.name;
-    document.getElementById("userProfileRole").textContent = user.role;
-    document.getElementById("userAvatarInitials").textContent = user.initials;
+    const nameEl = document.getElementById("userProfileName");
+    const roleEl = document.getElementById("userProfileRole");
+    const initEl = document.getElementById("userAvatarInitials");
+    if (nameEl) nameEl.textContent = user.name;
+    if (roleEl) roleEl.textContent = user.role;
+    if (initEl) initEl.textContent = user.initials;
 
     if (errBox) errBox.style.display = "none";
     
-    // Pastikan saat login hanya tab Overview yang aktif
     switchTab('overview');
     initData();
   } else {
@@ -211,10 +222,225 @@ function doLogin() {
   }
 }
 
+// ========================================================
+// ROUTER LANGSUNG KE PASPOR ASET (?kode=...)
+// ========================================================
+function checkDirectPassportParameter() {
+  const params = new URLSearchParams(window.location.search);
+  const targetKode = params.get('kode') || params.get('code');
+  
+  if (targetKode) {
+    const cleanTarget = String(targetKode).trim().toUpperCase().replace(/\s+/g, '');
+    
+    const loginModal = document.getElementById("loginModal");
+    const appContainer = document.getElementById("appContainer");
+    const passportView = document.getElementById("directPassportView");
+    
+    if (loginModal) loginModal.style.display = "none";
+    if (appContainer) appContainer.style.display = "none";
+    if (passportView) passportView.style.display = "flex";
+
+    let found = null;
+    let isInv = false;
+    try {
+      const cachedFA = JSON.parse(localStorage.getItem("dpsa_cache_fa") || "[]");
+      const cachedInv = JSON.parse(localStorage.getItem("dpsa_cache_inv") || "[]");
+      found = cachedFA.find(i => String(i.kodeAktiva).trim().toUpperCase().replace(/\s+/g, '') === cleanTarget);
+      if (!found) {
+        found = cachedInv.find(i => String(i.kodeBarang).trim().toUpperCase().replace(/\s+/g, '') === cleanTarget);
+        if (found) isInv = true;
+      }
+    } catch (e) {}
+
+    if (found) {
+      renderDirectPassport(found, isInv);
+    } else {
+      fetchLiveItemAndRender(cleanTarget, targetKode);
+    }
+    return true;
+  }
+  return false;
+}
+
+function renderDirectPassport(item, isInv) {
+  if (isInv) {
+    const lblKode = document.getElementById("passLblKode");
+    const qrKode = document.getElementById("passQrKode");
+    const lblNama = document.getElementById("passLblNama");
+    const qrNama = document.getElementById("passQrNama");
+    const rowSpek = document.getElementById("passRowSpek");
+    const lblSpek = document.getElementById("passLblSpek");
+    const qrSpek = document.getElementById("passQrSpek");
+    const rowMerk = document.getElementById("passRowMerk");
+    const rowTgl = document.getElementById("passRowTgl");
+    const rowHarga = document.getElementById("passRowHarga");
+    const rowLokasi = document.getElementById("passRowLokasi");
+    const lblKet = document.getElementById("passLblKeterangan");
+    const qrKet = document.getElementById("passQrKeterangan");
+    const fotoEl = document.getElementById("passQrFoto");
+
+    if (lblKode) lblKode.textContent = "Kode Barang";
+    if (qrKode) qrKode.textContent = item.kodeBarang || "-";
+    if (lblNama) lblNama.textContent = "Nama Barang";
+    if (qrNama) qrNama.innerHTML = formatMultilineText(item.namaBarang);
+    
+    if (rowSpek) rowSpek.style.display = "flex";
+    if (lblSpek) lblSpek.textContent = "Tipe / Ukuran";
+    if (qrSpek) qrSpek.innerHTML = formatMultilineText(item.tipe);
+
+    if (rowMerk) rowMerk.style.display = "none";
+    if (rowTgl) rowTgl.style.display = "none";
+    if (rowHarga) rowHarga.style.display = "none";
+    if (rowLokasi) rowLokasi.style.display = "none";
+
+    if (lblKet) lblKet.textContent = "Keterangan (Letak)";
+    if (qrKet) qrKet.innerHTML = formatMultilineText(item.keteranganLetak);
+
+    if (fotoEl && typeof CONFIG !== 'undefined') {
+      fotoEl.src = CONFIG.formatDriveImageUrl(item.gambar);
+    }
+  } else {
+    const lblKode = document.getElementById("passLblKode");
+    const qrKode = document.getElementById("passQrKode");
+    const lblNama = document.getElementById("passLblNama");
+    const qrNama = document.getElementById("passQrNama");
+    const rowMerk = document.getElementById("passRowMerk");
+    const qrMerk = document.getElementById("passQrMerk");
+    const rowSpek = document.getElementById("passRowSpek");
+    const lblSpek = document.getElementById("passLblSpek");
+    const qrSpek = document.getElementById("passQrSpek");
+    const rowTgl = document.getElementById("passRowTgl");
+    const qrTgl = document.getElementById("passQrTgl");
+    const rowHarga = document.getElementById("passRowHarga");
+    const qrHarga = document.getElementById("passQrHarga");
+    const rowLokasi = document.getElementById("passRowLokasi");
+    const qrLokasi = document.getElementById("passQrLokasi");
+    const lblKet = document.getElementById("passLblKeterangan");
+    const qrKet = document.getElementById("passQrKeterangan");
+    const fotoEl = document.getElementById("passQrFoto");
+
+    if (lblKode) lblKode.textContent = "Kode Aktiva";
+    if (qrKode) qrKode.textContent = item.kodeAktiva || "-";
+    if (lblNama) lblNama.textContent = "Nama Aktiva Tetap";
+    if (qrNama) qrNama.innerHTML = formatMultilineText(item.namaAktiva);
+
+    if (rowMerk) rowMerk.style.display = "flex";
+    if (qrMerk) qrMerk.innerHTML = formatMultilineText(item.merk);
+
+    if (rowSpek) rowSpek.style.display = "flex";
+    if (lblSpek) lblSpek.textContent = "Spesifikasi";
+    if (qrSpek) qrSpek.innerHTML = formatMultilineText(item.spesifikasi);
+
+    if (rowTgl) rowTgl.style.display = "flex";
+    if (qrTgl) qrTgl.textContent = item.tglPerolehan || "-";
+
+    if (rowHarga) rowHarga.style.display = "flex";
+    if (qrHarga) qrHarga.textContent = formatRupiah(item.hargaPerolehan || 0);
+
+    if (rowLokasi) rowLokasi.style.display = "flex";
+    if (qrLokasi) qrLokasi.textContent = (item.lokasi || "-").toUpperCase();
+
+    if (lblKet) lblKet.textContent = "Keterangan";
+    if (qrKet) qrKet.innerHTML = formatMultilineText(item.keterangan);
+
+    if (fotoEl && typeof CONFIG !== 'undefined') {
+      fotoEl.src = CONFIG.formatDriveImageUrl(item.linkGambar);
+    }
+  }
+  if (window.lucide) lucide.createIcons();
+}
+
+async function fetchLiveItemAndRender(cleanTarget, originalKode) {
+  if (typeof CONFIG === 'undefined') return;
+
+  try {
+    const faUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEETS.FIX_ASSET)}&headers=0`;
+    const respFA = await fetch(faUrl);
+    const textFA = await respFA.text();
+    const jsonStrFA = textFA.substring(textFA.indexOf("(") + 1, textFA.lastIndexOf(")"));
+    const dataFA = JSON.parse(jsonStrFA);
+
+    let match = null;
+    if (dataFA?.table?.rows) {
+      dataFA.table.rows.forEach(r => {
+        const c = r.c || [];
+        const kode = String(c[1]?.v || "").trim();
+        if (kode.toUpperCase().replace(/\s+/g, '') === cleanTarget) {
+          match = {
+            kodeAktiva: kode,
+            namaAktiva: c[3]?.v || "-",
+            merk: c[4]?.v || "-",
+            spesifikasi: c[5]?.v || "-",
+            tglPerolehan: c[7]?.f || c[7]?.v || "-",
+            hargaPerolehan: parsePrice(c[11]?.v),
+            lokasi: c[25]?.v || "PT DPSA",
+            keterangan: c[26]?.v || "-",
+            linkGambar: c[27]?.v || ""
+          };
+        }
+      });
+    }
+
+    if (match) {
+      renderDirectPassport(match, false);
+      return;
+    }
+
+    const invUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEETS.INVENTORY)}&headers=0`;
+    const respInv = await fetch(invUrl);
+    const textInv = await respInv.text();
+    const jsonStrInv = textInv.substring(textInv.indexOf("(") + 1, textInv.lastIndexOf(")"));
+    const dataInv = JSON.parse(jsonStrInv);
+
+    if (dataInv?.table?.rows) {
+      dataInv.table.rows.forEach(r => {
+        const c = r.c || [];
+        const kode = String(c[1]?.v || "").trim();
+        if (kode.toUpperCase().replace(/\s+/g, '') === cleanTarget) {
+          match = {
+            kodeBarang: kode,
+            namaBarang: c[2]?.v || "-",
+            tipe: c[3]?.v || "-",
+            gambar: c[12]?.v || "",
+            keteranganLetak: c[13]?.v || "-"
+          };
+        }
+      });
+    }
+
+    if (match) {
+      renderDirectPassport(match, true);
+    } else {
+      renderDirectPassport({
+        kodeAktiva: originalKode,
+        namaAktiva: "DATA BARANG TIDAK DITEMUKAN",
+        merk: "-",
+        spesifikasi: "-",
+        tglPerolehan: "-",
+        hargaPerolehan: 0,
+        lokasi: "PT DPSA",
+        keterangan: "-",
+        linkGambar: "no image.png"
+      }, false);
+    }
+  } catch (err) {
+    console.error("Gagal mengambil data live:", err);
+  }
+}
+
+// ========================================================
+// WINDOW ONLOAD UTAMA
+// ========================================================
 window.onload = function() {
-  // Muat daftar akun user dari tab Akses User spreadsheet
+  // 1. Cek parameter scan QR (?kode=...) terlebih dahulu
+  if (checkDirectPassportParameter()) {
+    return;
+  }
+
+  // 2. Muat akun dinamis dari tab Akses User
   loadDynamicUsersFromSheets();
 
+  // 3. Konfigurasi sidebar default
   const isDesktop = window.innerWidth >= 768;
   const sidebar = document.getElementById("mainSidebar");
   if (sidebar) {
@@ -228,15 +454,22 @@ window.onload = function() {
     }
   }
 
+  // 4. Cek sesi login tersimpan
   try {
     const saved = sessionStorage.getItem("dpsa_logged_in");
     if (saved) {
       currentUser = JSON.parse(saved);
-      document.getElementById("loginModal").style.display = "none";
-      document.getElementById("appContainer").style.display = "flex";
-      document.getElementById("userProfileName").textContent = currentUser.name;
-      document.getElementById("userProfileRole").textContent = currentUser.role;
-      document.getElementById("userAvatarInitials").textContent = currentUser.initials;
+      const loginModal = document.getElementById("loginModal");
+      const appContainer = document.getElementById("appContainer");
+      if (loginModal) loginModal.style.display = "none";
+      if (appContainer) appContainer.style.display = "flex";
+
+      const nameEl = document.getElementById("userProfileName");
+      const roleEl = document.getElementById("userProfileRole");
+      const initEl = document.getElementById("userAvatarInitials");
+      if (nameEl) nameEl.textContent = currentUser.name;
+      if (roleEl) roleEl.textContent = currentUser.role;
+      if (initEl) initEl.textContent = currentUser.initials;
       
       switchTab('overview');
       initData();
@@ -244,31 +477,8 @@ window.onload = function() {
     }
   } catch (e) {}
 
-  document.getElementById("loginModal").style.display = "flex";
-
-  // Cek apakah URL membawa parameter ?kode=
-  const params = new URLSearchParams(window.location.search);
-  const targetKode = params.get('kode') || params.get('code');
-
-  if (targetKode) {
-    // Sembunyikan form login & dashboard utama
-    const loginModal = document.getElementById("loginModal");
-    const appContainer = document.getElementById("appContainer");
-    const passportView = document.getElementById("directPassportView");
-
-    if (loginModal) loginModal.style.display = "none";
-    if (appContainer) appContainer.style.display = "none";
-    if (passportView) passportView.style.display = "flex";
-
-    // Muat data aset untuk kartu paspor
-    checkDirectPassportParameter();
-    return; // Hentikan alur agar tidak membuka form login
-  }
-
-  // Jika URL biasa (tanpa ?kode=), jalankan alur login normal
-  loadDynamicUsersFromSheets();
-  // ... sisa kode window.onload Anda ...
-};
+  const loginModal = document.getElementById("loginModal");
+  if (loginModal) loginModal.style.display = "flex";
 };
 
 function logout() {
@@ -325,9 +535,13 @@ function initData() {
 }
 
 function applyFixAssetFilters() {
-  const periodeBulan = document.getElementById("faPeriodeBulan").value;
-  const periodeTahun = document.getElementById("faPeriodeTahun").value;
-  const query = document.getElementById("faSearchInput").value.toLowerCase();
+  const periodeBulanEl = document.getElementById("faPeriodeBulan");
+  const periodeTahunEl = document.getElementById("faPeriodeTahun");
+  const faSearchInputEl = document.getElementById("faSearchInput");
+
+  const periodeBulan = periodeBulanEl ? periodeBulanEl.value : "JANUARI";
+  const periodeTahun = periodeTahunEl ? periodeTahunEl.value : "2026";
+  const query = faSearchInputEl ? faSearchInputEl.value.toLowerCase() : "";
 
   calculatedFixAssets = rawFixAssets.map(item => calculateDepreciation(item, periodeBulan, periodeTahun));
 
@@ -348,7 +562,8 @@ function applyFixAssetFilters() {
 }
 
 function filterInventory() {
-  const query = document.getElementById("invSearchInput").value.toLowerCase();
+  const invSearchInputEl = document.getElementById("invSearchInput");
+  const query = invSearchInputEl ? invSearchInputEl.value.toLowerCase() : "";
   const filtered = inventoryItems.filter(i => 
     String(i.kodeBarang).toLowerCase().includes(query) ||
     String(i.namaBarang).toLowerCase().includes(query) ||
@@ -358,34 +573,40 @@ function filterInventory() {
 }
 
 // ========================================================
-// RENDERING OVERVIEW SESUAI POIN 3 LENGKAP
+// RENDERING OVERVIEW
 // ========================================================
 function renderOverview() {
-  // a. Fix Asset: Total Item & Total Perolehan (Kolom M)
   const totalItemFA = calculatedFixAssets.length;
   const totalNilaiFA = calculatedFixAssets.reduce((s, i) => s + (i.totalPerolehan || 0), 0);
 
-  document.getElementById("ovFaTotalItem").textContent = `${totalItemFA} Item`;
-  document.getElementById("ovFaTotalNilai").textContent = formatRupiah(totalNilaiFA);
+  const ovFaTotalItem = document.getElementById("ovFaTotalItem");
+  const ovFaTotalNilai = document.getElementById("ovFaTotalNilai");
+  if (ovFaTotalItem) ovFaTotalItem.textContent = `${totalItemFA} Item`;
+  if (ovFaTotalNilai) ovFaTotalNilai.textContent = formatRupiah(totalNilaiFA);
 
-  // b. Inventory: Total Item, Total Harga Perolehan (DPSA+DPM+Pak Boyke), dan Rincian Tiap Kolom
   const totalItemInv = inventoryItems.length;
   const totalNilaiDPSA = inventoryItems.reduce((s, i) => s + (i.totalDPSA || 0), 0);
   const totalNilaiDPM = inventoryItems.reduce((s, i) => s + (i.totalDPM || 0), 0);
   const totalNilaiBoyke = inventoryItems.reduce((s, i) => s + (i.totalBoyke || 0), 0);
   const totalNilaiInventorySemua = totalNilaiDPSA + totalNilaiDPM + totalNilaiBoyke;
 
-  document.getElementById("ovInvTotalItem").textContent = `${totalItemInv} Item`;
-  document.getElementById("ovInvTotalNilaiSemua").textContent = formatRupiah(totalNilaiInventorySemua);
-  document.getElementById("ovInvNilaiDPSA").textContent = formatRupiah(totalNilaiDPSA);
-  document.getElementById("ovInvNilaiDPM").textContent = formatRupiah(totalNilaiDPM);
-  document.getElementById("ovInvNilaiBoyke").textContent = formatRupiah(totalNilaiBoyke);
+  const ovInvTotalItem = document.getElementById("ovInvTotalItem");
+  const ovInvTotalNilaiSemua = document.getElementById("ovInvTotalNilaiSemua");
+  const ovInvNilaiDPSA = document.getElementById("ovInvNilaiDPSA");
+  const ovInvNilaiDPM = document.getElementById("ovInvNilaiDPM");
+  const ovInvNilaiBoyke = document.getElementById("ovInvNilaiBoyke");
 
-  // Badge Sidebar
-  document.getElementById("badgeCountFixAsset").textContent = totalItemFA;
-  document.getElementById("badgeCountInventory").textContent = totalItemInv;
+  if (ovInvTotalItem) ovInvTotalItem.textContent = `${totalItemInv} Item`;
+  if (ovInvTotalNilaiSemua) ovInvTotalNilaiSemua.textContent = formatRupiah(totalNilaiInventorySemua);
+  if (ovInvNilaiDPSA) ovInvNilaiDPSA.textContent = formatRupiah(totalNilaiDPSA);
+  if (ovInvNilaiDPM) ovInvNilaiDPM.textContent = formatRupiah(totalNilaiDPM);
+  if (ovInvNilaiBoyke) ovInvNilaiBoyke.textContent = formatRupiah(totalNilaiBoyke);
 
-  // 5 Aset Nilai Tertinggi
+  const badgeFA = document.getElementById("badgeCountFixAsset");
+  const badgeInv = document.getElementById("badgeCountInventory");
+  if (badgeFA) badgeFA.textContent = totalItemFA;
+  if (badgeInv) badgeInv.textContent = totalItemInv;
+
   const topBody = document.getElementById("overviewTopTableBody");
   if (topBody) {
     topBody.innerHTML = "";
@@ -418,7 +639,7 @@ function renderFixAssetTable(data) {
 
   data.forEach((item, idx) => {
     const qrUrl = getQrCodeUrl(item.kodeAktiva);
-    const imgUrl = CONFIG.formatDriveImageUrl(item.linkGambar);
+    const imgUrl = (typeof CONFIG !== 'undefined') ? CONFIG.formatDriveImageUrl(item.linkGambar) : 'no image.png';
 
     const tr = document.createElement("tr");
     tr.className = "hover:bg-blue-50/40 border-b border-slate-100 text-center";
@@ -464,15 +685,7 @@ function renderFixAssetTable(data) {
   if (window.lucide) lucide.createIcons();
 }
 
-// Render Tabel Inventory Sesuai Format Kolom Screenshot Baru (DPSA, DPM, Pak Boyke)
-// Render Tabel Inventory dengan Warna Kolom Menyesuaikan Header
-// Helper khusus untuk menampilkan nilai rupiah hanya jika nilainya > 0 / ada di spreadsheet
-function formatNilaiInventory(num) {
-  if (!num || num === 0) return "-";
-  return formatRupiah(num);
-}
-
-// Render Tabel Inventory Sesuai Format Kolom & Nilai Kosong Tidak Tampil Rp 0
+// Render Tabel Inventory Sesuai Format Kolom Screenshot Baru
 function renderInventoryTable(filtered = null) {
   const tbody = document.getElementById("inventoryTableBody");
   if (!tbody) return;
@@ -481,40 +694,33 @@ function renderInventoryTable(filtered = null) {
 
   data.forEach((item, idx) => {
     const qrUrl = getQrCodeUrl(item.kodeBarang);
-    const imgUrl = CONFIG.formatDriveImageUrl(item.gambar);
+    const imgUrl = (typeof CONFIG !== 'undefined') ? CONFIG.formatDriveImageUrl(item.gambar) : 'no image.png';
 
     const tr = document.createElement("tr");
     tr.className = "hover:bg-slate-50/60 border-b border-slate-100 text-center";
     tr.innerHTML = `
       <td class="py-2.5 px-2 text-slate-500">${idx + 1}</td>
-      <td class="py-2.5 px-3 font-mono font-bold text-blue-900 whitespace-nowrap">${item.kodeBarang}</td>
-      <td class="py-2.5 px-4 font-semibold text-slate-800 text-left">${formatMultilineText(item.namaBarang)}</td>
-      <td class="py-2.5 px-4 text-slate-600 text-[11px] text-left leading-relaxed">${formatMultilineText(item.tipe)}</td>
+      <td class="py-2.5 px-3 font-mono font-bold text-blue-900 whitespace-nowrap bg-yellow-50/30">${item.kodeBarang}</td>
+      <td class="py-2.5 px-4 font-semibold text-slate-800 text-left bg-yellow-50/30">${formatMultilineText(item.namaBarang)}</td>
+      <td class="py-2.5 px-4 text-slate-600 text-[11px] text-left leading-relaxed bg-yellow-50/30">${formatMultilineText(item.tipe)}</td>
       <td class="py-2.5 px-3 text-slate-600">${item.satuan}</td>
       <td class="py-2.5 px-2 font-bold text-slate-800">${item.jumlah}</td>
       <td class="py-2.5 px-2 text-slate-600 leading-relaxed">${formatMultilineText(item.tahun)}</td>
       <td class="py-2.5 px-2 text-slate-600 leading-relaxed">${formatMultilineText(item.kondisi)}</td>
-      <td class="py-2.5 px-3 font-medium text-slate-700 text-right leading-relaxed">${formatMultilineText(item.hargaSatuan)}</td>
-      
-      <!-- Kolom DPSA: Hanya tampil jika nilainya ada di spreadsheet (tidak Rp 0) -->
+      <td class="py-2.5 px-3 font-medium text-slate-700 text-right leading-relaxed bg-purple-50/30">${formatMultilineText(item.hargaSatuan)}</td>
       <td class="py-2.5 px-3 font-medium text-slate-900 text-right bg-[#e8f1fa]">
         ${formatNilaiInventory(item.totalDPSA)}
       </td>
-      
-      <!-- Kolom DPM: Hanya tampil jika nilainya ada di spreadsheet (tidak Rp 0) -->
       <td class="py-2.5 px-3 font-medium text-slate-900 text-right bg-[#f7edf2]">
         ${formatNilaiInventory(item.totalDPM)}
       </td>
-      
-      <!-- Kolom Pak Boyke: Hanya tampil jika nilainya ada di spreadsheet (tidak Rp 0) -->
       <td class="py-2.5 px-3 font-medium text-slate-900 text-right bg-[#fef6ee]">
         ${formatNilaiInventory(item.totalBoyke)}
       </td>
-      
-      <td class="py-2.5 px-2">
+      <td class="py-2.5 px-2 bg-yellow-50/30">
         <img src="${imgUrl}" alt="${item.namaBarang}" class="w-8 h-8 object-cover rounded-lg border border-slate-200 mx-auto" onerror="this.onerror=null;this.src='no image.png';">
       </td>
-      <td class="py-2.5 px-3 text-slate-500 text-[11px] text-left leading-relaxed">${formatMultilineText(item.keteranganLetak)}</td>
+      <td class="py-2.5 px-3 text-slate-500 text-[11px] text-left leading-relaxed bg-yellow-50/30">${formatMultilineText(item.keteranganLetak)}</td>
       <td class="py-2.5 px-3 whitespace-nowrap">
         <div class="flex items-center justify-center gap-1.5">
           <img src="${qrUrl}" alt="QR" class="w-7 h-7 rounded border border-slate-300 bg-white p-0.5 cursor-pointer hover:scale-125 transition-transform" onclick="openDetailData('${item.kodeBarang}')" title="Klik untuk lihat detail">
@@ -528,15 +734,6 @@ function renderInventoryTable(filtered = null) {
     tbody.appendChild(tr);
   });
   if (window.lucide) lucide.createIcons();
-}
-
-function openDetailData(kode) {
-  const origin = window.location.origin;
-  const path = window.location.pathname.replace(/\/index\.html$/, '');
-  const cleanPath = path.endsWith('/') ? path : `${path}/`;
-  
-  // Membuka tab langsung dengan format baru: /?kode=...
-  window.open(`${origin}${cleanPath}?kode=${encodeURIComponent(String(kode).trim())}`, '_blank');
 }
 
 // ========================================================
@@ -589,7 +786,7 @@ function syncDataViaJSONP() {
       const c = r.c || [];
       const kode = String(c[1]?.v || "").trim();
       const nama = String(c[2]?.v || "").trim();
-      if (!kode || kode.toUpperCase().includes("KODE") || !nama || nama.toUpperCase().includes("NAMA")) return;
+      if (!kode || kode.toUpperCase().includes("KODE") || !nama) return;
 
       const getText = (cell) => {
         if (!cell) return "-";
@@ -598,19 +795,19 @@ function syncDataViaJSONP() {
 
       parsed.push({
         no: c[0]?.v || (parsed.length + 1),
-        kodeBarang: kode,                         // Kolom B
-        namaBarang: nama,                         // Kolom C
-        tipe: getText(c[3]),                      // Kolom D
-        satuan: String(c[4]?.v || "Unit"),        // Kolom E
-        jumlah: parseInt(c[5]?.v) || 1,           // Kolom F
-        tahun: getText(c[6]),                     // Kolom G
-        kondisi: getText(c[7]),                   // Kolom H
-        hargaSatuan: getText(c[8]),               // Kolom I (Harga Satuan)
-        totalDPSA: parsePrice(c[9]?.v),           // Kolom J (Total DPSA)
-        totalDPM: parsePrice(c[10]?.v),          // Kolom K (Total DPM)
-        totalBoyke: parsePrice(c[11]?.v),        // Kolom L (Total Pak Boyke)
-        gambar: String(c[12]?.v || ""),           // Kolom M (Dokumen Gambar)
-        keteranganLetak: getText(c[13])           // Kolom N (Keterangan Letak)
+        kodeBarang: kode,
+        namaBarang: nama,
+        tipe: getText(c[3]),
+        satuan: String(c[4]?.v || "Unit"),
+        jumlah: parseInt(c[5]?.v) || 1,
+        tahun: getText(c[6]),
+        kondisi: getText(c[7]),
+        hargaSatuan: getText(c[8]),
+        totalDPSA: parsePrice(c[9]?.v),
+        totalDPM: parsePrice(c[10]?.v),
+        totalBoyke: parsePrice(c[11]?.v),
+        gambar: String(c[12]?.v || ""),
+        keteranganLetak: getText(c[13])
       });
     });
 
@@ -630,7 +827,7 @@ function syncDataViaJSONP() {
   document.body.appendChild(scriptInv);
 }
 
-// Navigasi Tab (Pemisahan Tegas Antar Section)
+// Navigasi Tab
 function switchTab(tabId) {
   ['overview', 'fixasset', 'inventory'].forEach(s => {
     const secEl = document.getElementById(`section-${s}`);
@@ -653,7 +850,8 @@ function switchTab(tabId) {
     fixasset: "Dashboard Fix Asset", 
     inventory: "Dashboard Inventory" 
   };
-  document.getElementById("topBarTitle").textContent = titles[tabId];
+  const topTitle = document.getElementById("topBarTitle");
+  if (topTitle) topTitle.textContent = titles[tabId];
 }
 
 // Batch Print Barcode 5x5 cm
