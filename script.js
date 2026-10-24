@@ -882,11 +882,35 @@ function switchTab(tabId) {
 }
 
 // Batch Print Barcode 5x5 cm
+// Tentukan warna stiker inventory berdasarkan kolom total harga perolehan.
+function getInventoryStickerOwner(item) {
+  const totalDPSA = parsePrice(item.totalDPSA);
+  const totalDPM = parsePrice(item.totalDPM);
+  const totalBoyke = parsePrice(item.totalBoyke);
+
+  // Pemilik ditentukan dari kolom total harga perolehan yang terisi.
+  // Jika lebih dari satu kolom terisi, prioritas: DPSA, DPM, lalu Pak Boyke.
+  if (totalDPSA > 0) return "dpsa";
+  if (totalDPM > 0) return "dpm";
+  if (totalBoyke > 0) return "boyke";
+  return "dpsa"; // Default biru bila seluruh nilai perolehan kosong/nol.
+}
+
+function getInventoryStickerTitle(item) {
+  const owner = getInventoryStickerOwner(item);
+  const titles = {
+    dpsa: "PT DPSA",
+    dpm: "DPM",
+    boyke: "Boyke Dharma"
+  };
+  return titles[owner] || "PT DPSA";
+}
+
 function openBatchPrintModal(type) {
   currentBatchType = type;
   const isFA = (type === 'fixasset');
   const list = isFA ? calculatedFixAssets : inventoryItems;
-  
+
   const modal = document.getElementById("batchPrintModal");
   const title = document.getElementById("batchPrintTitle");
   const sub = document.getElementById("batchPrintSubtitle");
@@ -902,13 +926,17 @@ function openBatchPrintModal(type) {
     const kode = isFA ? item.kodeAktiva : item.kodeBarang;
     const qrUrl = getQrCodeUrl(kode);
     const card = document.createElement("div");
-    card.className = "sticker-5x5cm print-card";
-    
+    // Fix Asset tetap berjudul PT DPSA; Inventory mengikuti pemilik berdasarkan total harga perolehan.
+    const owner = isFA ? "dpsa" : getInventoryStickerOwner(item);
+    const ownerClass = `sticker-owner-${owner}`;
+    const stickerTitle = isFA ? "PT DPSA" : getInventoryStickerTitle(item);
+    card.className = `sticker-5x5cm print-card ${ownerClass}`;
+
     card.innerHTML = `
       <div class="sticker-header">
         <img src="logo dpsa.png" alt="Logo" class="sticker-logo" onerror="this.onerror=null;this.src='no image.png';">
         <div class="sticker-brand">
-          <div class="sticker-title">PT DPSA</div>
+          <div class="sticker-title">${stickerTitle}</div>
           <div class="sticker-subtitle">Asset & Inventory System</div>
         </div>
       </div>
@@ -927,7 +955,6 @@ function openBatchPrintModal(type) {
   setPaperSize('A4');
   if (window.lucide) lucide.createIcons();
 }
-
 function closeBatchPrintModal() {
   const modal = document.getElementById("batchPrintModal");
   if (modal) {
